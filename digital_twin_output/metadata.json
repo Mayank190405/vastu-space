@@ -1,0 +1,27 @@
+{
+  "status": "success",
+  "pipeline_point": 23,
+  "engine": "VastuTextureReconstructionEngine",
+  "atlas_resolution": "2048x2048",
+  "coverage": {
+    "total_faces": 24999,
+    "untextured_faces": 89,
+    "surface_coverage_pct": 99.64,
+    "total_surface_area_m2": 8.0533,
+    "total_painted_texels": 485874,
+    "texel_density_pts_m2": 60332.3,
+    "is_valid": true
+  },
+  "assets": {
+    "mesh_obj": "/Users/kradsagency/Desktop/vastu-namma-space/digital_twin_output/textured_mesh.obj",
+    "material_mtl": "/Users/kradsagency/Desktop/vastu-namma-space/digital_twin_output/textured_mesh.mtl",
+    "atlas_png": "/Users/kradsagency/Desktop/vastu-namma-space/digital_twin_output/texture_atlas.png",
+    "atlas_jpg": "/Users/kradsagency/Desktop/vastu-namma-space/digital_twin_output/texture_atlas.jpg",
+    "material_json": "/Users/kradsagency/Desktop/vastu-namma-space/digital_twin_output/material.json",
+    "mipmaps": [
+      "/Users/kradsagency/Desktop/vastu-namma-space/digital_twin_output/mipmaps/texture_atlas_mip_1.jpg",
+      "/Users/kradsagency/Desktop/vastu-namma-space/digital_twin_output/mipmaps/texture_atlas_mip_2.jpg",
+      "/Users/kradsagency/Desktop/vastu-namma-space/digital_twin_output/mipmaps/texture_atlas_mip_3.jpg"
+    ]
+  }
+}

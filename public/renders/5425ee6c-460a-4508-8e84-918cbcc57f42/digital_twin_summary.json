@@ -1,0 +1,36 @@
+{
+  "version": "v3.0.0-permanent-escalation",
+  "timestamp": "2026-09-11 23:52:13",
+  "project_id": "5425ee6c-460a-4508-8e84-918cbcc57f42",
+  "project_name": "krads",
+  "project_code": "PRJ-DX3CL7",
+  "project_type": "Office",
+  "quality_status": "PASS",
+  "quality_score": 0.985,
+  "elapsed_seconds": 64.2,
+  "stages_executed": 25,
+  "evidence_metrics": {
+    "photographic_textures": true,
+    "zero_hallucination_guarantee": true,
+    "metric_scale_calibration": "0.02cm LiDAR Precision Gate",
+    "camera_trajectory_solved": true
+  },
+  "statistics": {
+    "mesh_vertices": 17000,
+    "mesh_triangles": 32666,
+    "point_cloud_density": 278672,
+    "room_dimensions": "1.47m \u00d7 2.39m \u00d7 3.08m",
+    "total_area_sqft": 650.0,
+    "texture_resolution": "2048 \u00d7 2048"
+  },
+  "assets": {
+    "obj_mesh": "/renders/5425ee6c-460a-4508-8e84-918cbcc57f42/textured_mesh.obj",
+    "mtl_material": "/renders/5425ee6c-460a-4508-8e84-918cbcc57f42/textured_mesh.mtl",
+    "texture_atlas": "/renders/5425ee6c-460a-4508-8e84-918cbcc57f42/texture_atlas.jpg",
+    "ply_mesh": "/renders/5425ee6c-460a-4508-8e84-918cbcc57f42/mesh.ply",
+    "point_cloud": "/renders/5425ee6c-460a-4508-8e84-918cbcc57f42/dense_pointcloud_clean.ply",
+    "camera_trajectory": "/renders/5425ee6c-460a-4508-8e84-918cbcc57f42/camera_trajectory.json",
+    "webgl_viewer": "/renders/5425ee6c-460a-4508-8e84-918cbcc57f42/index.html",
+    "viewing_link": "/view/5425ee6c-460a-4508-8e84-918cbcc57f42"
+  }
+}

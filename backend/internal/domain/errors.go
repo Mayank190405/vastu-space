@@ -1,0 +1,30 @@
+package domain
+
+import "errors"
+
+var (
+	ErrUserNotFound          = errors.New("user not found")
+	ErrUserAlreadyExists     = errors.New("user with this email already exists")
+	ErrInvalidCredentials    = errors.New("invalid email or password")
+	ErrEmailNotVerified      = errors.New("email address is not verified")
+	ErrInvalidOTP            = errors.New("invalid or expired OTP")
+	ErrOTPExpired            = errors.New("OTP has expired")
+	ErrOrgNotFound           = errors.New("organization not found")
+	ErrOrgAlreadyExists      = errors.New("organization already exists")
+	ErrMembershipNotFound    = errors.New("organization membership not found")
+	ErrMembershipExists      = errors.New("user is already a member or has a pending request in this organization")
+	ErrMembershipPending     = errors.New("your membership is pending admin approval")
+	ErrMembershipRejected    = errors.New("your membership request was rejected")
+	ErrUnauthorized          = errors.New("unauthorized access")
+	ErrForbidden             = errors.New("forbidden: insufficient permissions")
+	ErrInvalidToken          = errors.New("invalid or expired authentication token")
+	ErrTokenRevoked          = errors.New("authentication token has been revoked")
+	ErrInvalidDocument       = errors.New("invalid business verification document")
+	ErrInvalidTaxID          = errors.New("invalid tax identification number")
+	ErrModelImmutable        = errors.New("cannot mutate immutable spatial model version")
+	ErrModelNotFound         = errors.New("spatial model not found")
+	ErrPOINotFound           = errors.New("poi not found")
+	ErrJobNotFound           = errors.New("job not found")
+	ErrCaptureNotFound       = errors.New("capture not found")
+	ErrUploadNotFound        = errors.New("upload session not found")
+)

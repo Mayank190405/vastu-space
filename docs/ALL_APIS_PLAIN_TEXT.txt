@@ -1,0 +1,1878 @@
+================================================================================
+VĀSTU PLATFORM - COMPLETE BACKEND API SPECIFICATION (PLAIN TEXT FORMAT)
+================================================================================
+
+GLOBAL HOSTS:
+- Go Core Control Plane:      http://localhost:8080/api/v1
+- Python Spatial Engine:     http://localhost:8000/api/v1
+- WebSockets:                ws://localhost:8000/api/v1/ws
+
+GLOBAL AUTH HEADER:
+Authorization: Bearer <token>
+
+RESPONSE CONVENTIONS:
+- Go APIs return:     {"success": true, "message": "...", "data": ...} or {"error": "..."}
+- Python APIs return: Direct JSON objects / schemas or HTTP 4xx/5xx {"detail": "..."}
+
+================================================================================
+PART 1: GO CORE CONTROL PLANE (PORT 8080)
+================================================================================
+
+--------------------------------------------------------------------------------
+1. AUTHENTICATION & USERS
+--------------------------------------------------------------------------------
+
+[1] GET http://localhost:8080/health
+Auth: Public
+Req:  None
+Res:  200 OK
+{
+  "service": "vastu-backend-control-plane",
+  "status": "healthy",
+  "version": "1.0.0"
+}
+
+[2] POST http://localhost:8080/api/v1/auth/signup/user
+Auth: Public
+Req Body:
+{
+  "full_name": "Aditya Rao",
+  "email": "aditya@krads.co.in",
+  "password": "Password123!",
+  "phone_number": "+919876543210"
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "Verification OTP has been sent to your email address",
+  "data": {"email": "aditya@krads.co.in"}
+}
+
+[3] POST http://localhost:8080/api/v1/auth/verify-otp
+Auth: Public
+Req Body:
+{
+  "email": "aditya@krads.co.in",
+  "otp_code": "123456",
+  "purpose": "SIGNUP"  // or "LOGIN"
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "Email successfully verified",
+  "data": {
+    "user": {"id": "uuid", "email": "aditya@krads.co.in", "full_name": "Aditya Rao"},
+    "tokens": {"access_token": "jwt...", "refresh_token": "jwt...", "expires_in": 3600}
+  }
+}
+
+[4] POST http://localhost:8080/api/v1/auth/request-otp
+Auth: Public
+Req Body:
+{
+  "email": "aditya@krads.co.in",
+  "purpose": "LOGIN"
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "Login verification code dispatched to email",
+  "data": {"otp_id": "uuid"}
+}
+
+[5] POST http://localhost:8080/api/v1/auth/login
+Auth: Public
+Req Body:
+{
+  "email": "aditya@krads.co.in",
+  "password": "Password123!"
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "user": {"id": "uuid", "email": "aditya@krads.co.in", "full_name": "Aditya Rao"},
+    "tokens": {"access_token": "jwt...", "refresh_token": "jwt...", "expires_in": 3600},
+    "memberships": [{"org_id": "uuid", "org_name": "Krads Agency", "role": "ORGANIZATION_ADMIN"}]
+  }
+}
+
+[6] POST http://localhost:8080/api/v1/auth/google
+Auth: Public
+Req Body:
+{
+  "id_token": "google_oauth_id_token"
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "Google authentication successful",
+  "data": {"user": {...}, "tokens": {...}, "memberships": [...]}
+}
+
+[7] POST http://localhost:8080/api/v1/auth/google/signup
+Auth: Public
+Req Body:
+{
+  "id_token": "google_oauth_id_token"
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "Google registration successful",
+  "data": {"user": {...}, "tokens": {...}, "memberships": [...]}
+}
+
+[8] POST http://localhost:8080/api/v1/auth/apple
+Auth: Public
+Req Body:
+{
+  "id_token": "apple_identity_token",
+  "full_name": "Aditya Rao"
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "Apple authentication successful",
+  "data": {"user": {...}, "tokens": {...}, "memberships": [...]}
+}
+
+[9] POST http://localhost:8080/api/v1/auth/apple/signup
+Auth: Public
+Req Body:
+{
+  "id_token": "apple_identity_token",
+  "full_name": "Aditya Rao"
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "Apple registration successful",
+  "data": {"user": {...}, "tokens": {...}, "memberships": [...]}
+}
+
+[10] POST http://localhost:8080/api/v1/auth/refresh
+Auth: Public
+Req Body:
+{
+  "refresh_token": "jwt_refresh_token"
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "Token refreshed",
+  "data": {"access_token": "jwt...", "refresh_token": "jwt...", "expires_in": 3600}
+}
+
+[11] GET http://localhost:8080/api/v1/auth/me
+Auth: Bearer JWT
+Req:  None
+Res:  200 OK
+{
+  "success": true,
+  "message": "Current user profile",
+  "data": {
+    "user": {"id": "uuid", "email": "aditya@krads.co.in", "full_name": "Aditya Rao"},
+    "active_org": {"id": "uuid", "name": "Krads Agency", "org_code": "KRADS-8921"},
+    "active_role": "ORGANIZATION_ADMIN",
+    "memberships": [...]
+  }
+}
+
+--------------------------------------------------------------------------------
+2. ORGANIZATIONS & TENANCY
+--------------------------------------------------------------------------------
+
+[12] POST http://localhost:8080/api/v1/orgs/signup
+Auth: Public
+Content-Type: multipart/form-data
+Form Fields:
+  org_name: "Krads Agency Labs"
+  org_type: "Enterprise"
+  industry: "Architecture"
+  business_email: "contact@krads.co.in"
+  phone_number: "+919876543210"
+  country: "India"
+  state: "Karnataka"
+  city: "Bengaluru"
+  website: "https://krads.co.in"
+  org_size: "10-50"
+  address: "Indiranagar, Bengaluru"
+  admin_password: "Password123!"
+  gst_number: "29AAAAA0000A1Z5"
+  document: [file binary]
+  logo: [file binary]
+Res: 200 OK
+{
+  "success": true,
+  "message": "Organization registration initiated. Verification OTP sent to business email.",
+  "data": {"business_email": "contact@krads.co.in", "org_name": "Krads Agency Labs"}
+}
+
+[13] POST http://localhost:8080/api/v1/orgs/verify-otp
+Auth: Public
+Req Body:
+{
+  "email": "contact@krads.co.in",
+  "otp_code": "123456"
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "Organization verified successfully",
+  "data": {
+    "org": {"id": "uuid", "name": "Krads Agency Labs", "org_code": "KRADS-8921", "status": "ACTIVE"},
+    "tokens": {"access_token": "jwt...", "refresh_token": "jwt..."}
+  }
+}
+
+[14] GET http://localhost:8080/api/v1/orgs/validate/{orgCode}
+Auth: Public
+Req:  None
+Res:  200 OK
+{
+  "success": true,
+  "message": "Organisation validated",
+  "data": {
+    "valid": true,
+    "org_id": "uuid",
+    "name": "Krads Agency Labs",
+    "org_code": "KRADS-8921",
+    "status": "ACTIVE",
+    "country": "India"
+  }
+}
+
+[15] POST http://localhost:8080/api/v1/orgs/join
+Auth: Bearer JWT
+Req Body:
+{
+  "org_code": "KRADS-8921"
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "Join request submitted. Pending organization admin approval.",
+  "data": {"id": "uuid", "org_id": "uuid", "user_id": "uuid", "status": "PENDING"}
+}
+
+[16] GET http://localhost:8080/api/v1/orgs/{orgId}/members/pending
+Auth: Bearer JWT (Admin)
+Req:  None
+Res:  200 OK
+{
+  "success": true,
+  "message": "Pending membership requests",
+  "data": [
+    {"id": "uuid", "user_id": "uuid", "user_name": "Field Op", "user_email": "op@krads.co.in", "status": "PENDING"}
+  ]
+}
+
+[17] POST http://localhost:8080/api/v1/orgs/{orgId}/members/{memberId}/approve
+Auth: Bearer JWT (Admin)
+Req Body:
+{
+  "assigned_role": "CAPTURE_OPERATOR"  // "MEMBER", "EDITOR", "VIEWER", "ORGANIZATION_ADMIN"
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "Member request approved successfully"
+}
+
+[18] POST http://localhost:8080/api/v1/orgs/{orgId}/members/{memberId}/reject
+Auth: Bearer JWT (Admin)
+Req:  None
+Res:  200 OK
+{
+  "success": true,
+  "message": "Member request rejected"
+}
+
+[19] POST http://localhost:8080/api/v1/orgs/{orgId}/regenerate-code
+Auth: Bearer JWT (Admin)
+Req:  None
+Res:  200 OK
+{
+  "success": true,
+  "message": "VĀSTU Organisation ID regenerated successfully",
+  "data": {"id": "uuid", "org_code": "KRADS-9912"}
+}
+
+--------------------------------------------------------------------------------
+3. PROJECTS & COLLABORATION
+--------------------------------------------------------------------------------
+
+[20] POST http://localhost:8080/api/v1/projects
+Auth: Bearer JWT
+Req Body:
+{
+  "name": "RMZ Ecospace Block 4A",
+  "client_name": "RMZ Corp",
+  "description": "Floor 2 & 3 Digital Twin",
+  "location_city": "Bengaluru",
+  "location_state": "Karnataka",
+  "location_country": "India",
+  "typology": "commercial_office",
+  "ceiling_height_meters": 3.2,
+  "total_floors_count": 2,
+  "precision_gate_cm": 2.5
+}
+Res: 201 Created
+{
+  "success": true,
+  "message": "Project created successfully",
+  "data": {
+    "id": "uuid",
+    "name": "RMZ Ecospace Block 4A",
+    "slug": "rmz-ecospace-block-4a",
+    "status": "active"
+  }
+}
+
+[21] GET http://localhost:8080/api/v1/projects
+Auth: Bearer JWT
+Req:  None
+Res:  200 OK
+{
+  "success": true,
+  "message": "Projects retrieved",
+  "data": [
+    {"id": "uuid", "name": "RMZ Ecospace Block 4A", "status": "active", "total_area_sqft": 35000.0}
+  ]
+}
+
+[22] GET http://localhost:8080/api/v1/projects/trash
+Auth: Bearer JWT
+Req:  None
+Res:  200 OK
+{
+  "success": true,
+  "message": "Trash projects retrieved (30-day recovery active)",
+  "data": [...]
+}
+
+[23] GET http://localhost:8080/api/v1/projects/{projectId}
+Auth: Bearer JWT
+Req:  None
+Res:  200 OK
+{
+  "success": true,
+  "message": "Project details retrieved",
+  "data": {"id": "uuid", "name": "RMZ Ecospace Block 4A", ...}
+}
+
+[24] PUT http://localhost:8080/api/v1/projects/{projectId}
+Auth: Bearer JWT
+Req Body:
+{
+  "name": "RMZ Ecospace Campus - Block 4A (Updated)",
+  "description": "Updated floor notes"
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "Project updated successfully",
+  "data": {"id": "uuid", ...}
+}
+
+[25] DELETE http://localhost:8080/api/v1/projects/{projectId}
+Auth: Bearer JWT
+Description: Moves project to trash (30-day recovery window)
+Res: 200 OK
+{
+  "success": true,
+  "message": "Project moved to trash (recoverable up to 30 days)"
+}
+
+[26] POST http://localhost:8080/api/v1/projects/{projectId}/restore
+Auth: Bearer JWT
+Description: Restores project from trash
+Res: 200 OK
+{
+  "success": true,
+  "message": "Project restored successfully"
+}
+
+[27] DELETE http://localhost:8080/api/v1/projects/{projectId}/permanent
+Auth: Bearer JWT
+Description: Permanent hard delete
+Res: 200 OK
+{
+  "success": true,
+  "message": "Project permanently deleted"
+}
+
+[28] DELETE http://localhost:8080/api/v1/projects/{projectId}/archive
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Project archived"
+}
+
+[29] GET http://localhost:8080/api/v1/projects/{projectId}/timeline
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Timeline events retrieved",
+  "data": [
+    {"id": "uuid", "title": "Field Scanning", "stage": "CAPTURE", "status": "COMPLETED"}
+  ]
+}
+
+[30] PUT http://localhost:8080/api/v1/projects/{projectId}/timeline/{eventId}/status
+Auth: Bearer JWT
+Req Body:
+{
+  "status": "COMPLETED",
+  "actor_name": "Field Op 1",
+  "actor_role": "Operations Lead"
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "Timeline milestone status updated",
+  "data": {"status": "COMPLETED"}
+}
+
+[31] POST http://localhost:8080/api/v1/projects/{projectId}/timeline/{eventId}/comments
+Auth: Bearer JWT
+Req Body:
+{
+  "comment": "Completed corridor re-scan at 100fps."
+}
+Res: 201 Created
+{
+  "success": true,
+  "message": "Comment added to timeline event",
+  "data": {"id": "uuid", "comment": "..."}
+}
+
+[32] GET http://localhost:8080/api/v1/projects/{projectId}/chat
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Chat messages retrieved",
+  "data": [
+    {"id": "uuid", "message": "Check room 302", "is_urgent": false, "is_resolved": false}
+  ]
+}
+
+[33] POST http://localhost:8080/api/v1/projects/{projectId}/chat
+Auth: Bearer JWT
+Req Body:
+{
+  "message": "URGENT: specular reflection near elevators",
+  "is_urgent": true
+}
+Res: 201 Created
+{
+  "success": true,
+  "message": "Message sent successfully",
+  "data": {"id": "uuid", "message": "...", "is_urgent": true}
+}
+
+[34] POST http://localhost:8080/api/v1/projects/{projectId}/chat/{messageId}/resolve
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Urgent message marked as resolved"
+}
+
+[35] GET http://localhost:8080/api/v1/projects/{projectId}/client-emails
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Client emails retrieved",
+  "data": [...]
+}
+
+[36] POST http://localhost:8080/api/v1/projects/{projectId}/client-emails/send
+Auth: Bearer JWT
+Req Body:
+{
+  "event_type": "MODEL_PUBLISHED",
+  "subject": "Your Digital Twin is Ready"
+}
+Res: 201 Created
+{
+  "success": true,
+  "message": "Email update dispatched to client"
+}
+
+[37] POST http://localhost:8080/api/v1/projects/{projectId}/client-emails/{logId}/resend
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Email re-sent to client successfully"
+}
+
+[38] GET http://localhost:8080/api/v1/projects/{projectId}/activities
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Project activities retrieved",
+  "data": [
+    {"id": "uuid", "action": "CREATE_CAPTURE", "user_email": "aditya@krads.co.in", "timestamp": "..."}
+  ]
+}
+
+--------------------------------------------------------------------------------
+4. CAPTURES, CHUNKED STORAGE & PROCESSING JOBS
+--------------------------------------------------------------------------------
+
+[39] POST http://localhost:8080/api/v1/captures
+Auth: Bearer JWT
+Req Body:
+{
+  "project_id": "uuid",
+  "device_model": "iPhone 15 Pro",
+  "notes": "East wing scan"
+}
+Res: 201 Created
+{
+  "success": true,
+  "message": "Capture session initiated",
+  "data": {"id": "uuid", "project_id": "uuid", "status": "CREATED"}
+}
+
+[40] GET http://localhost:8080/api/v1/captures/{id}
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Capture retrieved",
+  "data": {"id": "uuid", "status": "UPLOADED"}
+}
+
+[41] GET http://localhost:8080/api/v1/captures/project/{projectId}
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Captures list retrieved",
+  "data": [...]
+}
+
+[42] PUT http://localhost:8080/api/v1/captures/{id}/status
+Auth: Bearer JWT
+Req Body:
+{
+  "status": "PROCESSING"
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "Capture status updated",
+  "data": {"id": "uuid", "status": "PROCESSING"}
+}
+
+[43] POST http://localhost:8080/api/v1/uploads/init
+Auth: Bearer JWT
+Req Body:
+{
+  "capture_id": "uuid",
+  "artifact_type": "VIDEO_RAW",
+  "total_bytes": 104857600,
+  "chunk_size_bytes": 5242880,
+  "total_chunks": 20,
+  "file_name": "scan.mov"
+}
+Res: 201 Created
+{
+  "success": true,
+  "message": "Upload session initiated",
+  "data": {"session_id": "uuid", "chunk_size": 5242880, "total_chunks": 20}
+}
+
+[44] POST http://localhost:8080/api/v1/uploads/{sessionId}/chunk/{chunkIndex}
+Auth: Bearer JWT
+Headers:
+  X-Chunk-SHA256: <hex_sha256>
+  Content-Type: application/octet-stream
+Req Body: [Binary raw bytes]
+Res: 200 OK
+{
+  "success": true,
+  "message": "Chunk uploaded successfully",
+  "data": {"chunk_index": 0, "bytes_written": 5242880}
+}
+
+[45] GET http://localhost:8080/api/v1/uploads/{sessionId}/progress
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Upload progress retrieved",
+  "data": {"session_id": "uuid", "uploaded_chunks": 12, "total_chunks": 20, "progress_pct": 60.0}
+}
+
+[46] POST http://localhost:8080/api/v1/uploads/{sessionId}/complete
+Auth: Bearer JWT
+Req Body:
+{
+  "final_checksum_sha256": "hex_hash"
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "Upload finalized and verified successfully",
+  "data": {"file_url": "/uploads/scan.mov"}
+}
+
+[47] POST http://localhost:8080/api/v1/jobs
+Auth: Bearer JWT
+Req Body:
+{
+  "project_id": "uuid",
+  "capture_id": "uuid",
+  "pipeline_type": "FULL_RECONSTRUCTION"
+}
+Res: 201 Created
+{
+  "success": true,
+  "message": "Processing job created",
+  "data": {"id": "uuid", "status": "QUEUED"}
+}
+
+[48] GET http://localhost:8080/api/v1/jobs/{id}
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Job details retrieved",
+  "data": {"id": "uuid", "stage": "DENSE_RECONSTRUCTION", "progress_pct": 55.0}
+}
+
+[49] GET http://localhost:8080/api/v1/jobs/project/{projectId}
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Jobs retrieved",
+  "data": [...]
+}
+
+[50] PUT http://localhost:8080/api/v1/jobs/{id}/progress
+Auth: Bearer JWT
+Req Body:
+{
+  "stage": "SEMANTIC_RECONSTRUCTION",
+  "progress_pct": 75.0
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "Job progress updated",
+  "data": {"id": "uuid", "progress_pct": 75.0}
+}
+
+[51] POST http://localhost:8080/api/v1/jobs/{id}/logs
+Auth: Bearer JWT
+Req Body:
+{
+  "stage": "DENSE",
+  "level": "INFO",
+  "message": "Extracted 120,000 surfels",
+  "meta": {"surfel_count": 120000}
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "Log appended successfully"
+}
+
+[52] GET http://localhost:8080/api/v1/jobs/{id}/logs
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Job logs retrieved",
+  "data": [
+    {"level": "INFO", "stage": "DENSE", "message": "...", "timestamp": "..."}
+  ]
+}
+
+--------------------------------------------------------------------------------
+5. MODELS, POIS, NAVIGATION & VIEWER
+--------------------------------------------------------------------------------
+
+[53] POST http://localhost:8080/api/v1/models
+Auth: Bearer JWT
+Req Body:
+{
+  "project_id": "uuid",
+  "version": "1.0.0",
+  "format": "GLTF"
+}
+Res: 201 Created
+{
+  "success": true,
+  "message": "Spatial model registered",
+  "data": {"id": "uuid", "version": "1.0.0"}
+}
+
+[54] GET http://localhost:8080/api/v1/models/{id}
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Model retrieved",
+  "data": {"id": "uuid", ...}
+}
+
+[55] GET http://localhost:8080/api/v1/models/project/{projectId}/active
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Active model retrieved",
+  "data": {"id": "uuid", "version": "1.0.0", "status": "ACTIVE"}
+}
+
+[56] GET http://localhost:8080/api/v1/models/project/{projectId}
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Models retrieved",
+  "data": [...]
+}
+
+[57] POST http://localhost:8080/api/v1/models/{id}/artifacts
+Auth: Bearer JWT
+Req Body:
+{
+  "artifact_type": "LOD0_MESH",
+  "storage_path": "/storage/models/lod0.gltf",
+  "file_size_bytes": 48291000
+}
+Res: 201 Created
+{
+  "success": true,
+  "message": "Artifact added to model",
+  "data": {"id": "uuid", ...}
+}
+
+[58] POST http://localhost:8080/api/v1/pois
+Auth: Bearer JWT
+Req Body:
+{
+  "project_id": "uuid",
+  "name": "Fire Hose 4A",
+  "category": "SAFETY",
+  "x": 12.4,
+  "y": 1.65,
+  "z": -8.2,
+  "room": "Floor 2 Corridor"
+}
+Res: 201 Created
+{
+  "success": true,
+  "message": "POI created successfully",
+  "data": {"id": "uuid", "name": "Fire Hose 4A"}
+}
+
+[59] GET http://localhost:8080/api/v1/pois/{id}
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "POI retrieved",
+  "data": {"id": "uuid", ...}
+}
+
+[60] GET http://localhost:8080/api/v1/pois/project/{projectId}
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "POIs retrieved",
+  "data": [...]
+}
+
+[61] PUT http://localhost:8080/api/v1/pois/{id}
+Auth: Bearer JWT
+Req Body:
+{
+  "name": "Fire Hose 4A (Inspected)"
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "POI updated",
+  "data": {"id": "uuid", ...}
+}
+
+[62] DELETE http://localhost:8080/api/v1/pois/{id}
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "POI deleted successfully"
+}
+
+[63] POST http://localhost:8080/api/v1/search/spatial
+Auth: Bearer JWT
+Req Body:
+{
+  "project_id": "uuid",
+  "query": "meeting rooms with projector"
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "Spatial search results",
+  "data": [...]
+}
+
+[64] POST http://localhost:8080/api/v1/navigation/nodes
+Auth: Bearer JWT
+Req Body:
+{
+  "project_id": "uuid",
+  "x": 2.5,
+  "y": 0.0,
+  "z": 1.2,
+  "floor": 1
+}
+Res: 201 Created
+{
+  "success": true,
+  "message": "Navigation node created",
+  "data": {"id": "uuid"}
+}
+
+[65] GET http://localhost:8080/api/v1/navigation/nodes/project/{projectId}
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Navigation nodes retrieved",
+  "data": [...]
+}
+
+[66] POST http://localhost:8080/api/v1/navigation/edges
+Auth: Bearer JWT
+Req Body:
+{
+  "project_id": "uuid",
+  "from_node_id": "uuid",
+  "to_node_id": "uuid",
+  "edge_type": "WALKWAY",
+  "is_wheelchair_accessible": true
+}
+Res: 201 Created
+{
+  "success": true,
+  "message": "Navigation edge created",
+  "data": {"id": "uuid"}
+}
+
+[67] GET http://localhost:8080/api/v1/navigation/edges/project/{projectId}
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Navigation edges retrieved",
+  "data": [...]
+}
+
+[68] POST http://localhost:8080/api/v1/navigation/route
+Auth: Bearer JWT
+Req Body:
+{
+  "project_id": "uuid",
+  "start_node_id": "uuid",
+  "end_node_id": "uuid",
+  "require_accessible": true
+}
+Res: 200 OK
+{
+  "success": true,
+  "message": "Navigation route calculated",
+  "data": {"path_node_ids": ["uuid", "uuid"], "total_distance_m": 24.5}
+}
+
+[69] POST http://localhost:8080/api/v1/viewer/bookmarks
+Auth: Bearer JWT
+Req Body:
+{
+  "project_id": "uuid",
+  "title": "Reception Overview",
+  "position": [0.0, 1.65, 5.0],
+  "target": [0.0, 1.2, 0.0]
+}
+Res: 201 Created
+{
+  "success": true,
+  "message": "Camera bookmark saved",
+  "data": {"id": "uuid", "title": "Reception Overview"}
+}
+
+[70] GET http://localhost:8080/api/v1/viewer/bookmarks/project/{projectId}
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Camera bookmarks retrieved",
+  "data": [...]
+}
+
+[71] DELETE http://localhost:8080/api/v1/viewer/bookmarks/{id}
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Camera bookmark deleted"
+}
+
+[72] POST http://localhost:8080/api/v1/viewer/annotations
+Auth: Bearer JWT
+Req Body:
+{
+  "project_id": "uuid",
+  "text": "HVAC outlet needs sealing",
+  "coordinates": [3.4, 2.8, -1.2]
+}
+Res: 201 Created
+{
+  "success": true,
+  "message": "Viewer annotation created",
+  "data": {"id": "uuid", "text": "..."}
+}
+
+[73] GET http://localhost:8080/api/v1/viewer/annotations/project/{projectId}
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Viewer annotations retrieved",
+  "data": [...]
+}
+
+[74] DELETE http://localhost:8080/api/v1/viewer/annotations/{id}
+Auth: Bearer JWT
+Res: 200 OK
+{
+  "success": true,
+  "message": "Viewer annotation deleted"
+}
+
+
+================================================================================
+PART 2: PYTHON SPATIAL CONTROL PLANE (PORT 8000)
+================================================================================
+
+--------------------------------------------------------------------------------
+1. AUTH & USER REGISTRY
+--------------------------------------------------------------------------------
+
+[75] GET http://localhost:8000/health
+Auth: Public
+Res:  200 OK
+{
+  "service": "vastu-canonical-control-plane",
+  "status": "healthy",
+  "version": "2.0.0"
+}
+
+[76] POST http://localhost:8000/api/v1/auth/login
+Auth: Public
+Req Body:
+{
+  "email": "admin@vastu.local",
+  "password": "admin"
+}
+Res: 200 OK
+{
+  "access_token": "vastu_token_usr_123",
+  "token_type": "Bearer",
+  "user": {"id": "usr_123", "email": "admin@vastu.local", "role": "ADMIN"}
+}
+
+[77] POST http://localhost:8000/api/v1/auth/signup
+Auth: Public
+Req Body:
+{
+  "name": "Operator Alpha",
+  "email": "op@vastu.local",
+  "password": "Password123!",
+  "role": "VIEWER"
+}
+Res: 201 Created
+{
+  "access_token": "vastu_token_usr_456",
+  "token_type": "Bearer",
+  "user": {"id": "usr_456", "email": "op@vastu.local", "role": "VIEWER"}
+}
+
+[78] GET http://localhost:8000/api/v1/auth/me
+Auth: Bearer Token
+Res: 200 OK
+{
+  "id": "usr_123",
+  "email": "admin@vastu.local",
+  "name": "Admin",
+  "role": "ADMIN",
+  "status": "ACTIVE"
+}
+
+[79] GET http://localhost:8000/api/v1/auth/users
+Auth: Bearer Token
+Res: 200 OK
+[
+  {"id": "usr_123", "email": "admin@vastu.local", "name": "Admin", "role": "ADMIN"}
+]
+
+--------------------------------------------------------------------------------
+2. SPATIAL PROJECTS & SPACES
+--------------------------------------------------------------------------------
+
+[80] GET http://localhost:8000/api/v1/projects
+Auth: Public / Token
+Res: 200 OK
+[
+  {
+    "id": "proj_123",
+    "name": "RMZ Ecospace Campus 4A",
+    "typology": "commercial_office",
+    "total_area_sqft": 45000.0,
+    "ceiling_height_meters": 3.0,
+    "total_floors_count": 1,
+    "status": "active"
+  }
+]
+
+[81] GET http://localhost:8000/api/v1/projects/{project_id}
+Auth: Public / Token
+Res: 200 OK
+{
+  "id": "proj_123",
+  "name": "RMZ Ecospace Campus 4A",
+  ...
+}
+
+[82] POST http://localhost:8000/api/v1/projects
+Auth: Public / Token
+Req Body:
+{
+  "name": "WeWork Galaxy",
+  "client_name": "WeWork",
+  "typology": "commercial_office",
+  "ceiling_height_meters": 3.4,
+  "total_floors_count": 3
+}
+Res: 201 Created
+{
+  "id": "proj_456",
+  "name": "WeWork Galaxy",
+  "slug": "wework-galaxy",
+  "status": "active"
+}
+
+[83] DELETE http://localhost:8000/api/v1/projects/{project_id}
+Auth: Public / Token
+Res: 200 OK
+{
+  "status": "DELETED",
+  "id": "proj_456"
+}
+
+[84] GET http://localhost:8000/api/v1/spaces
+Auth: Public / Token
+Res: 200 OK
+[
+  {"id": "sp_789", "project_id": "proj_123", "name": "Conference Room 401", "space_type": "Meeting room"}
+]
+
+[85] GET http://localhost:8000/api/v1/spaces/project/{project_id}
+Auth: Public / Token
+Res: 200 OK
+[...]
+
+[86] GET http://localhost:8000/api/v1/spaces/{space_id}
+Auth: Public / Token
+Res: 200 OK
+{"id": "sp_789", "name": "Conference Room 401", "status": "PUBLISHED", "area_m2": 45.0}
+
+[87] POST http://localhost:8000/api/v1/spaces
+Auth: Public / Token
+Req Body:
+{
+  "project_id": "proj_123",
+  "name": "Executive Boardroom",
+  "space_type": "Boardroom",
+  "area_m2": 65.0,
+  "ceiling_height_meters": 3.2,
+  "status": "PROCESSING"
+}
+Res: 201 Created
+{
+  "id": "sp_890",
+  "project_id": "proj_123",
+  "name": "Executive Boardroom",
+  "status": "PROCESSING"
+}
+
+[88] DELETE http://localhost:8000/api/v1/spaces/{space_id}
+Auth: Public / Token
+Res: 200 OK
+{"status": "DELETED", "id": "sp_890"}
+
+--------------------------------------------------------------------------------
+3. PHYSICAL CAPTURES & VALIDATION
+--------------------------------------------------------------------------------
+
+[89] GET http://localhost:8000/api/v1/captures
+Auth: Public / Token
+Res: 200 OK
+[...]
+
+[90] GET http://localhost:8000/api/v1/captures/project/{project_id}
+Auth: Public / Token
+Res: 200 OK
+[...]
+
+[91] POST http://localhost:8000/api/v1/captures
+Auth: Public / Token
+Req Body (Contract 1 Manifest):
+{
+  "capture_id": "93b8214a-5690-410a-84bf-391820485910",
+  "project_id": "784a91b2-56fa-49cf-82b4-71c6db984102",
+  "device_model": "iPhone 15 Pro",
+  "device_os_version": "iOS 18.2",
+  "app_version": "2.0.0",
+  "start_time": "2026-03-07T12:30:00Z",
+  "end_time": "2026-03-07T12:35:00Z",
+  "frame_count": 9000,
+  "has_depth": true,
+  "has_imu": true,
+  "resolution": [1920, 1080],
+  "framerate_fps": 30.0,
+  "operator_id": "field_op_01"
+}
+Res: 201 Created
+{
+  "status": "ACCEPTED",
+  "message": "Capture session registered and manifest validated",
+  "capture_id": "93b8214a-5690-410a-84bf-391820485910"
+}
+
+[92] GET http://localhost:8000/api/v1/captures/{capture_id}
+Auth: Public / Token
+Res: 200 OK
+{...}
+
+[93] GET http://localhost:8000/api/v1/captures/{capture_id}/artifacts?project_id=uuid
+Auth: Public / Token
+Res: 200 OK
+{
+  "manifest": "projects/.../manifest.json",
+  "video": "projects/.../video.mov",
+  "imu": "projects/.../imu.csv",
+  "depth": "projects/.../depth.bin"
+}
+
+[94] POST http://localhost:8000/api/v1/captures/{capture_id}/validate
+Auth: Public / Token
+Res: 200 OK
+{
+  "is_valid": true,
+  "capture_id": "uuid",
+  "errors": [],
+  "warnings": [],
+  "checks_passed": ["IMU continuous", "Depth frame sync verified"]
+}
+
+--------------------------------------------------------------------------------
+4. 22-STAGE AUTOMATED PIPELINE & BENCHMARKS
+--------------------------------------------------------------------------------
+
+[95] POST http://localhost:8000/api/v1/jobs
+Auth: Public / Token
+Req Body:
+{
+  "project_id": "uuid",
+  "capture_id": "uuid",
+  "priority": 5
+}
+Res: 201 Created
+{
+  "job_id": "uuid",
+  "stage": "QUEUED",
+  "progress": 0
+}
+
+[96] POST http://localhost:8000/api/v1/jobs/orchestrated
+Auth: Public / Token
+Req Body:
+{
+  "project_id": "proj_123",
+  "capture_id": "cap_123",
+  "operator_id": "op_01",
+  "device_model": "iPhone 15 Pro",
+  "async_mode": true
+}
+Res: 201 Created
+{
+  "status": "ACCEPTED",
+  "message": "22-stage automated pipeline started in background",
+  "job_id": "job_e79104fa",
+  "progress_endpoint": "/api/v1/jobs/job_e79104fa/progress"
+}
+
+[97] GET http://localhost:8000/api/v1/jobs
+Auth: Public / Token
+Res: 200 OK
+[
+  {"job_id": "job_e79104fa", "status": "RUNNING", "progress_pct": 54.5, "stage": "DENSE_RECONSTRUCTION"}
+]
+
+[98] GET http://localhost:8000/api/v1/jobs/{job_id}
+Auth: Public / Token
+Res: 200 OK
+{
+  "job_id": "job_e79104fa",
+  "status": "RUNNING",
+  "progress_pct": 54.5,
+  "gpu_utilization_pct": 78.4
+}
+
+[99] GET http://localhost:8000/api/v1/jobs/{job_id}/logs
+Auth: Public / Token
+Res: 200 OK
+[
+  {"id": "1", "level": "INFO", "message": "[CAMERA_POSE_ESTIMATION] Trajectory converged (100%)"}
+]
+
+[100] GET http://localhost:8000/api/v1/jobs/{job_id}/progress
+Auth: Public / Token
+Res: 200 OK
+{
+  "job_id": "job_e79104fa",
+  "status": "RUNNING",
+  "current_stage": "DENSE_RECONSTRUCTION",
+  "overall_progress_pct": 54.5,
+  "stage_progress_pct": 80.0,
+  "stage_events": [...]
+}
+
+[101] POST http://localhost:8000/api/v1/jobs/test-failure-injection
+Auth: Public / Token
+Req Body:
+{
+  "failure_type": "DROPPED_FRAMES",
+  "custom_params": {"drop_pct": 25}
+}
+Res: 200 OK
+{
+  "failure_type": "DROPPED_FRAMES",
+  "detected": true,
+  "recovered": true,
+  "recovery_action": "Interpolated trajectory via IMU dead-reckoning"
+}
+
+[102] POST http://localhost:8000/api/v1/jobs/benchmark/run
+Auth: Public / Token
+Description: Runs controlled physical benchmark in Lab-Alpha-8x6
+Res: 200 OK
+{
+  "test_environment": "Lab-Alpha-8x6",
+  "baseline_residual_cm": 4.12,
+  "upgraded_residual_cm": 1.48,
+  "passed_precision_gate": true
+}
+
+--------------------------------------------------------------------------------
+5. TRI-REPRESENTATION MODELS & LOD STREAMING
+--------------------------------------------------------------------------------
+
+[103] POST http://localhost:8000/api/v1/models/
+Auth: Public / Token
+Req Body: ModelVersion schema
+Res: 201 Created
+{"status": "REGISTERED", "model_version": "1.0.0"}
+
+[104] GET http://localhost:8000/api/v1/models/project/{project_id}
+Auth: Public / Token
+Res: 200 OK
+[...]
+
+[105] GET http://localhost:8000/api/v1/models/project/{project_id}/active
+Auth: Public / Token
+Res: 200 OK
+{...}
+
+[106] GET http://localhost:8000/api/v1/models/{version_id}
+Auth: Public / Token
+Res: 200 OK
+{...}
+
+[107] POST http://localhost:8000/api/v1/models/{version_id}/bundle
+Auth: Public / Token
+Req Body: TriRepresentationBundle schema
+Res: 201 Created
+{"status": "REGISTERED", "version_id": "1.0.0", "bundle_id": "bundle_123"}
+
+[108] GET http://localhost:8000/api/v1/models/{version_id}/bundle
+Auth: Public / Token
+Res: 200 OK
+{...}
+
+[109] GET http://localhost:8000/api/v1/models/{version_id}/visual
+Auth: Public / Token
+Description: Web Viewer Stream (Zero collision/structural overhead)
+Res: 200 OK
+{
+  "model_version_id": "1.0.0",
+  "gltf_url": "/storage/models/1.0.0/visual.gltf",
+  "texture_atlas_url": "/storage/models/1.0.0/textures.bin",
+  "triangle_count": 568200,
+  "lod_tiers": [
+    {"lod": 0, "triangles": 568200},
+    {"lod": 1, "triangles": 142050},
+    {"lod": 2, "triangles": 35500}
+  ]
+}
+
+[110] GET http://localhost:8000/api/v1/models/{version_id}/structural
+Auth: Public / Token
+Description: BIM/Architectural Geometry (Floors, walls, doors)
+Res: 200 OK
+{
+  "model_version_id": "1.0.0",
+  "floors": [...],
+  "walls": [...],
+  "openings": [...]
+}
+
+[111] GET http://localhost:8000/api/v1/models/{version_id}/collision
+Auth: Public / Token
+Description: NavMesh Walkable Surfaces & Obstacle Colliders
+Res: 200 OK
+{
+  "human_radius_meters": 0.35,
+  "eye_height_meters": 1.65,
+  "walkable_surfaces": [...],
+  "collision_obstacles": [...]
+}
+
+[112] GET http://localhost:8000/api/v1/models/{version_id}/compare/{target_version_id}
+Auth: Public / Token
+Description: 4-Way Differential Analysis (Geometry, POIs, Nav, Confidence)
+Res: 200 OK
+{
+  "source_version": "1.0.0",
+  "target_version": "2.0.0",
+  "geometry_diff": {"changed_cells_count": 2, "max_displacement_cm": 1.4},
+  "pois_diff": {"migrated": ["poi_room_4"]},
+  "navigation_diff": {"topology_changed": false},
+  "confidence_diff": {"overall_delta": "+0.02"}
+}
+
+[113] GET http://localhost:8000/api/v1/models/{model_id}/lineage
+Auth: Public / Token
+Res: 200 OK
+{
+  "model_id": "rmz_4a",
+  "version_count": 2,
+  "versions": [...]
+}
+
+[114] GET http://localhost:8000/api/v1/models/{version_id}/delivery-manifest
+Auth: Public / Token
+Description: 3-Tier LOD Spatial Chunks for Progressive Web Streaming
+Res: 200 OK
+{
+  "model_version_id": "1.0.0",
+  "chunk_grid_size_meters": 5.0,
+  "spatial_chunks": [...]
+}
+
+[115] POST http://localhost:8000/api/v1/models/{version_id}/telemetry
+Auth: Public / Token
+Req Body: PerformanceTelemetryReport schema
+Res: 200 OK
+{
+  "status": "PASS",
+  "overall_verdict": "COMPLIANT",
+  "passed_metrics": 7,
+  "total_metrics": 7
+}
+
+--------------------------------------------------------------------------------
+6. POINTS OF INTEREST (POIS)
+--------------------------------------------------------------------------------
+
+[116] POST http://localhost:8000/api/v1/pois/
+Auth: Public / Token
+Req Body: PointOfInterest schema
+Res: 201 Created
+{"status": "CREATED", "poi_id": "uuid"}
+
+[117] GET http://localhost:8000/api/v1/pois/{poi_id}
+Auth: Public / Token
+Res: 200 OK
+{...}
+
+[118] PUT http://localhost:8000/api/v1/pois/{poi_id}
+Auth: Public / Token
+Req Body:
+{"name": "Updated POI"}
+Res: 200 OK
+{"status": "UPDATED", "poi": {...}}
+
+[119] DELETE http://localhost:8000/api/v1/pois/{poi_id}
+Auth: Public / Token
+Res: 200 OK
+{"status": "DELETED", "poi_id": "uuid"}
+
+[120] GET http://localhost:8000/api/v1/pois/?query=defibrillator&category=SAFETY
+Auth: Public / Token
+Res: 200 OK
+[...]
+
+[121] GET http://localhost:8000/api/v1/pois/project/{project_id}
+Auth: Public / Token
+Res: 200 OK
+[...]
+
+[122] POST http://localhost:8000/api/v1/pois/spatial-query
+Auth: Public / Token
+Req Body:
+{
+  "center_xyz": [0.0, 1.65, 0.0],
+  "radius_meters": 10.0,
+  "k_nearest": 5
+}
+Res: 200 OK
+[
+  {"poi": {...}, "distance_meters": 3.45}
+]
+
+[123] POST http://localhost:8000/api/v1/pois/raycast-placement
+Auth: Public / Token
+Req Body:
+{
+  "ray_origin": [0.0, 1.65, 0.0],
+  "ray_direction": [0.0, 0.0, -1.0],
+  "name": "Fire Exit Door",
+  "category": "SAFETY",
+  "room": "Hallway"
+}
+Res: 201 Created
+{
+  "status": "PLACED",
+  "poi": {"id": "uuid", "coordinates": {"x": 0.0, "y": 1.65, "z": -4.2}}
+}
+
+[124] POST http://localhost:8000/api/v1/pois/migrate
+Auth: Public / Token
+Req Body:
+{
+  "source_version": "1.0.0",
+  "target_version": "2.0.0",
+  "max_drift_threshold_m": 0.50
+}
+Res: 200 OK
+{
+  "status": "MIGRATED",
+  "migrated_count": 8,
+  "source_version": "1.0.0",
+  "target_version": "2.0.0"
+}
+
+--------------------------------------------------------------------------------
+7. INDOOR NAVIGATION & ROUTING
+--------------------------------------------------------------------------------
+
+[125] POST http://localhost:8000/api/v1/navigation/graph
+Auth: Public / Token
+Req Body: NavigationGraph schema
+Res: 201 Created
+{"status": "SUCCESS", "nodes": 45, "edges": 82}
+
+[126] POST http://localhost:8000/api/v1/navigation/route
+Auth: Public / Token
+Req Body:
+{
+  "project_id": "uuid",
+  "start_pos": [0.0, 1.65, 0.0],
+  "target_pos": [10.0, 1.65, -5.0],
+  "require_wheelchair": false,
+  "avoid_stairs": false
+}
+Res: 200 OK
+{
+  "total_distance_meters": 12.4,
+  "estimated_walk_seconds": 10,
+  "waypoints": [[0.0, 1.65, 0.0], [5.0, 1.65, -2.0], [10.0, 1.65, -5.0]],
+  "steps": [{"step": 1, "text": "Walk forward 5m", "distance_m": 5.0}]
+}
+
+[127] POST http://localhost:8000/api/v1/navigation/build
+Auth: Public / Token
+Description: Inflates obstacles by human body clearance (0.35m) to build NavMesh
+Req Body: BuildNavigationRequest schema
+Res: 200 OK
+{
+  "model_id": "rmz_4a",
+  "human_radius_m": 0.35,
+  "walkable_area_m2": 380.0,
+  "blocked_regions": [...]
+}
+
+[128] GET http://localhost:8000/api/v1/navigation/representation/{version_id}
+Auth: Public / Token
+Res: 200 OK
+{...}
+
+[129] GET http://localhost:8000/api/v1/navigation/blocked-regions?version=1.0.0
+Auth: Public / Token
+Res: 200 OK
+[
+  {
+    "id": "blk_01",
+    "cause": "OBSTACLE_COLLIDER",
+    "source_entity_id": "table_01",
+    "center_3d": [0.0, 0.45, 0.0],
+    "extent_3d": [3.1, 0.9, 2.1],
+    "walkable": false
+  }
+]
+
+[130] POST http://localhost:8000/api/v1/navigation/plan
+Auth: Public / Token
+Req Body:
+{
+  "start_position": [0.0, 1.65, 0.0],
+  "destination_coordinates": [12.0, 1.65, -8.0],
+  "enable_smoothing": true,
+  "wheelchair_accessible": true
+}
+Res: 200 OK
+{
+  "success": true,
+  "total_distance_m": 15.2,
+  "waypoints": [...],
+  "turn_instructions": [...]
+}
+
+[131] POST http://localhost:8000/api/v1/navigation/benchmark/run
+Auth: Public / Token
+Description: Evaluates 9 quantitative benchmark scenarios (0.0% collision rate)
+Res: 200 OK
+{
+  "route_success_rate": 1.0,
+  "collision_rate": 0.0,
+  "mean_computation_time_ms": 4.2
+}
+
+--------------------------------------------------------------------------------
+8. QUALITY EVALUATION & TARGETED RESCANS
+--------------------------------------------------------------------------------
+
+[132] POST http://localhost:8000/api/v1/quality/reports
+Auth: Public / Token
+Req Body: QualityReport schema
+Res: 201 Created
+{"status": "RECORDED", "report_id": "uuid"}
+
+[133] GET http://localhost:8000/api/v1/quality/reports/{report_id}
+Auth: Public / Token
+Res: 200 OK
+{...}
+
+[134] GET http://localhost:8000/api/v1/quality/space/{space_id}
+Auth: Public / Token
+Res: 200 OK
+{
+  "space_id": "sp_main",
+  "overall_score": 0.94,
+  "verdict": "PASS",
+  "scores": {"geometry_watertightness": 0.95, "tracking_vio_drift": 0.92}
+}
+
+[135] POST http://localhost:8000/api/v1/quality/rescan
+Auth: Public / Token
+Req Body: RescanRequest schema
+Res: 201 Created
+{"status": "CREATED", "request_id": "rescan_123"}
+
+[136] POST http://localhost:8000/api/v1/quality/rescan/generate
+Auth: Public / Token
+Req Body:
+{
+  "project_id": "uuid",
+  "cell_id": "cell_east_corridor",
+  "reason": "Tracking feature drop below threshold",
+  "priority": "HIGH"
+}
+Res: 201 Created
+{
+  "request_id": "rescan_456",
+  "cell_id": "cell_east_corridor",
+  "defect_type": "LOW_DENSITY"
+}
+
+[137] POST http://localhost:8000/api/v1/quality/rescan/{request_id}/integrate
+Auth: Public / Token
+Description: Localized fusion bypassing full reconstruction
+Res: 200 OK
+{
+  "status": "FUSED",
+  "global_reconstruction_bypassed": true,
+  "boundary_continuity_verified": true
+}
+
+[138] POST http://localhost:8000/api/v1/quality/evaluate?project_id=uuid&model_version_id=1.0.0
+Auth: Public / Token
+Req Body:
+{"capture_data": {...}, "pose_data": {...}}
+Res: 201 Created
+{
+  "verdict": "PASS",
+  "subsystem_scores": {...}
+}
+
+[139] GET http://localhost:8000/api/v1/rescans?project_id=all
+Auth: Public / Token
+Res: 200 OK
+[...]
+
+[140] GET http://localhost:8000/api/v1/rescans/{request_id}
+Auth: Public / Token
+Res: 200 OK
+{...}
+
+[141] POST http://localhost:8000/api/v1/rescans
+Auth: Public / Token
+Req Body: RescanRequest schema
+Res: 201 Created
+{"status": "CREATED", "request_id": "uuid"}
+
+[142] POST http://localhost:8000/api/v1/rescans/{request_id}/dispatch
+Auth: Public / Token
+Req Body:
+{"operator_id": "field_operator_02"}
+Res: 200 OK
+{"status": "ASSIGNED", "request_id": "uuid", "dispatched_at": "..."}
+
+[143] PATCH http://localhost:8000/api/v1/rescans/{request_id}
+Auth: Public / Token
+Req Body:
+{"status": "IN_PROGRESS"}
+Res: 200 OK
+{"request_id": "uuid", "status": "IN_PROGRESS"}
+
+[144] POST http://localhost:8000/api/v1/rescans/{request_id}/integrate
+Auth: Public / Token
+Res: 200 OK
+{
+  "status": "FUSED",
+  "request_id": "uuid",
+  "global_reconstruction_bypassed": true
+}
+
+--------------------------------------------------------------------------------
+9. RESUMABLE CHUNKED UPLOADS (DIRECT STORAGE)
+--------------------------------------------------------------------------------
+
+[145] POST http://localhost:8000/api/v1/uploads/
+Auth: Public / Token
+Req Body: CreateUploadSessionRequest schema
+Res: 201 Created
+{
+  "session_id": "upload_sess_123",
+  "status": "UPLOADING",
+  "presigned_chunk_urls": ["http://.../part1", "http://.../part2"]
+}
+
+[146] GET http://localhost:8000/api/v1/uploads/{session_id}
+Auth: Public / Token
+Res: 200 OK
+{
+  "session_id": "upload_sess_123",
+  "status": "UPLOADING",
+  "missing_chunks": [3, 4]
+}
+
+[147] POST http://localhost:8000/api/v1/uploads/{session_id}/pause
+Auth: Public / Token
+Res: 200 OK
+{"session_id": "upload_sess_123", "status": "PAUSED"}
+
+[148] POST http://localhost:8000/api/v1/uploads/{session_id}/resume
+Auth: Public / Token
+Res: 200 OK
+{"session_id": "upload_sess_123", "status": "RESUMING", "refreshed_urls": [...]}
+
+[149] POST http://localhost:8000/api/v1/uploads/{session_id}/parts/{chunk_index}
+Auth: Public / Token
+Req Body:
+{
+  "etag": "\"part_etag_hex\"",
+  "sha256": "chunk_sha256"
+}
+Res: 200 OK
+{"session_id": "upload_sess_123", "recorded_part": 0}
+
+[150] POST http://localhost:8000/api/v1/uploads/{session_id}/complete
+Auth: Public / Token
+Req Body:
+{
+  "parts": [{"part_number": 1, "etag": "..."}]
+}
+Res: 200 OK
+{"session_id": "upload_sess_123", "status": "VALIDATED"}
+
+[151] POST http://localhost:8000/api/v1/uploads/{session_id}/abort
+Auth: Public / Token
+Res: 200 OK
+{"session_id": "upload_sess_123", "status": "FAILED"}
+
+--------------------------------------------------------------------------------
+10. HYBRID SPATIAL SEARCH
+--------------------------------------------------------------------------------
+
+[152] POST http://localhost:8000/api/v1/search/spatial
+Auth: Public / Token
+Req Body:
+{
+  "query": "fire extinguishers near boardroom",
+  "max_distance_meters": 20.0,
+  "limit": 5
+}
+Res: 200 OK
+{
+  "total_matches": 1,
+  "results": [
+    {"poi_name": "Fire Extinguisher A", "distance_meters": 4.5, "relevance_score": 0.94}
+  ]
+}
+
+[153] GET http://localhost:8000/api/v1/search/spatial?q=chairs+near+reception&limit=10
+Auth: Public / Token
+Res: 200 OK
+{
+  "total_matches": 3,
+  "results": [...]
+}
+
+--------------------------------------------------------------------------------
+11. AR CAMERA LOCALIZATION & PROJECTION (STAGE 29)
+--------------------------------------------------------------------------------
+
+[154] POST http://localhost:8000/api/v1/ar/markers
+Auth: Public / Token
+Req Body: SpatialMarkerAnchor schema
+Res: 201 Created
+{
+  "marker_id": "qr_01",
+  "model_id": "rmz_4a",
+  "world_position": [2.45, 1.42, -5.10]
+}
+
+[155] GET http://localhost:8000/api/v1/ar/markers/{model_id}
+Auth: Public / Token
+Res: 200 OK
+[
+  {"marker_id": "qr_01", "world_position": [2.45, 1.42, -5.10]}
+]
+
+[156] POST http://localhost:8000/api/v1/ar/localize
+Auth: Public / Token
+Req Body:
+{
+  "model_id": "rmz_4a",
+  "detected_markers": [
+    {"marker_id": "qr_01", "corners_2d": [[100, 100], [200, 100], [200, 200], [100, 200]]}
+  ],
+  "vio_device_pose": {
+    "position": [0.0, 1.4, 0.0],
+    "rotation_quaternion": [0.0, 0.0, 0.0, 1.0]
+  }
+}
+Res: 200 OK
+{
+  "success": true,
+  "world_position": [2.45, 1.42, -5.10],
+  "confidence": 0.98,
+  "source": "MARKER_PNP",
+  "residual_error_cm": 1.2
+}
+
+[157] POST http://localhost:8000/api/v1/ar/project-route
+Auth: Public / Token
+Req Body:
+{
+  "camera_pose": {"position": [2.45, 1.42, -5.10], "rotation_quaternion": [0, 0.707, 0, 0.707]},
+  "camera_intrinsics": {"fx": 1420.5, "fy": 1420.5, "cx": 960.0, "cy": 540.0, "width": 1920, "height": 1080},
+  "waypoints": [[2.45, 1.42, -5.10], [5.0, 1.42, -10.0]]
+}
+Res: 200 OK
+{
+  "projected_points_2d": [
+    {"x": 960.0, "y": 540.0, "in_frustum": true, "depth_meters": 0.0},
+    {"x": 1280.6, "y": 545.0, "in_frustum": true, "depth_meters": 5.82}
+  ]
+}
+
+[158] POST http://localhost:8000/api/v1/ar/benchmark/run?model_id=benchmark_room_alpha
+Auth: Public / Token
+Res: 200 OK
+{
+  "translation_error_cm": 2.1,
+  "rotation_error_deg": 0.8,
+  "relocalization_time_ms": 12.4,
+  "passed": true
+}
+
+--------------------------------------------------------------------------------
+12. TELEMETRY & WEBSOCKETS
+--------------------------------------------------------------------------------
+
+[159] GET http://localhost:8000/api/v1/infrastructure/nodes
+Auth: Public / Token
+Res: 200 OK
+{
+  "cluster": "vastu-local-production",
+  "nodes": [
+    {"name": "Control Plane", "status": "ONLINE", "cpu_percent": 12.4},
+    {"name": "PostgreSQL 16", "status": "ONLINE", "latency_ms": 1.8},
+    {"name": "Redis 7", "status": "ONLINE", "latency_ms": 0.6},
+    {"name": "MinIO S3", "status": "ONLINE", "latency_ms": 1.9}
+  ]
+}
+
+[160] WS ws://localhost:8000/api/v1/ws/events
+Auth: Public / WebSocket
+Description: Live broadcast of system-wide events and alerts
+Handshake:
+{"type": "CONNECTION_ESTABLISHED", "service": "vastu-event-bus"}
+Heartbeat: Send string "ping" -> Server returns {"type": "pong"}
+
+[161] WS ws://localhost:8000/api/v1/ws/jobs/{job_id}
+Auth: Public / WebSocket
+Description: Live progress stream for specific pipeline job
+Message stream:
+{
+  "job_id": "job_e79104fa",
+  "status": "RUNNING",
+  "current_stage": "DENSE_RECONSTRUCTION",
+  "overall_progress_pct": 54.5
+}
+(Terminates automatically on COMPLETED, FAILED, or CANCELLED)
+
+================================================================================
+END OF SPECIFICATION (161 Endpoints Documented)
+================================================================================

@@ -1,0 +1,29 @@
+{
+  "calibration_source": "estimated",
+  "camera_model": "PINHOLE",
+  "original_resolution": [
+    2160,
+    3840
+  ],
+  "processing_resolution": [
+    540,
+    960
+  ],
+  "intrinsics": {
+    "fx": 912.0,
+    "fy": 912.0,
+    "cx": 270.0,
+    "cy": 480.0
+  },
+  "distortion_coefficients": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "field_of_view_deg": {
+    "horizontal": 32.98,
+    "vertical": 55.52
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "video_path": "/Users/kradsagency/Desktop/vastu-namma-space/IMG_3966.MOV",
+  "resolution": [
+    2160,
+    3840
+  ],
+  "fps": 59.93,
+  "duration_sec": 5.79,
+  "total_frames": 347,
+  "mean_sharpness": 340.84,
+  "mean_exposure": 151.58,
+  "motion_blur_pct": 0.0,
+  "excessive_darkness_pct": 5.1,
+  "excessive_saturation_pct": 0.1,
+  "frame_duplication_pct": 0.0,
+  "usable_frame_pct": 100.0,
+  "verdict": "PASS"
+}

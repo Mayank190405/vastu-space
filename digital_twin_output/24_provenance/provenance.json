@@ -1,0 +1,69 @@
+{
+  "per_frame_contributions": [
+    {
+      "frame_id": 0,
+      "contributed_points": 57144
+    },
+    {
+      "frame_id": 1,
+      "contributed_points": 57152
+    },
+    {
+      "frame_id": 2,
+      "contributed_points": 57141
+    },
+    {
+      "frame_id": 3,
+      "contributed_points": 57046
+    },
+    {
+      "frame_id": 4,
+      "contributed_points": 57038
+    },
+    {
+      "frame_id": 5,
+      "contributed_points": 57030
+    },
+    {
+      "frame_id": 6,
+      "contributed_points": 56999
+    },
+    {
+      "frame_id": 7,
+      "contributed_points": 56876
+    },
+    {
+      "frame_id": 8,
+      "contributed_points": 56258
+    },
+    {
+      "frame_id": 9,
+      "contributed_points": 56711
+    },
+    {
+      "frame_id": 10,
+      "contributed_points": 56648
+    },
+    {
+      "frame_id": 11,
+      "contributed_points": 56368
+    },
+    {
+      "frame_id": 12,
+      "contributed_points": 56161
+    },
+    {
+      "frame_id": 13,
+      "contributed_points": 55310
+    },
+    {
+      "frame_id": 14,
+      "contributed_points": 55706
+    },
+    {
+      "frame_id": 15,
+      "contributed_points": 56351
+    }
+  ],
+  "total_verified_points": 278672
+}

@@ -1,0 +1,6 @@
+{
+  "opening_masks_generated": 16,
+  "mean_opening_edge_pixels": 2262.0,
+  "door_window_recesses_preserved": true,
+  "synthetic_hole_filling_forbidden": true
+}

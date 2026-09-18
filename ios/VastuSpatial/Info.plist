@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>$(DEVELOPMENT_LANGUAGE)</string>
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.vastu.spatial</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>VĀSTU Spatial</string>
+    <key>CFBundlePackageType</key>
+    <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+    <key>NSCameraUsageDescription</key>
+    <string>VĀSTU requires camera access to capture high-fidelity spatial video for 3D reconstruction and Gaussian Splatting.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>VĀSTU requires microphone access for audio recording during spatial capture.</string>
+    <key>NSMotionUsageDescription</key>
+    <string>VĀSTU requires high-frequency 100Hz IMU motion sensors (accelerometer &amp; gyroscope) to compute precise camera trajectory and visual-inertial odometry.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>VĀSTU requires GPS geolocation access to automatically detect and tag site coordinates for architectural projects.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>VĀSTU requires GPS geolocation access to accurately anchor 3D digital twins to real-world WGS-84 coordinates.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>VĀSTU requires photo library access to export and preview captured construction site spatial recordings.</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>VĀSTU requires photo library write access to save high-resolution spatial videos.</string>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>VĀSTU requires local network access to stream live sensor telemetry and upload spatial scans to on-site reconstruction nodes.</string>
+    <key>UIFileSharingEnabled</key>
+    <true/>
+    <key>LSSupportsOpeningDocumentsInPlace</key>
+    <true/>
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>processing</string>
+        <string>fetch</string>
+    </array>
+    <key>UILaunchScreen</key>
+    <dict/>
+    <key>UIRequiresFullScreen</key>
+    <true/>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+    </array>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>com.vastu.spatial</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>vastuspatial</string>
+            </array>
+        </dict>
+    </array>
+</dict>
+</plist>

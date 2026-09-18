@@ -1,0 +1,11 @@
+{
+  "atlas_resolution": "2048x2048",
+  "material_file": "textured_mesh.mtl",
+  "mesh_file": "textured_mesh.obj",
+  "non_background_ratio": 99.97,
+  "surface_coverage_pct": 99.64,
+  "texture_sharpness": 753.78,
+  "color_variance": 311.87,
+  "synthetic_projection_test": "PASSED",
+  "validation_verdict": "PASS"
+}

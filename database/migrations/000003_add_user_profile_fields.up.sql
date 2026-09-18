@@ -1,0 +1,6 @@
+-- Migration: 000003_add_user_profile_fields.up.sql
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS first_name VARCHAR(128) DEFAULT '',
+ADD COLUMN IF NOT EXISTS middle_name VARCHAR(128) DEFAULT '',
+ADD COLUMN IF NOT EXISTS last_name VARCHAR(128) DEFAULT '',
+ADD COLUMN IF NOT EXISTS phone_number VARCHAR(32) DEFAULT '';

@@ -1,0 +1,13 @@
+{
+  "parallax_gate_passed": false,
+  "status": "INSUFFICIENT_TRANSLATION_FOR_METRIC_RECONSTRUCTION",
+  "total_baseline_displacement_m": 0.03,
+  "threshold_min_baseline_m": 0.1,
+  "mean_optical_flow_px": 2.09,
+  "mean_parallax_residual_px": 1.37,
+  "mean_homography_inlier_ratio": 0.727,
+  "diagnostic_message": "Degenerate camera translation detected (0.030m baseline < 0.10m threshold). Input sequence shows a nearly static or purely rotational pan/tilt camera motion with very little physical translation. Monocular depth estimation (MiDaS_small) paired with small-baseline PnP struggles here, causing flat walls to warp or bow outward in 3D space.",
+  "user_guidance": "CAPTURE GUIDANCE: Please capture room video using a smooth sliding (truck/dolly) lateral motion across the floor rather than pivoting from a stationary spot.",
+  "motion_type": "STATIONARY_ROTATIONAL_PIVOT",
+  "parallax_score": 0.2
+}

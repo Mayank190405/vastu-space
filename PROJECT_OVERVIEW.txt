@@ -1,0 +1,146 @@
+================================================================================
+                    VĀSTU / NAMMA SPACE - SYSTEM OVERVIEW
+================================================================================
+Platform: End-to-End Smartphone-to-3D Spatial Intelligence & Navigation
+Architecture: Decoupled Canonical Microservices & Zero-Install Web Viewer
+Date: September 2026
+
+--------------------------------------------------------------------------------
+1. EXECUTIVE SUMMARY & OBJECTIVE
+--------------------------------------------------------------------------------
+VĀSTU (Namma Space) is an automated spatial computing platform designed to convert
+standard smartphone camera captures into metric-accurate, photorealistic 3D digital 
+twins with zero manual 3D modeling (no CAD or Blender required). 
+
+The platform features:
+1. Standard Operating Procedure (SOP) guided mobile data capture.
+2. An automated 9-stage reconstruction pipeline (Structure-from-Motion, dense 
+   depth estimation, Poisson surface meshing, texture atlas synthesis).
+3. Indoor spatial indexing (semantic POI labeling, room extraction).
+4. Obstacle-aware 3D NavMesh A* pathfinding (with ADA wheelchair slope checks).
+5. A zero-install WebGL/Three.js interactive web viewer with first-person 
+   roaming, floor height constraints, and collision boundaries.
+6. Mobile browser live AR camera navigation with 3D directional guidance arrows.
+
+--------------------------------------------------------------------------------
+2. HIGH-LEVEL REPOSITORY ARCHITECTURE
+--------------------------------------------------------------------------------
+The repository is structured into modular layers:
+
+vastu-namma-space/
+│
+├── frontend (src/)              --> React 18 + TypeScript + Three.js web app
+│   ├── components/viewer/       --> 3D Spatial Viewer (WebGL, Orbit/First-Person, HUD)
+│   ├── pages/capture/           --> Guided Capture Studio (browser-based capture)
+│   ├── pages/dashboard/         --> Project management and spatial metrics
+│   └── context/                 --> Authentication & Organization state
+│
+├── api/                         --> FastAPI Python Control Plane
+│   ├── routers/                 --> Endpoints for captures, jobs, models, routing
+│   └── main.py                  --> REST API gateway (Port 8000)
+│
+├── backend/                     --> High-throughput Go Services
+│   ├── internal/service/        --> Business logic for projects, orgs, models
+│   └── internal/repository/     --> PostgreSQL & PostGIS queries
+│
+├── core/                        --> Pure Algorithmic Engine & Domain Logic
+│   ├── schemas/                 --> 13 Canonical Contracts (Pydantic v2)
+│   ├── sop/                     --> 11-Stage Capture SOP state machine & TTS signals
+│   ├── tracking/                --> Camera tracking, VIO, and pose estimation
+│   ├── dense/                   --> Multi-view stereo depth consistency
+│   ├── structure/               --> Architectural plane extraction (Manhattan world)
+│   ├── semantics/               --> 10-Class semantic taxonomy & 3D Bounding Boxes
+│   └── quality/                 --> Multi-stage quality gates and reprojection audit
+│
+├── workers/                     --> Distributed 9-Stage Asynchronous Pipeline
+│   ├── stages/01_preprocessing  --> Frame extraction, blur check (Laplacian > 120)
+│   ├── stages/02_sfm            --> Structure-from-Motion (PyCOLMAP / SIFT)
+│   ├── stages/03_depth          --> Dense depth map estimation
+│   ├── stages/04_pointcloud     --> Multi-view consensus fusion
+│   ├── stages/05_meshing        --> Screened Poisson watertight surface reconstruction
+│   ├── stages/06_texturing      --> Visibility-aware photometric atlas generation
+│   ├── stages/07_semantics      --> 3D Oriented Bounding Box (OBB) object detection
+│   ├── stages/08_navmesh        --> Walkable surface & barrier extraction
+│   └── stages/09_quality        --> Final metric gate verification
+│
+├── navigation/                  --> 3D Metric Indoor Routing Engine
+│   ├── graph.py                 --> Topological NavMesh graph representation
+│   ├── router.py                --> 3D A* shortest path (slope constraint <= 4.76°)
+│   └── instructions.py          --> Turn-by-turn spatial guidance generation
+│
+├── geometry/                    --> Pure Mathematical & Geometric Utilities
+│   ├── planes.py                --> RANSAC 3D plane fitting
+│   ├── spatial_hash.py          --> Voxel-based point cloud downsampling
+│   ├── normals.py               --> Surface normal estimation & camera alignment
+│   └── mesh_repair.py           --> Topological manifold validation & repair
+│
+├── mobile/ (android/ & ios/)    --> Native Capture Apps
+│   ├── android/                 --> Kotlin ARCore capture client with IMU telemetry
+│   └── ios/                     --> Swift ARKit capture client with LiDAR support
+│
+├── database/                    --> Relational & Spatial Storage
+│   └── migrations/              --> 16 PostGIS migrations for spatial indexing
+│
+└── infrastructure/              --> Containerization & Deployment
+    ├── docker-compose.yml       --> PostGIS, MinIO (S3), Redis, Worker containers
+    └── Dockerfile.api           --> Production container for FastAPI control plane
+
+--------------------------------------------------------------------------------
+3. END-TO-END DATA WORKFLOW
+--------------------------------------------------------------------------------
+Step 1: Input Capture
+- Standard smartphone captures 4K 30/60fps video + 6-DoF IMU movement.
+- Built-in SOP engine ensures 70-80% image overlap, 1.5-2m distance from walls,
+  and proper corner anchor sweeps.
+
+Step 2: Automated Reconstruction (Zero CAD / Zero Manual Labor)
+- Sharp keyframes extracted; motion-blurred frames filtered out automatically.
+- Structure-from-Motion estimates exact camera positions and sparse geometry.
+- Multi-view depth maps are computed, merged, and meshed into watertight 3D models.
+- Textures are mapped using visibility weighting for photorealistic finish.
+
+Step 3: Spatial Indexing & Navigation
+- The floor plane is isolated to extract a 2D/3D Walkable NavMesh.
+- Physical obstacles (walls, furniture, fixtures) form collision boundaries.
+- Points of Interest (POIs, e.g. "Meeting Room", "Fire Exit") are indexed.
+- The 3D A* router computes non-colliding walking trajectories.
+
+Step 4: Zero-Install Client Delivery
+- The model loads immediately in modern desktop and mobile browsers.
+- Desktop users roam with fluid WASD keys and mouse look constrained to floor height.
+- Users can search for rooms and see glowing floor path lines guiding them around walls.
+- Mobile users can open the AR camera mode to view live directional arrows overlaid
+  on their camera feed.
+
+--------------------------------------------------------------------------------
+4. HOW TO RUN THE PROJECT LOCALLY
+--------------------------------------------------------------------------------
+Prerequisites: Node.js (v18+), Python (3.10+), Docker (optional for databases)
+
+1. Frontend Web App (Zero-Install Viewer & Dashboard):
+   $ npm install
+   $ npm run dev
+   - Web App Gateway: http://localhost:5173
+   - Desktop 3D Spatial Viewer (WASD/Orbit/POI): http://localhost:5173/viewer
+   - Mobile Live AR Camera Navigation: http://localhost:5173/ar
+
+2. Automated Reconstruction Pipeline (Zero CAD / Fast Turnaround):
+   $ python scripts/reconstruct.py --video /path/to/capture.mp4 --output digital_twin_output --deploy
+   - Automatically processes video, extracts keyframes, runs SfM & Poisson meshing,
+     synthesizes texture atlas, and deploys 3D assets directly to web viewer.
+
+3. Backend Control Plane (FastAPI):
+   $ pip install -r requirements-api.txt
+   $ uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+   - API Docs available at: http://localhost:8000/docs
+
+--------------------------------------------------------------------------------
+5. COMPETITION & PRODUCTION COMPLIANCE
+--------------------------------------------------------------------------------
+[x] Zero Manual Modeling: Automated end-to-end photogrammetry and meshing.
+[x] Zero Heavy Client Installs: 100% web-based (WebGL/Three.js).
+[x] Obstacle-Aware: A* router and first-person camera respect physical obstacles.
+[x] Structured SOP: Guided mobile capture protocols for repeatable reconstructions.
+[x] Single-Day Turnaround Ready: Automated pipeline allows on-site rapid deployment.
+[x] AR Bonus Layer: Mobile camera overlay with real-time directional guidance.
+================================================================================

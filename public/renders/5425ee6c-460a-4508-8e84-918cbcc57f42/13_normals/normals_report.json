@@ -1,0 +1,7 @@
+{
+  "normals_count": 278672,
+  "unit_length_validity_ratio": 1.0,
+  "search_radius_m": 0.06,
+  "max_nearest_neighbors": 30,
+  "orientation_consistent": true
+}

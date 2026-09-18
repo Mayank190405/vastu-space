@@ -1,0 +1,16 @@
+{
+  "coordinate_convention": "+Y is World-Up, Floor at Y=0.00m, Right-Handed",
+  "camera_model": "Pinhole",
+  "focal_length_px": [
+    912.0,
+    912.0
+  ],
+  "principal_point": [
+    270.0,
+    480.0
+  ],
+  "projection_equation": "X_c = (u - cx)*Z/fx, Y_c = (v - cy)*Z/fy, Z_c = Z",
+  "world_transform_equation": "X_w = R^T * (X_c - t)",
+  "camera_poses_computed": 16,
+  "status": "PASS"
+}

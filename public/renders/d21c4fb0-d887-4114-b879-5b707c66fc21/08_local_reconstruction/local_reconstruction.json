@@ -1,0 +1,11 @@
+{
+  "total_frames": 16,
+  "expansion_pyramid": [
+    2,
+    4,
+    8,
+    16
+  ],
+  "stability_status": "STABLE",
+  "rejected_frames": []
+}

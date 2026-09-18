@@ -1,0 +1,189 @@
+services:
+  vastu-postgres:
+    image: postgis/postgis:16-3.4
+    container_name: vastu_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vastu_user
+      POSTGRES_PASSWORD: vastu_secure_password_2026
+      POSTGRES_DB: vastu_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - vastu_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vastu_user -d vastu_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  vastu-migrate:
+    image: migrate/migrate
+    container_name: vastu_migrate
+    networks:
+      - default
+    volumes:
+      - ./database/migrations:/migrations
+    command:
+      - -path=/migrations
+      - -database=postgres://vastu_user:vastu_secure_password_2026@vastu-postgres:5432/vastu_db?sslmode=disable
+      - up
+    depends_on:
+      vastu-postgres:
+        condition: service_healthy
+
+  vastu-redis:
+    image: redis:7-alpine
+    container_name: vastu_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - vastu_redis_data:/data
+
+  vastu-minio:
+    image: minio/minio:latest
+    container_name: vastu_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadminpassword2026
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - vastu_minio_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  vastu-minio-init:
+    image: minio/mc:latest
+    container_name: vastu_minio_init
+    depends_on:
+      vastu-minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set local http://vastu-minio:9000 minioadmin minioadminpassword2026;
+      /usr/bin/mc mb --ignore-existing local/vastu-artifacts;
+      /usr/bin/mc mb --ignore-existing local/vastu-raw-captures;
+      /usr/bin/mc mb --ignore-existing local/vastu-exports;
+      /usr/bin/mc anonymous set download local/vastu-artifacts;
+      exit 0;
+      "
+
+  vastu-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vastu_backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql://vastu_user:vastu_secure_password_2026@vastu-postgres:5432/vastu_db?sslmode=disable}
+      - PORT=${BACKEND_PORT:-8080}
+      - SMTP_HOST=${SMTP_HOST:-smtp.hostinger.com}
+      - SMTP_PORT=${SMTP_PORT:-465}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_FROM_NAME=${SMTP_FROM_NAME:-VĀSTU Spatial Platform}
+      - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL}
+      - JWT_SECRET=${JWT_SECRET:-vastu_production_secure_jwt_signing_key_994829384729103847291028347}
+      - UPLOAD_DIR=/app/uploads
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+    depends_on:
+      vastu-postgres:
+        condition: service_healthy
+    volumes:
+      - ./uploads:/app/uploads
+
+  vastu-worker:
+    build:
+      context: ./backend/workers
+      dockerfile: Dockerfile
+    container_name: vastu_worker
+    restart: unless-stopped
+    command: tail -f /dev/null
+    environment:
+      - PYTHONPATH=/app:/app/backend/workers
+      - S3_ENDPOINT_URL=http://vastu-minio:9000
+      - AWS_ACCESS_KEY_ID=minioadmin
+      - AWS_SECRET_ACCESS_KEY=minioadminpassword2026
+      - S3_BUCKET=vastu-artifacts
+      - REDIS_URL=redis://vastu-redis:6379/0
+      - DATABASE_URL=postgresql://vastu_user:vastu_secure_password_2026@vastu-postgres:5432/vastu_db?sslmode=disable
+    volumes:
+      - .:/app
+    depends_on:
+      - vastu-redis
+      - vastu-postgres
+      - vastu-minio
+
+  vastu-kafka:
+    image: apache/kafka:latest
+    container_name: vastu_kafka
+    restart: unless-stopped
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://vastu-kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@vastu-kafka:9093
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    ports:
+      - "9092:9092"
+    volumes:
+      - vastu_kafka_data:/var/lib/kafka/data
+
+  asynq-web:
+    platform: linux/amd64
+    image: hibiken/asynqmon:latest
+    container_name: vastu_asynq_web
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    environment:
+      REDIS_ADDR: vastu-redis:6379
+    depends_on:
+      - vastu-redis
+
+  vastu-api:
+    image: vastu-api:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: vastu_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://vastu_user:vastu_secure_password_2026@vastu-postgres:5432/vastu_db?sslmode=disable
+      - REDIS_URL=redis://vastu-redis:6379/0
+      - MINIO_ENDPOINT=http://vastu-minio:9000
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadminpassword2026
+      - PYTHONPATH=/app
+    depends_on:
+      vastu-postgres:
+        condition: service_healthy
+      vastu-redis:
+        condition: service_started
+      vastu-minio:
+        condition: service_started
+
+volumes:
+  vastu_pg_data:
+  vastu_redis_data:
+  vastu_kafka_data:
+  vastu_minio_data:

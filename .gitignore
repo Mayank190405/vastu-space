@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+backend/workers/venv/
+venv/
+.gradle/
+
+# Production & Build outputs
+dist/
+build/
+out/
+.next/
+ios/.build/
+android/build/
+*.apk
+*.aab
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.egg-info/
+
+# Environment, Secrets & Local configuration
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+android/local.properties
+
+# OS & Editor metadata
+.DS_Store
+Thumbs.db
+.idea/
+*.iml
+.vscode/
+xcuserdata/
+*.xcuserstate
+
+# Temporary files, media & logs
+*.log
+uploads/
+backup/
+*.mov
+*.MOV
+*.mp4
+*.MP4
+*.avi
+

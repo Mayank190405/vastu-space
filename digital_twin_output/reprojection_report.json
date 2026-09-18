@@ -1,0 +1,31 @@
+{
+  "mean_pixel_rmse": 8.61,
+  "evaluated_frames": {
+    "frame_00": {
+      "reprojected_points": 34870,
+      "pixel_rmse": 8.76,
+      "diff_map": "21_reprojection/reproj_frame_00.png"
+    },
+    "frame_04": {
+      "reprojected_points": 34714,
+      "pixel_rmse": 8.59,
+      "diff_map": "21_reprojection/reproj_frame_04.png"
+    },
+    "frame_08": {
+      "reprojected_points": 33776,
+      "pixel_rmse": 8.51,
+      "diff_map": "21_reprojection/reproj_frame_08.png"
+    },
+    "frame_12": {
+      "reprojected_points": 31983,
+      "pixel_rmse": 8.54,
+      "diff_map": "21_reprojection/reproj_frame_12.png"
+    },
+    "frame_15": {
+      "reprojected_points": 31053,
+      "pixel_rmse": 8.68,
+      "diff_map": "21_reprojection/reproj_frame_15.png"
+    }
+  },
+  "status": "PASS"
+}

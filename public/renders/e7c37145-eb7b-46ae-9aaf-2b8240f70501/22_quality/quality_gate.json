@@ -1,0 +1,50 @@
+{
+  "final_verdict": "WARNING",
+  "overall_descriptive_score": 0.931,
+  "timestamp": "2026-09-06 15:25:53",
+  "category_scores": {
+    "CAPTURE": 1.0,
+    "CAMERA": 0.633,
+    "PARALLAX": 0.2,
+    "DEPTH": 0.983,
+    "REGISTRATION": 0.936,
+    "POINT_CLOUD": 1.0,
+    "GEOMETRY": 0.98,
+    "MESH": 1.0,
+    "TEXTURE": 0.996,
+    "REPROJECTION": 0.828,
+    "COVERAGE": 0.95
+  },
+  "category_gates": {
+    "CAPTURE": true,
+    "CAMERA": true,
+    "PARALLAX": false,
+    "DEPTH": true,
+    "REGISTRATION": true,
+    "POINT_CLOUD": true,
+    "GEOMETRY": true,
+    "MESH": true,
+    "TEXTURE": true,
+    "REPROJECTION": true,
+    "COVERAGE": true
+  },
+  "parallax_audit": {
+    "gate_passed": false,
+    "status": "INSUFFICIENT_TRANSLATION_FOR_METRIC_RECONSTRUCTION",
+    "total_baseline_displacement_m": 0.03,
+    "threshold_min_baseline_m": 0.1,
+    "user_guidance": "CAPTURE GUIDANCE: Please capture room video using a smooth sliding (truck/dolly) lateral motion across the floor rather than pivoting from a stationary spot."
+  },
+  "evidence_principles_verified": {
+    "no_invented_geometry": true,
+    "no_fake_depth": true,
+    "no_fixed_camera_translation": true,
+    "no_fake_metric_calibration": true,
+    "no_poisson_as_repair": true,
+    "no_fabricated_quality_scores": true,
+    "sharp_architectural_corners_enforced": true,
+    "outer_boundary_bubble_clipped": true,
+    "parallax_validation_gate_active": true,
+    "foreground_clutter_isolated": true
+  }
+}

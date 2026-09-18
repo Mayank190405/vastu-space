@@ -1,0 +1,22 @@
+{
+  "metric_scale_status": "CALIBRATED_EMPIRICAL",
+  "scale_consistency_ratio": 1.002,
+  "temporal_drift_detected": false,
+  "inter_frame_scale_ratios": [
+    0.985,
+    1.009,
+    1.004,
+    0.995,
+    0.994,
+    1.019,
+    0.975,
+    0.972,
+    0.996,
+    0.999,
+    1.007,
+    1.002,
+    1.008,
+    1.006,
+    1.065
+  ]
+}

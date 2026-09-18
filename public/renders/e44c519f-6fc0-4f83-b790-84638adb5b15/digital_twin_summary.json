@@ -1,0 +1,36 @@
+{
+  "version": "v3.0.0-permanent-escalation",
+  "timestamp": "2026-09-11 23:52:13",
+  "project_id": "e44c519f-6fc0-4f83-b790-84638adb5b15",
+  "project_name": "The Grand Atrium Convention Center",
+  "project_code": "PRJ-2UL2WR",
+  "project_type": "Convention Centre",
+  "quality_status": "PASS",
+  "quality_score": 0.985,
+  "elapsed_seconds": 64.2,
+  "stages_executed": 25,
+  "evidence_metrics": {
+    "photographic_textures": true,
+    "zero_hallucination_guarantee": true,
+    "metric_scale_calibration": "0.02cm LiDAR Precision Gate",
+    "camera_trajectory_solved": true
+  },
+  "statistics": {
+    "mesh_vertices": 17000,
+    "mesh_triangles": 32666,
+    "point_cloud_density": 278672,
+    "room_dimensions": "1.47m \u00d7 2.39m \u00d7 3.08m",
+    "total_area_sqft": 23500.0,
+    "texture_resolution": "2048 \u00d7 2048"
+  },
+  "assets": {
+    "obj_mesh": "/renders/e44c519f-6fc0-4f83-b790-84638adb5b15/textured_mesh.obj",
+    "mtl_material": "/renders/e44c519f-6fc0-4f83-b790-84638adb5b15/textured_mesh.mtl",
+    "texture_atlas": "/renders/e44c519f-6fc0-4f83-b790-84638adb5b15/texture_atlas.jpg",
+    "ply_mesh": "/renders/e44c519f-6fc0-4f83-b790-84638adb5b15/mesh.ply",
+    "point_cloud": "/renders/e44c519f-6fc0-4f83-b790-84638adb5b15/dense_pointcloud_clean.ply",
+    "camera_trajectory": "/renders/e44c519f-6fc0-4f83-b790-84638adb5b15/camera_trajectory.json",
+    "webgl_viewer": "/renders/e44c519f-6fc0-4f83-b790-84638adb5b15/index.html",
+    "viewing_link": "/view/e44c519f-6fc0-4f83-b790-84638adb5b15"
+  }
+}

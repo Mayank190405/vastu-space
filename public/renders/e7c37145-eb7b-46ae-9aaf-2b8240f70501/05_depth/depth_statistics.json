@@ -1,0 +1,135 @@
+{
+  "model": "MiDaS_small",
+  "metric_scale_status": "CALIBRATED_EMPIRICAL",
+  "clutter_layer_active": true,
+  "frame_statistics": [
+    {
+      "frame_id": 0,
+      "min_depth_m": 0.989,
+      "max_depth_m": 3.658,
+      "median_depth_m": 2.12,
+      "confidence_ratio": 0.992,
+      "clutter_ratio": 0.202
+    },
+    {
+      "frame_id": 1,
+      "min_depth_m": 0.979,
+      "max_depth_m": 3.735,
+      "median_depth_m": 2.053,
+      "confidence_ratio": 0.992,
+      "clutter_ratio": 0.202
+    },
+    {
+      "frame_id": 2,
+      "min_depth_m": 0.983,
+      "max_depth_m": 3.651,
+      "median_depth_m": 2.31,
+      "confidence_ratio": 0.992,
+      "clutter_ratio": 0.196
+    },
+    {
+      "frame_id": 3,
+      "min_depth_m": 0.99,
+      "max_depth_m": 3.618,
+      "median_depth_m": 2.308,
+      "confidence_ratio": 0.99,
+      "clutter_ratio": 0.197
+    },
+    {
+      "frame_id": 4,
+      "min_depth_m": 0.939,
+      "max_depth_m": 3.611,
+      "median_depth_m": 2.407,
+      "confidence_ratio": 0.99,
+      "clutter_ratio": 0.196
+    },
+    {
+      "frame_id": 5,
+      "min_depth_m": 0.963,
+      "max_depth_m": 3.629,
+      "median_depth_m": 2.339,
+      "confidence_ratio": 0.99,
+      "clutter_ratio": 0.205
+    },
+    {
+      "frame_id": 6,
+      "min_depth_m": 0.947,
+      "max_depth_m": 3.558,
+      "median_depth_m": 2.523,
+      "confidence_ratio": 0.99,
+      "clutter_ratio": 0.201
+    },
+    {
+      "frame_id": 7,
+      "min_depth_m": 0.85,
+      "max_depth_m": 3.664,
+      "median_depth_m": 2.335,
+      "confidence_ratio": 0.988,
+      "clutter_ratio": 0.207
+    },
+    {
+      "frame_id": 8,
+      "min_depth_m": 0.8,
+      "max_depth_m": 3.766,
+      "median_depth_m": 2.138,
+      "confidence_ratio": 0.976,
+      "clutter_ratio": 0.219
+    },
+    {
+      "frame_id": 9,
+      "min_depth_m": 0.8,
+      "max_depth_m": 3.808,
+      "median_depth_m": 2.128,
+      "confidence_ratio": 0.984,
+      "clutter_ratio": 0.208
+    },
+    {
+      "frame_id": 10,
+      "min_depth_m": 0.8,
+      "max_depth_m": 3.826,
+      "median_depth_m": 2.107,
+      "confidence_ratio": 0.983,
+      "clutter_ratio": 0.228
+    },
+    {
+      "frame_id": 11,
+      "min_depth_m": 0.8,
+      "max_depth_m": 3.903,
+      "median_depth_m": 2.108,
+      "confidence_ratio": 0.978,
+      "clutter_ratio": 0.231
+    },
+    {
+      "frame_id": 12,
+      "min_depth_m": 0.8,
+      "max_depth_m": 3.882,
+      "median_depth_m": 2.19,
+      "confidence_ratio": 0.975,
+      "clutter_ratio": 0.199
+    },
+    {
+      "frame_id": 13,
+      "min_depth_m": 0.8,
+      "max_depth_m": 3.9,
+      "median_depth_m": 2.217,
+      "confidence_ratio": 0.96,
+      "clutter_ratio": 0.206
+    },
+    {
+      "frame_id": 14,
+      "min_depth_m": 0.8,
+      "max_depth_m": 3.76,
+      "median_depth_m": 2.189,
+      "confidence_ratio": 0.967,
+      "clutter_ratio": 0.191
+    },
+    {
+      "frame_id": 15,
+      "min_depth_m": 0.8,
+      "max_depth_m": 3.747,
+      "median_depth_m": 2.363,
+      "confidence_ratio": 0.978,
+      "clutter_ratio": 0.188
+    }
+  ]
+}

@@ -1,0 +1,458 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		00E342D011AD48618249E334 /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C23DC89EFDD647B582BC3842 /* AuthView.swift */; };
+		09A936AF4BE14C6C9730B09C /* ProjectListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C66CCEC28D4144A7BD1378D1 /* ProjectListView.swift */; };
+		1F7363CA2C774AE7895F9B88 /* IMUValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8CB7D6A66C8489A9CE8DAB4 /* IMUValidator.swift */; };
+		25F71B6FE4A54FA88B94C798 /* CaptureQualityEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F8B60F0DAC040CF9CE5B33A /* CaptureQualityEngine.swift */; };
+		349CE8FF5C754D50B203FC6F /* CaptureRecoveryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DC15A67AFC4971B19CB916 /* CaptureRecoveryManager.swift */; };
+		50B5001FB8E449A3A482FBFD /* VastuAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A46741CF8D54F45896F4A00 /* VastuAPIClient.swift */; };
+		6370F46C4A3B4FDABFE6B269 /* StorageMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1E32E81A97F48EEA78FB134 /* StorageMonitor.swift */; };
+		82F6A13494F04BFEB3B13D5F /* LocalCaptureStorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B370ECE59030419F8085E52F /* LocalCaptureStorageManager.swift */; };
+		84227F39C8D347B4AA16ECD6 /* SensorSyncEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA75EAEE95D14FC5AF4F5247 /* SensorSyncEngine.swift */; };
+		94FCF5727678478C9361238C /* SpatialModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3675E38ABB33473D8A7C15D3 /* SpatialModels.swift */; };
+		A15161B381E04F3AAC8447B5 /* VastuTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82F4B4E44FEF4EE4B168C28C /* VastuTheme.swift */; };
+		A1A100012C774AE7895F9B01 /* VastuPreloaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1B100012C774AE7895F9B01 /* VastuPreloaderView.swift */; };
+		A1A100022C774AE7895F9B02 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1B100022C774AE7895F9B02 /* DashboardView.swift */; };
+		A1A100032C774AE7895F9B03 /* ProjectCreationWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1B100032C774AE7895F9B03 /* ProjectCreationWizardView.swift */; };
+		A1A100042C774AE7895F9B04 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1B100042C774AE7895F9B04 /* ProfileView.swift */; };
+		A1A100052C774AE7895F9B05 /* vastu_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = B1B100052C774AE7895F9B05 /* vastu_logo.png */; };
+		A1A100062C774AE7895F9B06 /* vastu_archway_hero.png in Resources */ = {isa = PBXBuildFile; fileRef = B1B100062C774AE7895F9B06 /* vastu_archway_hero.png */; };
+		A1A100072C774AE7895F9B07 /* PermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1B100072C774AE7895F9B07 /* PermissionManager.swift */; };
+		A1A100082C774AE7895F9B08 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B1B100082C774AE7895F9B08 /* Assets.xcassets */; };
+		B2AFCA757B294C33A03F3EE9 /* VideoValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6870BF0D8945DFB191BE53 /* VideoValidator.swift */; };
+		BBC9EDF55FB3426FBE15E1AC /* MotionSensorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3395A6175444D21AE40211B /* MotionSensorManager.swift */; };
+		D33B54D8D4C14DC2889ACFD7 /* CaptureSessionJournal.swift in Sources */ = {isa = PBXBuildFile; fileRef = FADCEEDAA1D048F2AAEC839E /* CaptureSessionJournal.swift */; };
+		D5EA698BD354456DA7E0A76C /* ResumableUploadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49B7A3F74C79423A97657D17 /* ResumableUploadManager.swift */; };
+		D86D8F111C8C40D1967183E0 /* CaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAE5DC0C2FF4465C9277F8D4 /* CaptureView.swift */; };
+		E02D55A4983A4FF7B7C4D328 /* VastuSpatialApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0F38AF31FB14307BB3FF35F /* VastuSpatialApp.swift */; };
+		F86F535D270048F69FFDF05D /* AVCameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6365353A7C6A417CBB5CD72F /* AVCameraManager.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0C6870BF0D8945DFB191BE53 /* VideoValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoValidator.swift; path = VastuSpatial/Camera/VideoValidator.swift; sourceTree = "<group>"; };
+		3675E38ABB33473D8A7C15D3 /* SpatialModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SpatialModels.swift; path = VastuSpatial/Models/SpatialModels.swift; sourceTree = "<group>"; };
+		36DC15A67AFC4971B19CB916 /* CaptureRecoveryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CaptureRecoveryManager.swift; path = VastuSpatial/Storage/CaptureRecoveryManager.swift; sourceTree = "<group>"; };
+		49B7A3F74C79423A97657D17 /* ResumableUploadManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ResumableUploadManager.swift; path = VastuSpatial/Upload/ResumableUploadManager.swift; sourceTree = "<group>"; };
+		4C4B0049BA344DAF9B84931F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = VastuSpatial/Info.plist; sourceTree = "<group>"; };
+		6152868042F041E693118623 /* VastuSpatial.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VastuSpatial.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6365353A7C6A417CBB5CD72F /* AVCameraManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AVCameraManager.swift; path = VastuSpatial/Camera/AVCameraManager.swift; sourceTree = "<group>"; };
+		7F8B60F0DAC040CF9CE5B33A /* CaptureQualityEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CaptureQualityEngine.swift; path = VastuSpatial/Camera/CaptureQualityEngine.swift; sourceTree = "<group>"; };
+		82F4B4E44FEF4EE4B168C28C /* VastuTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VastuTheme.swift; path = VastuSpatial/Views/Theme/VastuTheme.swift; sourceTree = "<group>"; };
+		9A46741CF8D54F45896F4A00 /* VastuAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VastuAPIClient.swift; path = VastuSpatial/Network/VastuAPIClient.swift; sourceTree = "<group>"; };
+		A3395A6175444D21AE40211B /* MotionSensorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MotionSensorManager.swift; path = VastuSpatial/Sensors/MotionSensorManager.swift; sourceTree = "<group>"; };
+		A8CB7D6A66C8489A9CE8DAB4 /* IMUValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = IMUValidator.swift; path = VastuSpatial/Sensors/IMUValidator.swift; sourceTree = "<group>"; };
+		B1B100012C774AE7895F9B01 /* VastuPreloaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VastuPreloaderView.swift; path = VastuSpatial/Views/Preloader/VastuPreloaderView.swift; sourceTree = "<group>"; };
+		B1B100022C774AE7895F9B02 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DashboardView.swift; path = VastuSpatial/Views/Dashboard/DashboardView.swift; sourceTree = "<group>"; };
+		B1B100032C774AE7895F9B03 /* ProjectCreationWizardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProjectCreationWizardView.swift; path = VastuSpatial/Views/Projects/ProjectCreationWizardView.swift; sourceTree = "<group>"; };
+		B1B100042C774AE7895F9B04 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileView.swift; path = VastuSpatial/Views/Profile/ProfileView.swift; sourceTree = "<group>"; };
+		B1B100052C774AE7895F9B05 /* vastu_logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = vastu_logo.png; path = VastuSpatial/Resources/vastu_logo.png; sourceTree = "<group>"; };
+		B1B100062C774AE7895F9B06 /* vastu_archway_hero.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = vastu_archway_hero.png; path = VastuSpatial/Resources/vastu_archway_hero.png; sourceTree = "<group>"; };
+		B1B100072C774AE7895F9B07 /* PermissionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PermissionManager.swift; path = VastuSpatial/Sensors/PermissionManager.swift; sourceTree = "<group>"; };
+		B1B100082C774AE7895F9B08 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = VastuSpatial/Resources/Assets.xcassets; sourceTree = "<group>"; };
+		B1E32E81A97F48EEA78FB134 /* StorageMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StorageMonitor.swift; path = VastuSpatial/Camera/StorageMonitor.swift; sourceTree = "<group>"; };
+		B370ECE59030419F8085E52F /* LocalCaptureStorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LocalCaptureStorageManager.swift; path = VastuSpatial/Storage/LocalCaptureStorageManager.swift; sourceTree = "<group>"; };
+		C23DC89EFDD647B582BC3842 /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AuthView.swift; path = VastuSpatial/Views/Auth/AuthView.swift; sourceTree = "<group>"; };
+		C66CCEC28D4144A7BD1378D1 /* ProjectListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProjectListView.swift; path = VastuSpatial/Views/Projects/ProjectListView.swift; sourceTree = "<group>"; };
+		E0F38AF31FB14307BB3FF35F /* VastuSpatialApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VastuSpatialApp.swift; path = VastuSpatial/VastuSpatialApp.swift; sourceTree = "<group>"; };
+		EAE5DC0C2FF4465C9277F8D4 /* CaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CaptureView.swift; path = VastuSpatial/Views/Capture/CaptureView.swift; sourceTree = "<group>"; };
+		FA75EAEE95D14FC5AF4F5247 /* SensorSyncEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SensorSyncEngine.swift; path = VastuSpatial/Sensors/SensorSyncEngine.swift; sourceTree = "<group>"; };
+		FADCEEDAA1D048F2AAEC839E /* CaptureSessionJournal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CaptureSessionJournal.swift; path = VastuSpatial/Storage/CaptureSessionJournal.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		DF1E4A7CA54E407397F7D1AC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		07189DEDA77F47AAA1253903 /* Sensors */ = {
+			isa = PBXGroup;
+			children = (
+				A8CB7D6A66C8489A9CE8DAB4 /* IMUValidator.swift */,
+				A3395A6175444D21AE40211B /* MotionSensorManager.swift */,
+				FA75EAEE95D14FC5AF4F5247 /* SensorSyncEngine.swift */,
+				B1B100072C774AE7895F9B07 /* PermissionManager.swift */,
+			);
+			name = Sensors;
+			sourceTree = "<group>";
+		};
+		2C29187CEF8D4C6685E644DE = {
+			isa = PBXGroup;
+			children = (
+				8CA701F0FC9C408FA0C569AF /* VastuSpatial */,
+				8D3996D6F0CE4639A23AA1EF /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		3A3C67FBE6A84878826C8FC2 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				C23DC89EFDD647B582BC3842 /* AuthView.swift */,
+				EAE5DC0C2FF4465C9277F8D4 /* CaptureView.swift */,
+				C66CCEC28D4144A7BD1378D1 /* ProjectListView.swift */,
+				82F4B4E44FEF4EE4B168C28C /* VastuTheme.swift */,
+				B1B100012C774AE7895F9B01 /* VastuPreloaderView.swift */,
+				B1B100022C774AE7895F9B02 /* DashboardView.swift */,
+				B1B100032C774AE7895F9B03 /* ProjectCreationWizardView.swift */,
+				B1B100042C774AE7895F9B04 /* ProfileView.swift */,
+			);
+			name = Views;
+			sourceTree = "<group>";
+		};
+		5AAFADD94151454B9A8256DD /* Upload */ = {
+			isa = PBXGroup;
+			children = (
+				49B7A3F74C79423A97657D17 /* ResumableUploadManager.swift */,
+			);
+			name = Upload;
+			sourceTree = "<group>";
+		};
+		651EB8D861FD44C8BCE811FC /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				36DC15A67AFC4971B19CB916 /* CaptureRecoveryManager.swift */,
+				FADCEEDAA1D048F2AAEC839E /* CaptureSessionJournal.swift */,
+				B370ECE59030419F8085E52F /* LocalCaptureStorageManager.swift */,
+			);
+			name = Storage;
+			sourceTree = "<group>";
+		};
+		8CA701F0FC9C408FA0C569AF /* VastuSpatial */ = {
+			isa = PBXGroup;
+			children = (
+				4C4B0049BA344DAF9B84931F /* Info.plist */,
+				E0F38AF31FB14307BB3FF35F /* VastuSpatialApp.swift */,
+				CA9F323C3DEC4891AFB86517 /* Camera */,
+				EE303ED3F97A4558B89E65C2 /* Models */,
+				8F20E219BED4480DADADF2D1 /* Network */,
+				07189DEDA77F47AAA1253903 /* Sensors */,
+				651EB8D861FD44C8BCE811FC /* Storage */,
+				5AAFADD94151454B9A8256DD /* Upload */,
+				3A3C67FBE6A84878826C8FC2 /* Views */,
+				B1B100052C774AE7895F9B05 /* vastu_logo.png */,
+				B1B100062C774AE7895F9B06 /* vastu_archway_hero.png */,
+				B1B100082C774AE7895F9B08 /* Assets.xcassets */,
+			);
+			name = VastuSpatial;
+			sourceTree = "<group>";
+		};
+		8D3996D6F0CE4639A23AA1EF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				6152868042F041E693118623 /* VastuSpatial.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8F20E219BED4480DADADF2D1 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				9A46741CF8D54F45896F4A00 /* VastuAPIClient.swift */,
+			);
+			name = Network;
+			sourceTree = "<group>";
+		};
+		CA9F323C3DEC4891AFB86517 /* Camera */ = {
+			isa = PBXGroup;
+			children = (
+				6365353A7C6A417CBB5CD72F /* AVCameraManager.swift */,
+				7F8B60F0DAC040CF9CE5B33A /* CaptureQualityEngine.swift */,
+				B1E32E81A97F48EEA78FB134 /* StorageMonitor.swift */,
+				0C6870BF0D8945DFB191BE53 /* VideoValidator.swift */,
+			);
+			name = Camera;
+			sourceTree = "<group>";
+		};
+		EE303ED3F97A4558B89E65C2 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				3675E38ABB33473D8A7C15D3 /* SpatialModels.swift */,
+			);
+			name = Models;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		09666251E3B143959D0843B5 /* VastuSpatial */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 39A18225D637492490050CE3 /* Build configuration list for PBXNativeTarget "VastuSpatial" */;
+			buildPhases = (
+				EA208639A5304457BAF0FD10 /* Sources */,
+				DF1E4A7CA54E407397F7D1AC /* Frameworks */,
+				1EFF8E2DEBBF46AC9EA63206 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = VastuSpatial;
+			productName = VastuSpatial;
+			productReference = 6152868042F041E693118623 /* VastuSpatial.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		82ABBA80652C4CB6B51FDF31 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 2660;
+				TargetAttributes = {
+					09666251E3B143959D0843B5 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = 4F1945A79D03422DAD3E48A6 /* Build configuration list for PBXProject "VastuSpatial" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 2C29187CEF8D4C6685E644DE;
+			productRefGroup = 8D3996D6F0CE4639A23AA1EF /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				09666251E3B143959D0843B5 /* VastuSpatial */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1EFF8E2DEBBF46AC9EA63206 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1A100052C774AE7895F9B05 /* vastu_logo.png in Resources */,
+				A1A100062C774AE7895F9B06 /* vastu_archway_hero.png in Resources */,
+				A1A100082C774AE7895F9B08 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		EA208639A5304457BAF0FD10 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E02D55A4983A4FF7B7C4D328 /* VastuSpatialApp.swift in Sources */,
+				F86F535D270048F69FFDF05D /* AVCameraManager.swift in Sources */,
+				25F71B6FE4A54FA88B94C798 /* CaptureQualityEngine.swift in Sources */,
+				6370F46C4A3B4FDABFE6B269 /* StorageMonitor.swift in Sources */,
+				B2AFCA757B294C33A03F3EE9 /* VideoValidator.swift in Sources */,
+				94FCF5727678478C9361238C /* SpatialModels.swift in Sources */,
+				50B5001FB8E449A3A482FBFD /* VastuAPIClient.swift in Sources */,
+				1F7363CA2C774AE7895F9B88 /* IMUValidator.swift in Sources */,
+				BBC9EDF55FB3426FBE15E1AC /* MotionSensorManager.swift in Sources */,
+				84227F39C8D347B4AA16ECD6 /* SensorSyncEngine.swift in Sources */,
+				349CE8FF5C754D50B203FC6F /* CaptureRecoveryManager.swift in Sources */,
+				D33B54D8D4C14DC2889ACFD7 /* CaptureSessionJournal.swift in Sources */,
+				82F6A13494F04BFEB3B13D5F /* LocalCaptureStorageManager.swift in Sources */,
+				D5EA698BD354456DA7E0A76C /* ResumableUploadManager.swift in Sources */,
+				00E342D011AD48618249E334 /* AuthView.swift in Sources */,
+				D86D8F111C8C40D1967183E0 /* CaptureView.swift in Sources */,
+				09A936AF4BE14C6C9730B09C /* ProjectListView.swift in Sources */,
+				A15161B381E04F3AAC8447B5 /* VastuTheme.swift in Sources */,
+				A1A100012C774AE7895F9B01 /* VastuPreloaderView.swift in Sources */,
+				A1A100022C774AE7895F9B02 /* DashboardView.swift in Sources */,
+				A1A100032C774AE7895F9B03 /* ProjectCreationWizardView.swift in Sources */,
+				A1A100042C774AE7895F9B04 /* ProfileView.swift in Sources */,
+				A1A100072C774AE7895F9B07 /* PermissionManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		0878227757BF4DF4B6472CB6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7889MB544R;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = VastuSpatial/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vastu.spatial;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		3FAB162118CD4A488B93435F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		5A930E7716A6494EB579C530 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7889MB544R;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = VastuSpatial/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vastu.spatial;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		ABE68D6174FD47B2862469D1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		39A18225D637492490050CE3 /* Build configuration list for PBXNativeTarget "VastuSpatial" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5A930E7716A6494EB579C530 /* Debug */,
+				0878227757BF4DF4B6472CB6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4F1945A79D03422DAD3E48A6 /* Build configuration list for PBXProject "VastuSpatial" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ABE68D6174FD47B2862469D1 /* Debug */,
+				3FAB162118CD4A488B93435F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 82ABBA80652C4CB6B51FDF31 /* Project object */;
+}
