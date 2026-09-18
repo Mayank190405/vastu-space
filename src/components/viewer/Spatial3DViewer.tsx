@@ -117,7 +117,7 @@ export const Spatial3DViewer: React.FC<Spatial3DViewerProps> = ({
   const [showPointCloud, setShowPointCloud] = useState(false);
   const [showCameraPath, setShowCameraPath] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
-  const [renderMode, setRenderMode] = useState<'photographic' | 'unlit' | 'wireframe'>('photographic');
+  const [renderMode, setRenderMode] = useState<'photographic' | 'unlit' | 'wireframe' | 'metrology'>('photographic');
   const [exposure, setExposure] = useState(1.15);
   const [autoRotate, setAutoRotate] = useState(false);
   const [pointSize, setPointSize] = useState(0.015);
@@ -176,6 +176,7 @@ export const Spatial3DViewer: React.FC<Spatial3DViewerProps> = ({
   const origMaterialsRef = useRef<Map<THREE.Mesh, THREE.Material | THREE.Material[]>>(new Map());
   const unlitMaterialsRef = useRef<Map<THREE.Mesh, THREE.Material>>(new Map());
   const wireMaterialsRef = useRef<Map<THREE.Mesh, THREE.Material>>(new Map());
+  const metrologyMaterialsRef = useRef<Map<THREE.Mesh, THREE.Material>>(new Map());
 
   // Load summary metrics if available
   useEffect(() => {
@@ -387,6 +388,14 @@ export const Spatial3DViewer: React.FC<Spatial3DViewerProps> = ({
                 });
                 wireMaterialsRef.current.set(mesh, wire);
 
+                const metrology = new THREE.MeshStandardMaterial({
+                  color: 0x22c55e,
+                  roughness: 0.45,
+                  metalness: 0.15,
+                  side: THREE.DoubleSide
+                });
+                metrologyMaterialsRef.current.set(mesh, metrology);
+
                 mesh.castShadow = true;
                 mesh.receiveShadow = true;
               }
@@ -432,6 +441,27 @@ export const Spatial3DViewer: React.FC<Spatial3DViewerProps> = ({
       `${basePath}/dense_pointcloud_clean.ply`,
       (geom) => {
         geom.computeVertexNormals();
+        if (geom.attributes.provenance) {
+          const provArr = geom.attributes.provenance.array;
+          const colors = new Float32Array(provArr.length * 3);
+          for (let i = 0; i < provArr.length; i++) {
+            const code = provArr[i];
+            if (code === 0) {
+              // Observed: Green #22c55e
+              colors[i * 3] = 0.133; colors[i * 3 + 1] = 0.773; colors[i * 3 + 2] = 0.369;
+            } else if (code === 1) {
+              // Estimated: Yellow #eab308
+              colors[i * 3] = 0.918; colors[i * 3 + 1] = 0.702; colors[i * 3 + 2] = 0.031;
+            } else if (code === 2) {
+              // Inferred: Orange #f97316
+              colors[i * 3] = 0.976; colors[i * 3 + 1] = 0.451; colors[i * 3 + 2] = 0.086;
+            } else {
+              // Unresolved: Red #ef4444
+              colors[i * 3] = 0.937; colors[i * 3 + 1] = 0.267; colors[i * 3 + 2] = 0.267;
+            }
+          }
+          geom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        }
         const pcdMat = new THREE.PointsMaterial({
           size: 0.015,
           vertexColors: true,
@@ -537,6 +567,9 @@ export const Spatial3DViewer: React.FC<Spatial3DViewerProps> = ({
           if (mat) mesh.material = mat;
         } else if (renderMode === 'wireframe') {
           const mat = wireMaterialsRef.current.get(mesh);
+          if (mat) mesh.material = mat;
+        } else if (renderMode === 'metrology') {
+          const mat = metrologyMaterialsRef.current.get(mesh);
           if (mat) mesh.material = mat;
         }
       }
@@ -848,6 +881,41 @@ export const Spatial3DViewer: React.FC<Spatial3DViewerProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Metrology Audit HUD Overlay */}
+      {renderMode === 'metrology' && (
+        <div className="absolute top-20 right-6 z-20 w-72 bg-[#0d1118]/95 backdrop-blur-2xl border border-emerald-500/40 rounded-2xl p-4 shadow-2xl animate-in fade-in slide-in-from-top-3 duration-300">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Metrology Evidence Audit
+            </span>
+            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+              FAIL-SAFE
+            </span>
+          </div>
+          <div className="space-y-1.5 text-[11px]">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 flex-shrink-0" />
+              <span className="text-slate-200"><strong className="text-emerald-400">Observed:</strong> Multi-view consensus (≥2 views)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 flex-shrink-0" />
+              <span className="text-slate-200"><strong className="text-amber-400">Estimated:</strong> Planar RANSAC snapped</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-orange-500 flex-shrink-0" />
+              <span className="text-slate-200"><strong className="text-orange-400">Inferred:</strong> Monocular depth completion</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500 flex-shrink-0 animate-pulse" />
+              <span className="text-slate-200"><strong className="text-red-400">Unresolved:</strong> Rescan Required (&gt;20mm gap)</span>
+            </div>
+          </div>
+          <div className="mt-2.5 pt-2 border-t border-white/10 text-[10px] text-slate-400 leading-tight">
+            Non-negotiable mandate: Inferred geometry is never disguised as physically observed reality.
+          </div>
+        </div>
+      )}
 
       {/* 2. Top-Center Navigation Guidance Banner (Active Route HUD) */}
       {activeRoute && (
@@ -1174,6 +1242,27 @@ export const Spatial3DViewer: React.FC<Spatial3DViewerProps> = ({
                   }`}
                 >
                   Unlit Pure
+                </button>
+                <button
+                  onClick={() => setRenderMode('wireframe')}
+                  className={`px-2 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${
+                    renderMode === 'wireframe'
+                      ? 'bg-[#dfb873] text-[#0b0f17]'
+                      : 'bg-white/5 text-slate-300 hover:bg-white/10'
+                  }`}
+                >
+                  Wireframe
+                </button>
+                <button
+                  onClick={() => setRenderMode('metrology')}
+                  className={`px-2 py-1.5 rounded-lg text-[11px] font-semibold transition-all flex items-center justify-center gap-1 ${
+                    renderMode === 'metrology'
+                      ? 'bg-emerald-500 text-slate-950 font-bold shadow-md shadow-emerald-500/20'
+                      : 'bg-white/5 text-slate-300 hover:bg-white/10'
+                  }`}
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Metrology</span>
                 </button>
               </div>
             </div>

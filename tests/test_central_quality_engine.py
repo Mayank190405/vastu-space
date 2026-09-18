@@ -207,3 +207,38 @@ def test_acceptance_criterion_engine_explains_why_reconstruction_passed_or_faile
     assert "PASS" in pass_explanation
     assert "zero hard failures" in pass_explanation.lower()
     assert "approved for production" in passed_eval.recommended_actions[0].lower()
+
+
+def test_failsafe_unverified_area_blocks_clean_pass_and_generates_rescan():
+    """
+    Validates the Fail-Safe Rule:
+    'A crash is detectable. A visually convincing but geometrically incorrect digital twin is not.'
+    Even if numerical scores are pristine (> 0.90), an unverified / inferred area > 5%
+    must block PASS, force a WARNING, and generate targeted 3D rescan instructions.
+    """
+    decision_engine = QualityDecisionEngine(max_unverified_area_ratio=0.05)
+    subsystem_scores = {
+        "capture": 0.95, "pose": 0.95, "depth": 0.95,
+        "geometry": 0.95, "semantics": 0.95, "navigation": 0.95
+    }
+
+    verdict, actions, explanation = decision_engine.evaluate_verdict(
+        global_score=0.95,
+        subsystem_scores=subsystem_scores,
+        hard_failures=[],
+        warnings=[],
+        per_cell_issues={"cell_blindspot_north": ["Unverified unobserved depth cavity"]},
+        unverified_area_ratio=0.08,  # 8% unverified area > 5% limit
+        cell_centroids={"cell_blindspot_north": [2.5, 4.0, 1.2]}
+    )
+
+    # Must be downgraded from PASS to WARNING
+    assert verdict == "WARNING"
+    assert "FAILSAFE_ALERT" in explanation
+    assert "Unverified/inferred surface area is 8.0%" in explanation
+
+    # Must generate actionable 30s rescan with spatial coordinates
+    assert any("Targeted 30s rescan for cell_blindspot_north" in act for act in actions)
+    assert any("[2.50, 4.00, 1.20]" in act for act in actions)
+    assert any("< 15 deg/sec" in act for act in actions)
+

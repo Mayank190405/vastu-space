@@ -163,6 +163,10 @@ class HierarchicalPoseEstimator:
 
             # Hierarchical Fusion Decisions
             if vis_result.success and vis_result.inliers_count >= 30 and vis_result.reprojection_error_px <= self.max_reprojection_error_px:
+                if vis_result.is_repetitive:
+                    flags.append("REPETITIVE_PATTERN_AMBIGUITY")
+                    logger.warning(f"Frame {frame_idx}: Repetitive pattern detected (e.g. grid tiles). Downweighting pure visual matching.")
+
                 if has_vio:
                     # Fused Hybrid: Combine VIO translation scale with visual rotation
                     vio_t = np.array(vio_data.get("translation_vector_m", [0, 0, 0])).reshape(3, 1)
@@ -173,12 +177,16 @@ class HierarchicalPoseEstimator:
                     R_curr = vis_result.R_rel @ R_curr
                     tracking_source = TrackingSource.FUSED_HYBRID
                     confidence = min(1.0, vis_result.inliers_count / 80.0)
+                    if vis_result.is_repetitive:
+                        confidence *= 0.8
                 else:
                     # Pure Visual / SfM Odometry
                     t_curr = t_curr + (R_curr @ (vis_result.t_rel * 0.3))
                     R_curr = vis_result.R_rel @ R_curr
                     tracking_source = TrackingSource.SFM_BA
                     confidence = min(1.0, vis_result.inliers_count / 100.0)
+                    if vis_result.is_repetitive:
+                        confidence *= 0.7
             elif has_vio:
                 # Visual failed, fallback to device VIO prior
                 logger.warning(f"Visual tracking degraded on frame {frame_idx}; falling back to DEVICE_VIO")

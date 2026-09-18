@@ -20,7 +20,8 @@ class VisualTrackingResult:
         reprojection_error_px: float,
         parallax_angle_deg: float,
         pts1: np.ndarray,
-        pts2: np.ndarray
+        pts2: np.ndarray,
+        is_repetitive: bool = False
     ):
         self.success = success
         self.R_rel = R_rel
@@ -31,6 +32,7 @@ class VisualTrackingResult:
         self.parallax_angle_deg = parallax_angle_deg
         self.pts1 = pts1
         self.pts2 = pts2
+        self.is_repetitive = is_repetitive
 
 
 class VisualPoseTracker:
@@ -163,6 +165,10 @@ class VisualPoseTracker:
         errors = num / np.maximum(1e-7, den)
         mean_reproj_error = float(np.mean(errors)) if len(errors) > 0 else 0.5
 
+        # Check repetitive texture ambiguity (e.g. repeated tiles, ceiling patterns)
+        ambiguous_matches = sum(1 for m, n in matches if len((m, n)) == 2 and m.distance >= 0.82 * n.distance)
+        is_repetitive = (ambiguous_matches / max(1, len(matches))) > 0.60
+
         return VisualTrackingResult(
             success=True,
             R_rel=R_rel,
@@ -172,5 +178,6 @@ class VisualPoseTracker:
             reprojection_error_px=mean_reproj_error,
             parallax_angle_deg=mean_parallax,
             pts1=inliers_pts1,
-            pts2=inliers_pts2
+            pts2=inliers_pts2,
+            is_repetitive=is_repetitive
         )

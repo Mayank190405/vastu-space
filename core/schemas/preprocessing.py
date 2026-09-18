@@ -17,6 +17,9 @@ class FrameDiscardReason(str, Enum):
     OVEREXPOSED_GLARE = "OVEREXPOSED_GLARE"          # Highlight clipping / glare saturation
     LOW_FEATURE_DENSITY = "LOW_FEATURE_DENSITY"      # Insufficient trackable keypoints across spatial grid
     CADENCE_REDUNDANT = "CADENCE_REDUNDANT"          # Temporal pacing budget during smooth stationary motion
+    ROLLING_SHUTTER_DISTORTION = "ROLLING_SHUTTER_DISTORTION"  # Severe angular velocity causing wall curvature
+    UNRECOVERABLE_MOTION_BLUR = "UNRECOVERABLE_MOTION_BLUR"    # Motion blur lacking recoverable gradient signal
+    FLOW_WARP_VIOLATION = "FLOW_WARP_VIOLATION"                # Asymmetrical optical flow warp failing physical sanity
 
 
 class SceneContextTag(str, Enum):
