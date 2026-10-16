@@ -29,7 +29,10 @@ import {
   Building2,
   User,
   Shield,
-  ExternalLink
+  ExternalLink,
+  Square,
+  Film,
+  Zap
 } from 'lucide-react';
 
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -157,11 +160,15 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
       return 'projects';
     }
     if (p === '/viewer' || p.startsWith('/viewer') || p.startsWith('/3d') || p.startsWith('/view/')) return 'viewer';
+    if (p === '/cad' || p.startsWith('/cad') || p.startsWith('/floorplan')) return 'cad';
     if (p === '/captures') return 'captures';
     if (p === '/assets') return 'assets';
+    if (p === '/pipeline' || p.startsWith('/pipeline')) return 'pipeline';
+    if (p === '/tours' || p.startsWith('/tours')) return 'tours';
     if (p === '/activity') return 'activity';
     if (p === '/search') return 'search';
-    if (p === '/team' || p.startsWith('/organization')) return 'team';
+    if (p === '/team' || p.startsWith('/organization/members') || p.startsWith('/organization/requests')) return 'team';
+    if (p === '/organization') return 'organization';
     if (p === '/settings') return 'settings';
     return 'dashboard';
   };
@@ -170,27 +177,31 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
 
   const navSections = [
     {
-      title: 'SPATIAL',
+      title: 'SPATIAL INTELLIGENCE',
       items: [
         { key: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
         { key: 'projects', label: 'Projects', path: '/projects', icon: FolderGit2 },
-        { key: 'viewer', label: 'Spatial Viewer', path: '/viewer', icon: Box },
-        { key: 'captures', label: 'Captures', path: '/captures', icon: Layers3 },
-        { key: 'assets', label: 'Assets', path: '/assets', icon: Cuboid },
+        { key: 'viewer', label: '3D Spatial Studio', path: '/viewer', icon: Box },
+        { key: 'cad', label: '2D / 3D CAD Studio', path: '/cad', icon: Square },
+        { key: 'captures', label: 'Guided Captures', path: '/captures', icon: Layers3 },
+        { key: 'assets', label: 'Digital Twin Assets', path: '/assets', icon: Cuboid },
       ],
     },
     {
-      title: 'WORKSPACE',
+      title: 'RECONSTRUCTION & ENGINE',
       items: [
-        { key: 'activity', label: 'Activity', path: '/activity', icon: Activity },
-        { key: 'search', label: 'Search', path: '/search', icon: Search, onClick: () => setIsSearchOpen(true) },
+        { key: 'pipeline', label: 'Pipeline Command', path: '/pipeline', icon: Zap },
+        { key: 'tours', label: 'Virtual Tour Studio', path: '/tours', icon: Film },
+        { key: 'search', label: 'Spatial Index Search', path: '/search', icon: Search, onClick: () => setIsSearchOpen(true) },
+        { key: 'activity', label: 'Activity & Audit Log', path: '/activity', icon: Activity },
       ],
     },
     {
-      title: 'ORGANIZATION',
+      title: 'ENTERPRISE WORKSPACE',
       items: [
-        { key: 'team', label: 'Team', path: '/team', icon: UsersRound, badge: pendingCount },
-        { key: 'settings', label: 'Settings', path: '/settings', icon: Settings },
+        { key: 'team', label: 'Team & Access', path: '/team', icon: UsersRound, badge: pendingCount },
+        { key: 'organization', label: 'Workspaces', path: '/organization', icon: Building2 },
+        { key: 'settings', label: 'Platform Settings', path: '/settings', icon: Settings },
       ],
     },
   ];

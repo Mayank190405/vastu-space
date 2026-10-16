@@ -20,6 +20,9 @@ import { ARNavigationPage } from './pages/viewer/ARNavigationPage';
 import { GuidedCaptureStudioPage } from './pages/capture/GuidedCaptureStudioPage';
 import { CapturesPage } from './pages/capture/CapturesPage';
 import { AssetsPage } from './pages/assets/AssetsPage';
+import { FloorPlanStudioPage } from './pages/cad/FloorPlanStudioPage';
+import { PipelineCommandCenterPage } from './pages/pipeline/PipelineCommandCenterPage';
+import { VirtualTourStudioPage } from './pages/tours/VirtualTourStudioPage';
 
 
 // Root gatekeeper: absolutely no marketing home page between opening the app and authentication
@@ -136,6 +139,46 @@ export const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <AssetsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/cad"
+            element={
+              <ProtectedRoute>
+                <FloorPlanStudioPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/floorplan"
+            element={
+              <ProtectedRoute>
+                <FloorPlanStudioPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pipeline"
+            element={
+              <ProtectedRoute>
+                <PipelineCommandCenterPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tours"
+            element={
+              <ProtectedRoute>
+                <VirtualTourStudioPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/presentation"
+            element={
+              <ProtectedRoute>
+                <VirtualTourStudioPage />
               </ProtectedRoute>
             }
           />
