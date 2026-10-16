@@ -86,30 +86,72 @@ In the AWS EC2 Management Console, configure your instance's **Inbound Security 
 
 ---
 
-## 5. One-Command Deployment
+## 5. Deployment via AWS Browser SSH (EC2 Instance Connect)
 
-Connect to your AWS EC2 instance:
+You don't need any local terminal or `.pem` file on your computer. You can do the entire setup directly in your browser:
+
+### Step 5.1: Open Browser SSH in AWS Console
+1. Go to the [AWS EC2 Console](https://console.aws.amazon.com/ec2/).
+2. Select your running VĀSTU instance and click **Connect** in the top right.
+3. Choose the **EC2 Instance Connect** tab.
+4. Ensure the username is `ubuntu` and click the orange **Connect** button.
+5. A browser-based terminal will immediately open inside your browser window.
+
+---
+
+### Step 5.2: Generate SSH Key & Authorize GitHub
+
+In your EC2 browser terminal, run:
+
 ```bash
-ssh -i your-key.pem ubuntu@<YOUR-EC2-PUBLIC-IP>
+# 1. Generate an Ed25519 SSH keypair (press Enter for all prompts to use defaults)
+ssh-keygen -t ed25519 -C "aws-ec2-vastu" -f ~/.ssh/id_ed25519 -N ""
+
+# 2. Print your Public Key to the screen
+cat ~/.ssh/id_ed25519.pub
 ```
 
-Clone the repository:
+Now copy the output line (starts with `ssh-ed25519 ... aws-ec2-vastu`) and add it to GitHub:
+1. Open GitHub in a new browser tab: 👉 [https://github.com/settings/ssh/new](https://github.com/settings/ssh/new)
+2. **Title**: `AWS EC2 VASTU Production`
+3. **Key**: Paste the copied key.
+4. Click **Add SSH key**.
+
+---
+
+### Step 5.3: Verify Connection & Clone via SSH
+
+Back in your EC2 browser terminal, test the GitHub SSH connection:
+
 ```bash
-git clone https://github.com/Mayank190405/vastu-space.git vastu-namma-space
+# Verify GitHub connection (type 'yes' when prompted about host authenticity)
+ssh -T git@github.com
+```
+*You will see: `Hi <username>! You've successfully authenticated...`*
+
+Now clone the repository using SSH:
+```bash
+git clone git@github.com:Mayank190405/vastu-space.git vastu-namma-space
 cd vastu-namma-space
+
+# Check out the active architecture branch
+git checkout cursor/service-to-service-architecture
 ```
 
-### Option A: Standard HTTP Deployment (Quick Test / IP-based)
+---
+
+### Step 5.4: Run the Automated Deployment
+
+#### Option A: Quick Test / Demo Deployment (HTTP on EC2 IP)
 ```bash
 ./scripts/deploy-aws.sh
 ```
-*This command will auto-install Docker, configure swap, generate cryptographic passwords, execute database migrations, build the containers, and launch the platform.*
 
-### Option B: Production Deployment with Let's Encrypt SSL
+#### Option B: Production Deployment with Let's Encrypt SSL
 ```bash
 DOMAIN_NAME=vastu.yourdomain.com CERTBOT_EMAIL=admin@yourdomain.com ./scripts/deploy-aws.sh --ssl
 ```
-*Automatically obtains an SSL certificate from Let's Encrypt, enables HTTP/2 and HSTS, and redirects all port 80 traffic to HTTPS.*
+*This installs Docker, configures swap, executes PostGIS migrations, builds the multi-stage images, and starts all microservices with health checks.*
 
 ---
 
