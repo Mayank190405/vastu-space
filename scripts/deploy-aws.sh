@@ -136,7 +136,7 @@ fi
 echo -e "${BLUE}▶ Building and launching VĀSTU production stack...${NC}"
 
 docker compose -f docker-compose.prod.yml --env-file "${ENV_FILE}" down --remove-orphans || true
-docker compose -f docker-compose.prod.yml --env-file "${ENV_FILE}" build --parallel
+docker compose -f docker-compose.prod.yml --env-file "${ENV_FILE}" build
 docker compose -f docker-compose.prod.yml --env-file "${ENV_FILE}" up -d
 
 # ------------------------------------------------------------------------------

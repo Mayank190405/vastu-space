@@ -11,13 +11,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Install Python dependencies
+# Install Python dependencies with CPU-optimized PyTorch wheels (reduces image size from ~5GB to ~600MB)
 COPY requirements.txt .
-# We use no-cache-dir to keep the image size down
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 
 # Copy source code
 COPY . .
 
-# Run pytest by default
-CMD ["pytest", ".", "-v"]
+# Run worker by default
+CMD ["python", "-m", "pipeline.pipeline_orchestrator"]
