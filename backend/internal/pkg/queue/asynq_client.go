@@ -15,11 +15,11 @@ type AsynqClient struct {
 	client *asynq.Client
 }
 
-// NewAsynqClient creates an AsynqClient connected to the given Redis address.
-// redisAddr example: "localhost:6379" or "vastu-redis:6379" (docker-compose service name).
-func NewAsynqClient(redisAddr string) *AsynqClient {
+// NewAsynqClient creates an AsynqClient connected to the given Redis address or URI.
+// redisAddrOrURL example: "localhost:6379", "redis://:password@vastu-redis:6379/0".
+func NewAsynqClient(redisAddrOrURL string, redisPassword ...string) *AsynqClient {
 	return &AsynqClient{
-		client: asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddr}),
+		client: asynq.NewClient(ParseRedisConnOpt(redisAddrOrURL, redisPassword...)),
 	}
 }
 

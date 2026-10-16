@@ -15,6 +15,7 @@ import (
 	"vastu/backend/internal/middleware"
 	"vastu/backend/internal/pkg/jwt"
 	"vastu/backend/internal/pkg/mailer"
+	"vastu/backend/internal/pkg/queue"
 	"vastu/backend/internal/repository/postgres"
 	"vastu/backend/internal/service"
 
@@ -62,6 +63,8 @@ func main() {
 	smtpMailer := mailer.NewSMTPMailer(cfg.SMTPHost, cfg.SMTPPort, cfg.SMTPUser, cfg.SMTPPassword, cfg.SMTPFromName, cfg.SMTPFromEmail)
 	googleSvc := service.NewGoogleService(cfg.GoogleClientID)
 	appleSvc := service.NewAppleService(cfg.AppleClientID)
+	asynqClient := queue.NewAsynqClient(cfg.RedisURL, cfg.RedisPassword)
+	defer asynqClient.Close()
 
 	// 4. Initialize Services
 	otpService := service.NewOTPService(otpRepo, smtpMailer)
@@ -70,7 +73,8 @@ func main() {
 	projectService := service.NewProjectService(projectRepo, orgRepo, smtpMailer)
 	captureService := service.NewCaptureService(captureRepo, projectRepo)
 	uploadService := service.NewUploadService(uploadRepo, captureRepo, cfg.UploadDir)
-	jobService := service.NewJobService(jobRepo, projectRepo, captureRepo)
+	jobService := service.NewJobService(jobRepo, projectRepo, captureRepo, asynqClient)
+	jobService.SetUploadDir(cfg.UploadDir)
 	modelService := service.NewModelService(modelRepo, projectRepo)
 	poiService := service.NewPOIService(poiRepo, projectRepo)
 	searchService := service.NewSearchService(poiRepo, projectRepo)

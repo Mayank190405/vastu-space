@@ -10,6 +10,7 @@ import (
 	"vastu/backend/internal/pkg/events"
 	"vastu/backend/internal/repository"
 
+	"github.com/google/uuid"
 	"github.com/hibiken/asynq"
 )
 
@@ -312,11 +313,7 @@ func (h *StageHandlers) HandleFinalizeModel(ctx context.Context, t *asynq.Task) 
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-func (h *StageHandlers) transition(ctx context.Context, jobID interface{ String() string }, stage domain.JobStage, progress int) error {
-	id, ok := jobID.(interface{ String() string })
-	if !ok {
-		return fmt.Errorf("transition: invalid jobID type")
-	}
-	_ = id
-	return nil // jobRepo.UpdateProgress called in each handler above
+func (h *StageHandlers) transition(ctx context.Context, jobID uuid.UUID, stage domain.JobStage, progress int) error {
+	workerID := "vastu-worker"
+	return h.jobRepo.UpdateProgress(ctx, jobID, stage, progress, &workerID, nil, nil)
 }

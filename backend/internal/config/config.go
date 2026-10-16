@@ -24,6 +24,10 @@ type Config struct {
 	GoogleClientID       string
 	GoogleClientSecret   string
 	AppleClientID        string
+	RedisURL             string
+	RedisPassword        string
+	WorkersPath          string
+	WorkerConcurrency    int
 }
 
 func LoadConfig() *Config {
@@ -49,6 +53,11 @@ func LoadConfig() *Config {
 	googleClientSecret := getEnv("GOOGLE_CLIENT_SECRET", "")
 	appleClientID := getEnv("APPLE_CLIENT_ID", "")
 
+	redisURL := getEnv("REDIS_URL", "redis://localhost:6379/0")
+	redisPassword := getEnv("REDIS_PASSWORD", "")
+	workersPath := getEnv("WORKERS_PATH", "/app/backend/workers")
+	workerConcurrency := getEnvAsInt("WORKER_CONCURRENCY", 5)
+
 	return &Config{
 		DatabaseURL:          dbURL,
 		Port:                 port,
@@ -66,6 +75,10 @@ func LoadConfig() *Config {
 		GoogleClientID:       googleClientID,
 		GoogleClientSecret:   googleClientSecret,
 		AppleClientID:        appleClientID,
+		RedisURL:             redisURL,
+		RedisPassword:        redisPassword,
+		WorkersPath:          workersPath,
+		WorkerConcurrency:    workerConcurrency,
 	}
 }
 

@@ -2,8 +2,10 @@ package queue
 
 import (
 	"context"
+	"fmt"
 	"log"
 
+	"vastu/backend/internal/domain"
 	"vastu/backend/internal/pkg/events"
 	"vastu/backend/internal/repository"
 
@@ -12,9 +14,11 @@ import (
 
 // AsynqServerConfig configures the Asynq worker server.
 type AsynqServerConfig struct {
-	RedisAddr   string
-	Concurrency int    // number of concurrent workers (default: 10)
-	WorkersPath string // absolute path to backend/workers Python scripts
+	RedisAddr     string // Can be redis://:password@host:port/db or host:port
+	RedisURL      string // Alias or full URI
+	RedisPassword string // Optional password if not embedded in URI
+	Concurrency   int    // number of concurrent workers (default: 10)
+	WorkersPath   string // absolute path to backend/workers Python scripts
 }
 
 // AsynqServer wraps an asynq.Server with VĀSTU-specific task registration.
@@ -36,12 +40,18 @@ func NewAsynqServer(
 	jobRepo repository.JobRepository,
 	eventBus *events.EventBus,
 ) *AsynqServer {
-	if cfg.Concurrency == 0 {
-		cfg.Concurrency = 10
+	if cfg.Concurrency <= 0 {
+		cfg.Concurrency = 5
 	}
 
+	redisAddrOrURL := cfg.RedisURL
+	if redisAddrOrURL == "" {
+		redisAddrOrURL = cfg.RedisAddr
+	}
+	connOpt := ParseRedisConnOpt(redisAddrOrURL, cfg.RedisPassword)
+
 	srv := asynq.NewServer(
-		asynq.RedisClientOpt{Addr: cfg.RedisAddr},
+		connOpt,
 		asynq.Config{
 			Concurrency: cfg.Concurrency,
 			Queues: map[string]int{
@@ -52,12 +62,30 @@ func NewAsynqServer(
 			// Asynq's built-in retry scheduler handles exponential backoff.
 			// Max retries are set per-task in the client (default: 3).
 			ErrorHandler: asynq.ErrorHandlerFunc(func(ctx context.Context, task *asynq.Task, err error) {
-				log.Printf("[AsynqServer] Task %q failed: %v", task.Type(), err)
+				retried, _ := asynq.GetRetryCount(ctx)
+				maxRetry, _ := asynq.GetMaxRetry(ctx)
+				log.Printf("[AsynqServer] Task %q failed (retry %d/%d): %v", task.Type(), retried, maxRetry, err)
+
+				// When all retries are exhausted, record failure in PostgreSQL
+				if retried >= maxRetry {
+					if p, decErr := DecodeReconstructionPayload(task.Payload()); decErr == nil {
+						errCode := "ERR_STAGE_FAILED"
+						errMsg := fmt.Sprintf("Stage %s failed after %d retries: %v", task.Type(), retried, err)
+						workerID := "vastu-worker"
+						_ = jobRepo.UpdateProgress(ctx, p.JobID, domain.JobStageFailed, 0, &workerID, &errCode, &errMsg)
+						_ = jobRepo.AddLog(ctx, &domain.JobLog{
+							JobID:    p.JobID,
+							Stage:    string(domain.JobStageFailed),
+							LogLevel: "error",
+							Message:  errMsg,
+						})
+					}
+				}
 			}),
 		},
 	)
 
-	client := NewAsynqClient(cfg.RedisAddr)
+	client := NewAsynqClient(redisAddrOrURL, cfg.RedisPassword)
 	handlers := NewStageHandlers(jobRepo, eventBus, client, cfg.WorkersPath)
 
 	mux := asynq.NewServeMux()

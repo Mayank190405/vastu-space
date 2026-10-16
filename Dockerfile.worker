@@ -1,0 +1,47 @@
+# Multi-stage production build for VĀSTU Reconstruction Worker Daemon
+# Stage 1: Build the Go worker daemon
+FROM golang:1.22-alpine AS go-builder
+
+WORKDIR /app
+COPY backend/go.mod backend/go.sum ./
+RUN go mod download
+
+COPY backend/ .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /app/vastu-worker ./cmd/worker/main.go
+
+# Stage 2: Dual runtime with Python 3.10 and C++ native dependencies
+FROM python:3.10-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+# Install system runtime dependencies for OpenCV, Open3D, and PyTorch (C++ native libraries)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1 \
+    libglib2.0-0 \
+    libgomp1 \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install Python reconstruction pipeline dependencies with CPU-optimized PyTorch wheels
+COPY backend/workers/requirements.txt .
+RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+
+# Copy Go worker executable from builder stage
+COPY --from=go-builder /app/vastu-worker /app/vastu-worker
+
+# Copy worker modules, scripts, and assets
+COPY backend/workers /app/backend/workers
+COPY scripts /app/scripts
+
+# Pre-create scratch and upload directories
+RUN mkdir -p /app/uploads/scratch
+
+ENV WORKERS_PATH=/app/backend/workers
+ENV PYTHONPATH=/app:/app/backend/workers:/app/scripts
+ENV UPLOAD_DIR=/app/uploads
+
+ENTRYPOINT ["/app/vastu-worker"]

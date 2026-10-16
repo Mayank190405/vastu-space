@@ -123,6 +123,8 @@ services:
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
       - APPLE_CLIENT_ID=${APPLE_CLIENT_ID:-}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@vastu-redis:6379/0
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
       - UPLOAD_DIR=/app/uploads
       - S3_ENDPOINT=http://vastu-minio:9000
       - S3_REGION=us-east-1
@@ -174,22 +176,26 @@ services:
       - vastu_internal
 
   # ----------------------------------------------------------------------------
-  # 8. WORKER: Distributed 9-Stage Reconstruction Pipeline
+  # 8. WORKER: Distributed 9-Stage Reconstruction Pipeline (Go Daemon + Python)
   # ----------------------------------------------------------------------------
   vastu-worker:
     build:
-      context: ./backend/workers
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile.worker
     container_name: vastu_worker
     restart: unless-stopped
     environment:
-      - PYTHONPATH=/app:/app/backend/workers
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-vastu_user}:${POSTGRES_PASSWORD}@vastu-postgres:5432/${POSTGRES_DB:-vastu_db}?sslmode=disable
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@vastu-redis:6379/0
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - UPLOAD_DIR=/app/uploads
+      - WORKERS_PATH=/app/backend/workers
+      - WORKER_CONCURRENCY=5
       - S3_ENDPOINT_URL=http://vastu-minio:9000
       - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER:-vastu_minio_admin}
       - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
       - S3_BUCKET=vastu-artifacts
-      - REDIS_URL=redis://:${REDIS_PASSWORD}@vastu-redis:6379/0
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-vastu_user}:${POSTGRES_PASSWORD}@vastu-postgres:5432/${POSTGRES_DB:-vastu_db}
+      - PYTHONPATH=/app:/app/backend/workers:/app/scripts
     volumes:
       - vastu_uploads_data:/app/uploads
     depends_on:

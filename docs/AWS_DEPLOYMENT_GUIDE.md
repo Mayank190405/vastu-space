@@ -34,10 +34,15 @@ This guide provides the complete, step-by-step production deployment procedure f
          │               │  │ PostGIS Database (16) │  │           │
          │               │  └───────────────────────┘  │           │
          │               │  ┌───────────────────────┐  │           │
-         │               │  │ Redis 7 Data Store    │  │           │
-         │               │  └───────────────────────┘  │           │
+         │               │  │ Authenticated Redis 7 │  │           │
+         │               │  │ (Asynq Queue & Pub/Sub)│ │           │
+         │               │  └───────────┬───────────┘  │           │
+         │               │              │ Task Queue   │           │
+         │               │              ▼              │           │
          │               │  ┌───────────────────────┐  │           │
-         │               │  │ 9-Stage Worker Engine │  │           │
+         │               │  │ vastu_worker Daemon   │  │           │
+         │               │  │ (Go Asynq + Py/C++ 9- │  │           │
+         │               │  │ Stage Reconstruction) │  │           │
          │               │  └───────────────────────┘  │           │
          │               └─────────────────────────────┘           │
          └─────────────────────────────────────────────────────────┘

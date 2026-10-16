@@ -3,9 +3,12 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
+	"os"
 	"time"
 
 	"vastu/backend/internal/domain"
+	"vastu/backend/internal/pkg/queue"
 	"vastu/backend/internal/repository"
 
 	"github.com/google/uuid"
@@ -15,14 +18,30 @@ type JobService struct {
 	jobRepo     repository.JobRepository
 	projectRepo repository.ProjectRepository
 	captureRepo repository.CaptureRepository
+	asynqClient *queue.AsynqClient
+	uploadDir   string
 }
 
-func NewJobService(jobRepo repository.JobRepository, projectRepo repository.ProjectRepository, captureRepo repository.CaptureRepository) *JobService {
+func NewJobService(jobRepo repository.JobRepository, projectRepo repository.ProjectRepository, captureRepo repository.CaptureRepository, asynqClient ...*queue.AsynqClient) *JobService {
+	var client *queue.AsynqClient
+	if len(asynqClient) > 0 {
+		client = asynqClient[0]
+	}
 	return &JobService{
 		jobRepo:     jobRepo,
 		projectRepo: projectRepo,
 		captureRepo: captureRepo,
+		asynqClient: client,
+		uploadDir:   "./uploads",
 	}
+}
+
+func (s *JobService) SetUploadDir(dir string) {
+	s.uploadDir = dir
+}
+
+func (s *JobService) SetAsynqClient(client *queue.AsynqClient) {
+	s.asynqClient = client
 }
 
 func (s *JobService) CreateJob(ctx context.Context, input domain.CreateJobInput) (*domain.ProcessingJob, error) {
@@ -60,6 +79,61 @@ func (s *JobService) CreateJob(ctx context.Context, input domain.CreateJobInput)
 		LogLevel: "info",
 		Message:  "Spatial reconstruction job placed in processing queue",
 	})
+
+	// Enqueue to Asynq Redis queue if client is configured
+	if s.asynqClient != nil {
+		videoURL := ""
+		imuURL := ""
+		lidarURL := ""
+
+		if input.CaptureID != nil && s.captureRepo != nil {
+			if cap, err := s.captureRepo.GetByID(ctx, *input.CaptureID); err == nil && cap != nil {
+				if cap.VideoURL != nil {
+					videoURL = *cap.VideoURL
+				}
+				if cap.IMUURL != nil {
+					imuURL = *cap.IMUURL
+				}
+				if cap.LiDARURL != nil {
+					lidarURL = *cap.LiDARURL
+				}
+			}
+		}
+
+		workDir := fmt.Sprintf("%s/scratch/%s", s.uploadDir, job.ID.String())
+		_ = os.MkdirAll(workDir, 0755)
+
+		payload := &queue.ReconstructionPayload{
+			JobID:     job.ID,
+			ProjectID: job.ProjectID,
+			CaptureID: job.CaptureID,
+			VideoURL:  videoURL,
+			IMUURL:    imuURL,
+			LiDARURL:  lidarURL,
+			WorkDir:   workDir,
+			Priority:  priority,
+		}
+
+		if _, err := s.asynqClient.EnqueueReconstructionJob(ctx, payload); err != nil {
+			errMsg := fmt.Sprintf("Failed to enqueue task to Asynq queue: %v", err)
+			errCode := "ERR_ENQUEUE_FAILED"
+			_ = s.jobRepo.UpdateProgress(ctx, job.ID, domain.JobStageFailed, 0, nil, &errCode, &errMsg)
+			_ = s.jobRepo.AddLog(ctx, &domain.JobLog{
+				JobID:    job.ID,
+				Stage:    string(domain.JobStageFailed),
+				LogLevel: "error",
+				Message:  errMsg,
+			})
+			return nil, fmt.Errorf("job created but queue submission failed: %w", err)
+		}
+
+		_ = s.jobRepo.AddLog(ctx, &domain.JobLog{
+			JobID:    job.ID,
+			Stage:    string(domain.JobStageQueued),
+			LogLevel: "info",
+			Message:  "Reconstruction task successfully submitted to Redis worker queue",
+		})
+	}
 
 	return job, nil
 }
