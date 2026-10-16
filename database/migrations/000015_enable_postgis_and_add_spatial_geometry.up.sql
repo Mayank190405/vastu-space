@@ -14,7 +14,12 @@
 -- ============================================================
 
 CREATE EXTENSION IF NOT EXISTS postgis;
-CREATE EXTENSION IF NOT EXISTS postgis_sfcgal;  -- 3D geometry ops (volume, convex hull, etc.)
+DO $$ 
+BEGIN 
+    CREATE EXTENSION IF NOT EXISTS postgis_sfcgal; 
+EXCEPTION WHEN OTHERS THEN 
+    RAISE NOTICE 'postgis_sfcgal extension not present in this distribution, proceeding with native postgis'; 
+END $$;
 CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;   -- For fuzzy POI search support
 
 -- ============================================================
