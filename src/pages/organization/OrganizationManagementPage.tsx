@@ -50,8 +50,8 @@ export const OrganizationManagementPage: React.FC = () => {
         api.listMembers().catch(() => []),
       ]);
 
-      setJoinRequests(reqs);
-      setMembers(mems);
+      setJoinRequests(Array.isArray(reqs) ? reqs : []);
+      setMembers(Array.isArray(mems) ? mems : []);
     } catch (err: any) {
       setError(err.message || 'Failed to fetch organization data');
     } finally {
@@ -202,9 +202,9 @@ export const OrganizationManagementPage: React.FC = () => {
         >
           <Clock className="w-4 h-4" />
           <span>Pending Join Requests</span>
-          {joinRequests.length > 0 && (
+          {(joinRequests || []).length > 0 && (
             <span className="px-2 py-0.5 rounded-full bg-[#8F6834] text-white text-[10px] font-bold">
-              {joinRequests.length}
+              {(joinRequests || []).length}
             </span>
           )}
         </button>
@@ -218,7 +218,7 @@ export const OrganizationManagementPage: React.FC = () => {
           }`}
         >
           <Users className="w-4 h-4" />
-          <span>Active Members ({members.length})</span>
+          <span>Active Members ({(members || []).length})</span>
         </button>
 
         <button
@@ -237,7 +237,7 @@ export const OrganizationManagementPage: React.FC = () => {
       {/* TAB 1: Join Requests */}
       {activeTab === 'requests' && (
         <div className="space-y-4">
-          {joinRequests.length === 0 ? (
+          {(joinRequests || []).length === 0 ? (
             <div className="glass-panel p-12 rounded-2xl border border-[#C5A059]/30 text-center space-y-2 shadow-md">
               <Users className="w-8 h-8 text-[#8F6834] mx-auto" />
               <h3 className="text-sm font-bold text-[#2E2218] font-serif-brand">No Pending Requests</h3>

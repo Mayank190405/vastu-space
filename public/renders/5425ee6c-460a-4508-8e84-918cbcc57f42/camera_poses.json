@@ -3,225 +3,225 @@
     "frame_a": 0,
     "frame_b": 1,
     "pair": "00_01",
-    "good_matches": 490,
-    "inliers": 459,
-    "inlier_ratio": 0.937,
+    "good_matches": 470,
+    "inliers": 254,
+    "inlier_ratio": 0.54,
     "camera_position": [
-      0.005,
-      0.0011,
-      0.0019
+      -0.0035,
+      -0.004,
+      0.0056
     ],
-    "translation_mag_m": 0.0054,
-    "confidence": 0.937
+    "translation_mag_m": 0.0077,
+    "confidence": 0.54
   },
   {
     "frame_a": 1,
     "frame_b": 2,
     "pair": "01_02",
-    "good_matches": 464,
-    "inliers": 350,
-    "inlier_ratio": 0.754,
+    "good_matches": 398,
+    "inliers": 163,
+    "inlier_ratio": 0.41,
     "camera_position": [
-      0.0221,
-      0.0015,
-      -0.0017
+      -0.0133,
+      -0.0147,
+      0.0401
     ],
-    "translation_mag_m": 0.0175,
-    "confidence": 0.754
+    "translation_mag_m": 0.0374,
+    "confidence": 0.41
   },
   {
     "frame_a": 2,
     "frame_b": 3,
     "pair": "02_03",
-    "good_matches": 405,
-    "inliers": 241,
-    "inlier_ratio": 0.595,
+    "good_matches": 444,
+    "inliers": 171,
+    "inlier_ratio": 0.385,
     "camera_position": [
-      0.0555,
-      0.0108,
-      0.0169
+      -0.0297,
+      -0.0016,
+      0.1015
     ],
-    "translation_mag_m": 0.0393,
-    "confidence": 0.595
+    "translation_mag_m": 0.0648,
+    "confidence": 0.385
   },
   {
     "frame_a": 3,
     "frame_b": 4,
     "pair": "03_04",
-    "good_matches": 446,
+    "good_matches": 558,
     "inliers": 298,
-    "inlier_ratio": 0.668,
+    "inlier_ratio": 0.534,
     "camera_position": [
-      0.0725,
-      0.0175,
-      0.0368
+      -0.0421,
+      0.0015,
+      0.1212
     ],
-    "translation_mag_m": 0.027,
-    "confidence": 0.668
+    "translation_mag_m": 0.0235,
+    "confidence": 0.534
   },
   {
     "frame_a": 4,
     "frame_b": 5,
     "pair": "04_05",
-    "good_matches": 505,
-    "inliers": 435,
-    "inlier_ratio": 0.861,
+    "good_matches": 366,
+    "inliers": 132,
+    "inlier_ratio": 0.361,
     "camera_position": [
-      0.0816,
-      0.0205,
-      0.0411
+      -0.0756,
+      0.0118,
+      0.1889
     ],
-    "translation_mag_m": 0.0105,
-    "confidence": 0.861
+    "translation_mag_m": 0.0762,
+    "confidence": 0.361
   },
   {
     "frame_a": 5,
     "frame_b": 6,
     "pair": "05_06",
-    "good_matches": 500,
-    "inliers": 347,
-    "inlier_ratio": 0.694,
+    "good_matches": 246,
+    "inliers": 101,
+    "inlier_ratio": 0.411,
     "camera_position": [
-      0.0963,
-      0.028,
-      0.0617
+      -0.0873,
+      0.0062,
+      0.2342
     ],
-    "translation_mag_m": 0.0264,
-    "confidence": 0.694
+    "translation_mag_m": 0.0471,
+    "confidence": 0.411
   },
   {
     "frame_a": 6,
     "frame_b": 7,
     "pair": "06_07",
-    "good_matches": 455,
-    "inliers": 335,
-    "inlier_ratio": 0.736,
+    "good_matches": 290,
+    "inliers": 127,
+    "inlier_ratio": 0.438,
     "camera_position": [
-      0.1131,
-      0.0367,
-      0.077
+      -0.1026,
+      0.0164,
+      0.3342
     ],
-    "translation_mag_m": 0.0243,
-    "confidence": 0.736
+    "translation_mag_m": 0.1017,
+    "confidence": 0.438
   },
   {
     "frame_a": 7,
     "frame_b": 8,
     "pair": "07_08",
-    "good_matches": 458,
-    "inliers": 337,
-    "inlier_ratio": 0.736,
+    "good_matches": 315,
+    "inliers": 128,
+    "inlier_ratio": 0.406,
     "camera_position": [
-      0.1258,
-      0.0436,
-      0.0996
+      -0.0992,
+      0.0709,
+      0.469
     ],
-    "translation_mag_m": 0.0268,
-    "confidence": 0.736
+    "translation_mag_m": 0.1454,
+    "confidence": 0.406
   },
   {
     "frame_a": 8,
     "frame_b": 9,
     "pair": "08_09",
-    "good_matches": 473,
-    "inliers": 254,
-    "inlier_ratio": 0.537,
+    "good_matches": 233,
+    "inliers": 64,
+    "inlier_ratio": 0.275,
     "camera_position": [
-      0.1378,
-      0.0499,
-      0.1346
+      -0.1463,
+      0.0771,
+      0.5483
     ],
-    "translation_mag_m": 0.0375,
-    "confidence": 0.537
+    "translation_mag_m": 0.0925,
+    "confidence": 0.275
   },
   {
     "frame_a": 9,
     "frame_b": 10,
     "pair": "09_10",
-    "good_matches": 525,
-    "inliers": 456,
-    "inlier_ratio": 0.869,
+    "good_matches": 282,
+    "inliers": 106,
+    "inlier_ratio": 0.376,
     "camera_position": [
-      0.1415,
-      0.0504,
-      0.1425
+      -0.1748,
+      0.0866,
+      0.5869
     ],
-    "translation_mag_m": 0.0087,
-    "confidence": 0.869
+    "translation_mag_m": 0.0489,
+    "confidence": 0.376
   },
   {
     "frame_a": 10,
     "frame_b": 11,
     "pair": "10_11",
-    "good_matches": 492,
-    "inliers": 308,
-    "inlier_ratio": 0.626,
+    "good_matches": 326,
+    "inliers": 149,
+    "inlier_ratio": 0.457,
     "camera_position": [
-      0.152,
-      0.0555,
-      0.1753
+      -0.1426,
+      0.0682,
+      0.5278
     ],
-    "translation_mag_m": 0.0348,
-    "confidence": 0.626
+    "translation_mag_m": 0.0698,
+    "confidence": 0.457
   },
   {
     "frame_a": 11,
     "frame_b": 12,
     "pair": "11_12",
-    "good_matches": 491,
-    "inliers": 352,
-    "inlier_ratio": 0.717,
+    "good_matches": 443,
+    "inliers": 287,
+    "inlier_ratio": 0.648,
     "camera_position": [
-      0.1594,
-      0.058,
-      0.1963
+      -0.145,
+      0.0637,
+      0.521
     ],
-    "translation_mag_m": 0.0224,
-    "confidence": 0.717
+    "translation_mag_m": 0.0085,
+    "confidence": 0.648
   },
   {
     "frame_a": 12,
     "frame_b": 13,
     "pair": "12_13",
-    "good_matches": 469,
-    "inliers": 346,
-    "inlier_ratio": 0.738,
+    "good_matches": 422,
+    "inliers": 221,
+    "inlier_ratio": 0.524,
     "camera_position": [
-      0.1676,
-      0.0596,
-      0.2126
+      -0.1512,
+      0.0557,
+      0.5064
     ],
-    "translation_mag_m": 0.0183,
-    "confidence": 0.738
+    "translation_mag_m": 0.0177,
+    "confidence": 0.524
   },
   {
     "frame_a": 13,
     "frame_b": 14,
     "pair": "13_14",
-    "good_matches": 513,
-    "inliers": 461,
-    "inlier_ratio": 0.899,
+    "good_matches": 408,
+    "inliers": 241,
+    "inlier_ratio": 0.591,
     "camera_position": [
-      0.1718,
-      0.0601,
-      0.2166
+      -0.163,
+      0.0529,
+      0.4951
     ],
-    "translation_mag_m": 0.0059,
-    "confidence": 0.899
+    "translation_mag_m": 0.0166,
+    "confidence": 0.591
   },
   {
     "frame_a": 14,
     "frame_b": 15,
     "pair": "14_15",
-    "good_matches": 518,
-    "inliers": 413,
-    "inlier_ratio": 0.797,
+    "good_matches": 312,
+    "inliers": 139,
+    "inlier_ratio": 0.446,
     "camera_position": [
-      0.1797,
-      0.0612,
-      0.2229
+      -0.2012,
+      0.0577,
+      0.5094
     ],
-    "translation_mag_m": 0.0102,
-    "confidence": 0.797
+    "translation_mag_m": 0.0411,
+    "confidence": 0.446
   }
 ]

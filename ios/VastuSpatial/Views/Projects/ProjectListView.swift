@@ -1,5 +1,12 @@
 import SwiftUI
 
+enum ProjectSortOption: String, CaseIterable {
+    case recent = "Recent"
+    case name = "Name"
+    case status = "Status"
+    case type = "Type"
+}
+
 public struct ProjectListView: View {
     @ObservedObject var apiClient = VastuAPIClient.shared
     @State private var projects: [ProjectDTO] = []
@@ -34,10 +41,54 @@ public struct ProjectListView: View {
     @State private var showQuickAddFloor: Bool = false
     @State private var quickFloorName: String = ""
     
+    // Enhanced Project Selection
+    @State private var searchText: String = ""
+    @State private var selectedProjectType: String = "All"
+    @State private var selectedStatus: String = "All"
+    @State private var sortBy: ProjectSortOption = .recent
+    
     let supportedTypes = [
         "Building", "Mall", "Office", "Warehouse", "Hospital",
         "Hotel", "Campus", "Convention Centre", "Villa", "Apartment Complex"
     ]
+    
+    // Computed properties for filtering and sorting
+    var filteredProjects: [ProjectDTO] {
+        var result = projects
+        
+        // Filter by search text
+        if !searchText.isEmpty {
+            result = result.filter { project in
+                project.name.localizedCaseInsensitiveContains(searchText) ||
+                (project.projectType?.localizedCaseInsensitiveContains(searchText) ?? false) ||
+                (project.location?.localizedCaseInsensitiveContains(searchText) ?? false)
+            }
+        }
+        
+        // Filter by project type
+        if selectedProjectType != "All" {
+            result = result.filter { $0.projectType == selectedProjectType }
+        }
+        
+        // Filter by status
+        if selectedStatus != "All" {
+            result = result.filter { $0.status == selectedStatus }
+        }
+        
+        // Sort
+        switch sortBy {
+        case .recent:
+            result = result.sorted { $0.createdAt > $1.createdAt }
+        case .name:
+            result = result.sorted { $0.name < $1.name }
+        case .status:
+            result = result.sorted { $0.status ?? "" < $1.status ?? "" }
+        case .type:
+            result = result.sorted { $0.projectType ?? "" < $1.projectType ?? "" }
+        }
+        
+        return result
+    }
     
     public init() {}
     
@@ -50,20 +101,28 @@ public struct ProjectListView: View {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: VastuColors.brandBronze))
                         .scaleEffect(1.3)
+                } else if filteredProjects.isEmpty && !searchText.isEmpty {
+                    emptySearchStateView
                 } else if projects.isEmpty {
                     emptyStateView
                 } else {
-                    ScrollView {
-                        LazyVStack(spacing: 14) {
-                            ForEach(projects) { project in
-                                ProjectCardView(project: project) {
-                                    handleStartCapture(for: project)
+                    VStack(spacing: 0) {
+                        // Search and Filter Bar
+                        searchAndFilterBar
+                        
+                        // Project List
+                        ScrollView {
+                            LazyVStack(spacing: 14) {
+                                ForEach(filteredProjects) { project in
+                                    ProjectCardView(project: project) {
+                                        handleStartCapture(for: project)
+                                    }
                                 }
                             }
+                            .padding(.horizontal, 16)
+                            .padding(.top, 16)
+                            .padding(.bottom, 30)
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.top, 16)
-                        .padding(.bottom, 30)
                     }
                 }
             }
@@ -572,5 +631,160 @@ struct ProjectCardView: View {
                 .stroke(VastuColors.brandBorder, lineWidth: 1)
         )
         .shadow(color: Color.black.opacity(0.04), radius: 6, x: 0, y: 2)
+    }
+}
+
+// MARK: - Enhanced Search and Filter Bar
+
+extension ProjectListView {
+    var searchAndFilterBar: some View {
+        VStack(spacing: 12) {
+            // Search Bar
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 14))
+                    .foregroundColor(VastuColors.brandTextMuted)
+                
+                TextField("Search projects...", text: $searchText)
+                    .font(.system(size: 14))
+                    .foregroundColor(VastuColors.brandText)
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
+                
+                if !searchText.isEmpty {
+                    Button(action: { searchText = "" }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(VastuColors.brandTextMuted)
+                    }
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(VastuColors.brandIvory)
+            .cornerRadius(10)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(VastuColors.brandBorder, lineWidth: 1)
+            )
+            
+            // Filter Chips
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    // Project Type Filter
+                    FilterChip(
+                        title: selectedProjectType,
+                        options: ["All"] + supportedTypes,
+                        onSelect: { selectedProjectType = $0 }
+                    )
+                    
+                    // Status Filter
+                    FilterChip(
+                        title: selectedStatus,
+                        options: ["All", "Ready", "Processing", "Completed"],
+                        onSelect: { selectedStatus = $0 }
+                    )
+                    
+                    // Sort Option
+                    Menu {
+                        ForEach(ProjectSortOption.allCases, id: \.self) { option in
+                            Button(action: { sortBy = option }) {
+                                HStack {
+                                    Text(option.rawValue)
+                                    if sortBy == option {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.up.arrow.down")
+                                .font(.system(size: 12))
+                            Text(sortBy.rawValue)
+                                .font(.system(size: 12, weight: .medium))
+                        }
+                        .foregroundColor(VastuColors.brandText)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(VastuColors.brandIvory)
+                        .cornerRadius(8)
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+        .padding(.bottom, 12)
+        .background(VastuColors.brandParchment)
+    }
+    
+    var emptySearchStateView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 48))
+                .foregroundColor(VastuColors.brandTextMuted.opacity(0.5))
+            
+            Text("No projects found")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(VastuColors.brandText)
+            
+            Text("Try adjusting your search or filters")
+                .font(.system(size: 14))
+                .foregroundColor(VastuColors.brandTextMuted)
+                .multilineTextAlignment(.center)
+            
+            Button(action: { 
+                searchText = ""
+                selectedProjectType = "All"
+                selectedStatus = "All"
+            }) {
+                Text("Clear Filters")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(VastuColors.brandBronze)
+                    .cornerRadius(8)
+            }
+        }
+        .padding(32)
+    }
+}
+
+// MARK: - Filter Chip Component
+
+struct FilterChip: View {
+    let title: String
+    let options: [String]
+    let onSelect: (String) -> Void
+    
+    @State private var showMenu = false
+    
+    var body: some View {
+        Menu {
+            ForEach(options, id: \.self) { option in
+                Button(action: { onSelect(option) }) {
+                    HStack {
+                        Text(option)
+                        if title == option {
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Text(title)
+                    .font(.system(size: 12, weight: .medium))
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 10))
+            }
+            .foregroundColor(VastuColors.brandText)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(VastuColors.brandIvory)
+            .cornerRadius(8)
+        }
     }
 }

@@ -245,6 +245,10 @@ public struct ProjectDTO: Codable, Identifiable, Hashable {
     public let total_area_sqft: Double?
     public let cover_image_url: String?
     public let floors: [FloorDTO]?
+
+    public var projectType: String? { project_type }
+    public var createdAt: String { created_at ?? "" }
+    public var location: String? { contact_name }
 }
 
 public struct CreateProjectRequest: Codable {
@@ -412,3 +416,52 @@ public struct OrgMemberDTO: Codable, Identifiable, Hashable {
     public let role: String
     public let user: UserDTO?
 }
+
+// ==========================================
+// POI & Spatial Navigation Models
+// ==========================================
+
+public struct POIDTO: Codable, Identifiable {
+    public let id: String
+    public let project_id: String
+    public let name: String
+    public let category: String
+    public let x: Double
+    public let y: Double
+    public let z: Double
+    public let color: String?
+    public let description: String?
+    public let created_at: String?
+}
+
+public struct CreatePOIRequest: Codable {
+    public let name: String
+    public let category: String
+    public let x: Double
+    public let y: Double
+    public let z: Double
+    public let color: String?
+    public let description: String?
+    
+    public init(name: String, category: String = "Custom", x: Double, y: Double, z: Double, color: String? = nil, description: String? = nil) {
+        self.name = name
+        self.category = category
+        self.x = x
+        self.y = y
+        self.z = z
+        self.color = color
+        self.description = description
+    }
+}
+
+public struct JobDTO: Codable, Identifiable {
+    public let id: String
+    public let capture_id: String?
+    public let floor_id: String?
+    public let status: String
+    public let progress_percent: Double
+    public let stage: String?
+    public let error_message: String?
+    public let created_at: String?
+}
+

@@ -18,6 +18,9 @@ import { SpatialViewerPage } from './pages/viewer/SpatialViewerPage';
 import { ProjectViewingPage } from './pages/viewer/ProjectViewingPage';
 import { ARNavigationPage } from './pages/viewer/ARNavigationPage';
 import { GuidedCaptureStudioPage } from './pages/capture/GuidedCaptureStudioPage';
+import { CapturesPage } from './pages/capture/CapturesPage';
+import { AssetsPage } from './pages/assets/AssetsPage';
+
 
 // Root gatekeeper: absolutely no marketing home page between opening the app and authentication
 const RootResolver: React.FC = () => {
@@ -121,6 +124,38 @@ export const App: React.FC = () => {
             }
           />
           <Route
+            path="/captures"
+            element={
+              <ProtectedRoute>
+                <CapturesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/assets"
+            element={
+              <ProtectedRoute>
+                <AssetsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/activity"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/search"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/projects/create"
             element={
               <ProtectedRoute>
@@ -149,6 +184,14 @@ export const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <GuidedCaptureStudioPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/team"
+            element={
+              <ProtectedRoute>
+                <OrganizationMembersPage />
               </ProtectedRoute>
             }
           />

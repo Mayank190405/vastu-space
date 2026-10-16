@@ -15,9 +15,27 @@ import {
   CreateFloorInput,
   UpdateFloorInput,
   AssignProjectMemberInput,
+  Capture,
+  CreateCaptureRequest,
 } from '../types';
 
-const API_BASE = '/api/v1';
+const getApiBaseUrl = (): string => {
+  const metaEnv = (import.meta as any).env;
+  if (metaEnv?.VITE_API_BASE_URL) {
+    return metaEnv.VITE_API_BASE_URL;
+  }
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    const port = window.location.port;
+    if (port !== '8080') {
+      const protocol = window.location.protocol || 'http:';
+      return `${protocol}//${host}:8080/api/v1`;
+    }
+  }
+  return '/api/v1';
+};
+
+const API_BASE = getApiBaseUrl();
 
 class ApiService {
   private getAuthHeader(): Record<string, string> {
@@ -37,10 +55,19 @@ class ApiService {
     const authHeaders = this.getAuthHeader();
     Object.assign(headers, authHeaders);
 
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-      ...options,
-      headers,
-    });
+    const baseUrl = getApiBaseUrl();
+    const url = `${baseUrl}${endpoint}`;
+
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        ...options,
+        headers,
+      });
+    } catch (netErr: any) {
+      console.error(`[VĀSTU API ERROR] Network/Connection failure to ${url}:`, netErr);
+      throw new Error(`Cannot connect to backend server at ${baseUrl}. Please ensure the Go Control Plane is running on port 8080.`);
+    }
 
     const data = await response.json().catch(() => ({}));
 
@@ -92,7 +119,7 @@ class ApiService {
   // --- AUTH ENDPOINTS ---
 
   async sendOTP(email: string, purpose: 'LOGIN' | 'ORG_SIGNUP' | 'EMPLOYEE_SIGNUP' = 'LOGIN') {
-    return this.request<{ email: string; purpose: string }>('/auth/otp/send', {
+    return this.request<{ email: string; purpose: string; debug_otp?: string }>('/auth/otp/send', {
       method: 'POST',
       body: JSON.stringify({ email, purpose }),
     });
@@ -102,6 +129,7 @@ class ApiService {
     return this.request<{
       user?: User;
       tokens?: AuthTokens;
+      token?: string;
       memberships?: OrganizationMember[];
     }>('/auth/otp/verify', {
       method: 'POST',
@@ -112,8 +140,9 @@ class ApiService {
   async login(email: string, password?: string) {
     return this.request<{
       user: User;
-      tokens: AuthTokens;
-      memberships: OrganizationMember[];
+      tokens?: AuthTokens;
+      token?: string;
+      memberships?: OrganizationMember[];
     }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
@@ -123,8 +152,9 @@ class ApiService {
   async googleAuth(idToken: string) {
     return this.request<{
       user: User;
-      tokens: AuthTokens;
-      memberships: OrganizationMember[];
+      tokens?: AuthTokens;
+      token?: string;
+      memberships?: OrganizationMember[];
     }>('/auth/google', {
       method: 'POST',
       body: JSON.stringify({ id_token: idToken }),
@@ -295,7 +325,8 @@ class ApiService {
   }
 
   async listDocuments() {
-    return this.request<OrganizationDocument[]>('/organizations/me/documents');
+    const res = await this.request<OrganizationDocument[]>('/organizations/me/documents');
+    return Array.isArray(res) ? res : [];
   }
 
   async deleteDocument(id: string) {
@@ -305,7 +336,8 @@ class ApiService {
   }
 
   async listMembers() {
-    return this.request<OrganizationMember[]>('/organizations/me/members');
+    const res = await this.request<OrganizationMember[]>('/organizations/me/members');
+    return Array.isArray(res) ? res : [];
   }
 
   async createInvite() {
@@ -321,7 +353,8 @@ class ApiService {
   }
 
   async listJoinRequests() {
-    return this.request<OrganizationJoinRequest[]>('/organizations/me/join-requests');
+    const res = await this.request<OrganizationJoinRequest[]>('/organizations/me/join-requests');
+    return Array.isArray(res) ? res : [];
   }
 
   async reviewJoinRequest(requestId: string, status: 'APPROVED' | 'REJECTED', assignedRole: string) {
@@ -346,11 +379,13 @@ class ApiService {
   // --- PROJECT CREATION & MANAGEMENT ENDPOINTS ---
 
   async getProjectTypes(): Promise<ProjectTypeDefinition[]> {
-    return this.request<ProjectTypeDefinition[]>('/projects/types');
+    const res = await this.request<ProjectTypeDefinition[]>('/projects/types');
+    return Array.isArray(res) ? res : [];
   }
 
   async listProjects(): Promise<Project[]> {
-    return this.request<Project[]>('/projects');
+    const res = await this.request<Project[]>('/projects');
+    return Array.isArray(res) ? res : [];
   }
 
   async getProject(id: string): Promise<Project> {
@@ -400,7 +435,8 @@ class ApiService {
   // --- FLOORS & SECTIONS ---
 
   async listFloors(projectId: string): Promise<ProjectFloor[]> {
-    return this.request<ProjectFloor[]>(`/projects/${projectId}/floors`);
+    const res = await this.request<ProjectFloor[]>(`/projects/${projectId}/floors`);
+    return Array.isArray(res) ? res : [];
   }
 
   async addFloor(projectId: string, input: CreateFloorInput): Promise<ProjectFloor> {
@@ -483,6 +519,169 @@ class ApiService {
   async getProjectViewingLink(projectId: string): Promise<{ viewing_url: string; share_token?: string }> {
     return this.request<{ viewing_url: string; share_token?: string }>(`/projects/${projectId}/view-link`);
   }
+
+  // --- SPATIAL ASSETS & POIs ---
+
+  async listPOIs(projectId: string): Promise<any[]> {
+    return this.request<any[]>(`/projects/${projectId}/pois`);
+  }
+
+  async listAllAssets(projects: { id: string; name: string }[]): Promise<any[]> {
+    if (!projects || projects.length === 0) return [];
+    const results = await Promise.allSettled(
+      projects.map(async (proj) => {
+        const pois = await this.listPOIs(proj.id);
+        return (pois || []).map((p: any) => ({
+          ...p,
+          project_name: proj.name,
+        }));
+      })
+    );
+
+    const allAssets: any[] = [];
+    for (const res of results) {
+      if (res.status === 'fulfilled' && Array.isArray(res.value)) {
+        allAssets.push(...res.value);
+      }
+    }
+    return allAssets;
+  }
+
+  async createPOI(input: {
+    project_id: string;
+    floor_id?: string;
+    name: string;
+    category?: string;
+    position: [number, number, number];
+    color?: string;
+    description?: string;
+  }): Promise<any> {
+    const payload = {
+      project_id: input.project_id,
+      level_id: input.floor_id,
+      title: input.name,
+      category: input.category || 'asset',
+      pos_x: input.position?.[0] || 0,
+      pos_y: input.position?.[1] || 0,
+      pos_z: input.position?.[2] || 0,
+      description: input.description,
+      color_hex: input.color || '#C5A059',
+    };
+    return this.request<any>('/pois', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async createAsset(input: {
+    project_id: string;
+    level_id?: string;
+    title: string;
+    category: string;
+    pos_x?: number;
+    pos_y?: number;
+    pos_z?: number;
+    description?: string;
+    custom_metadata?: Record<string, any>;
+  }): Promise<any> {
+    const payload = {
+      project_id: input.project_id,
+      level_id: input.level_id,
+      title: input.title,
+      category: input.category,
+      pos_x: input.pos_x ?? 0,
+      pos_y: input.pos_y ?? 0,
+      pos_z: input.pos_z ?? 0,
+      description: input.description,
+      custom_metadata: input.custom_metadata || {},
+    };
+    return this.request<any>('/pois', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async updateAsset(
+    id: string,
+    input: {
+      title?: string;
+      description?: string;
+      category?: string;
+      custom_metadata?: Record<string, any>;
+    }
+  ): Promise<any> {
+    return this.request<any>(`/pois/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(input),
+    });
+  }
+
+  async deletePOI(id: string): Promise<void> {
+    return this.request<void>(`/pois/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+
+  // --- PROCESSING JOBS ---
+
+  async listJobs(projectId: string): Promise<any[]> {
+    return this.request<any[]>(`/jobs/project/${projectId}`);
+  }
+
+  async getJob(id: string): Promise<any> {
+    return this.request<any>(`/jobs/${id}`);
+  }
+
+  // --- SPATIAL MODELS ---
+
+  async getActiveModel(projectId: string): Promise<any> {
+    return this.request<any>(`/models/project/${projectId}/active`);
+  }
+
+  // --- CAPTURES SERVICE ---
+
+  async listCaptures(projectId: string): Promise<Capture[]> {
+    const res = await this.request<Capture[]>(`/captures/project/${projectId}`);
+    return Array.isArray(res) ? res : [];
+  }
+
+  async listAllCaptures(projects: Project[]): Promise<Capture[]> {
+    let all: Capture[] = [];
+    await Promise.all(
+      projects.map(async (p) => {
+        try {
+          const list = await this.listCaptures(p.id);
+          if (Array.isArray(list)) {
+            const mapped = list.map((c) => ({ ...c, project_name: p.name }));
+            all = [...all, ...mapped];
+          }
+        } catch {
+          // ignore error for empty projects
+        }
+      })
+    );
+    return all;
+  }
+
+  async getCapture(id: string): Promise<Capture> {
+    return this.request<Capture>(`/captures/${id}`);
+  }
+
+  async createCaptureSession(input: CreateCaptureRequest): Promise<Capture> {
+    return this.request<Capture>('/captures', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  }
+
+  async updateCaptureStatus(id: string, status: string): Promise<Capture> {
+    return this.request<Capture>(`/captures/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
+    });
+  }
 }
 
 export const api = new ApiService();
+

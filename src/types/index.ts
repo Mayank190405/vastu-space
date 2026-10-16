@@ -288,3 +288,97 @@ export interface ProjectCreationFullInput {
   members: AssignProjectMemberInput[];
 }
 
+export interface Capture {
+  id: string;
+  project_id: string;
+  structure_id?: string;
+  level_id?: string;
+  section_id?: string;
+  operator_id?: string;
+  device_model?: string;
+  device_os?: string;
+  device_app_version?: string;
+  has_lidar?: boolean;
+  capture_mode?: string;
+  duration_seconds?: number;
+  frames_count?: number;
+  file_size_bytes?: number;
+  trajectory_length_meters?: number;
+  quality_score?: number;
+  blur_score?: number;
+  lighting_score?: number;
+  status: 'recording' | 'uploaded' | 'validating' | 'processing' | 'completed' | 'failed' | 'DRAFT' | 'UPLOADING' | 'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | string;
+  manifest_url?: string;
+  video_url?: string;
+  imu_url?: string;
+  lidar_url?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  project_name?: string;
+  space_name?: string;
+}
+
+export interface CreateCaptureRequest {
+  project_id: string;
+  level_id?: string;
+  device_model?: string;
+  has_lidar?: boolean;
+  capture_mode?: string;
+  notes?: string;
+}
+
+export interface SpatialAsset {
+  id: string;
+  project_id: string;
+  level_id?: string;
+  section_id?: string;
+  title: string;
+  description?: string;
+  category: string;
+  pos_x: number;
+  pos_y: number;
+  pos_z: number;
+  normal_x?: number;
+  normal_y?: number;
+  normal_z?: number;
+  icon_key?: string;
+  color_hex?: string;
+  tags?: string[];
+  custom_metadata?: {
+    status?: 'ACTIVE' | 'MAINTENANCE' | 'MISSING' | 'ARCHIVED' | 'DAMAGED' | 'INACTIVE' | string;
+    source?: 'DETECTED' | 'MANUAL' | 'IMPORTED' | string;
+    manufacturer?: string;
+    model?: string;
+    serial_number?: string;
+    dimensions?: { width?: number; length?: number; height?: number };
+    space_name?: string;
+    floor_name?: string;
+    building_name?: string;
+    confidence?: number;
+    notes?: string;
+    capture_id?: string;
+    documents?: { id: string; name: string; type: string; url?: string }[];
+    photos?: { id: string; url: string; caption?: string }[];
+  };
+  attachments?: any[];
+  camera_viewpoint?: any;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+  project_name?: string;
+}
+
+export interface CreateAssetInput {
+  project_id: string;
+  level_id?: string;
+  title: string;
+  category: string;
+  pos_x?: number;
+  pos_y?: number;
+  pos_z?: number;
+  description?: string;
+  custom_metadata?: Record<string, any>;
+}
+
+

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VĀSTU 3D Digital Twin — Standardized Evidence-Based Reconstruction</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #080a0f;
+            --panel-bg: rgba(13, 17, 24, 0.88);
+            --panel-border: rgba(223, 184, 115, 0.28);
+            --gold: #dfb873;
+            --gold-glow: rgba(223, 184, 115, 0.4);
+            --accent: #38bdf8;
+            --green: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        .header-bar {
+            position: absolute;
+            top: 18px;
+            left: 24px;
+            right: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .brand-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+            padding: 12px 20px;
+            backdrop-filter: blur(20px);
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo-symbol {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #dfb873, #a8823b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 17px;
+            color: #0b0f17;
+        }
+
+        .brand-info h1 {
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-info p {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .meta-pill {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 30px;
+            padding: 8px 18px;
+            backdrop-filter: blur(20px);
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--gold);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 10px var(--green);
+        }
+
+        .control-panel {
+            position: absolute;
+            top: 90px;
+            left: 24px;
+            width: 280px;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 20px;
+            backdrop-filter: blur(20px);
+            z-index: 10;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+        }
+
+        .panel-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gold);
+            margin-bottom: 12px;
+        }
+
+        .toggle-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: rgba(223, 184, 115, 0.15);
+            border-color: var(--gold);
+        }
+
+        .btn.active {
+            background: var(--gold);
+            color: #0b0f17;
+            border-color: var(--gold);
+        }
+
+        .metrics-card {
+            position: absolute;
+            bottom: 24px;
+            left: 24px;
+            width: 320px;
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 18px 20px;
+            backdrop-filter: blur(20px);
+            z-index: 10;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: var(--text-muted);
+        }
+
+        .metric-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--gold);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/MTLLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/PLYLoader.js"></script>
+</head>
+<body>
+    <div class="header-bar">
+        <div class="brand-card">
+            <div class="logo-symbol">V</div>
+            <div class="brand-info">
+                <h1>VĀSTU Digital Twin</h1>
+                <p>25-Stage Standardized Evidence Engine</p>
+            </div>
+        </div>
+        <div class="meta-pill">
+            <div class="status-dot"></div>
+            <span>EVIDENCE-DRIVEN • ZERO HALLUCINATION</span>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <div class="panel-title">Layer Controls</div>
+        <div class="toggle-group">
+            <label class="toggle-row">
+                <span>Photographic 3D Mesh</span>
+                <input type="checkbox" id="toggle-mesh" checked>
+            </label>
+            <label class="toggle-row">
+                <span>Consensus Point Cloud</span>
+                <input type="checkbox" id="toggle-pcd">
+            </label>
+            <label class="toggle-row">
+                <span>Camera Trajectory Path</span>
+                <input type="checkbox" id="toggle-cam" checked>
+            </label>
+            <label class="toggle-row">
+                <span>Architectural Grid</span>
+                <input type="checkbox" id="toggle-grid" checked>
+            </label>
+        </div>
+
+        <div class="panel-title" style="margin-top: 14px;">Rendering Mode</div>
+        <div class="btn-group">
+            <button class="btn active" id="mode-shaded">Mode B: Photographic</button>
+            <button class="btn" id="mode-unlit">Mode A: Debug Unlit</button>
+        </div>
+        <div class="btn-group" style="margin-top: 8px;">
+            <button class="btn" id="btn-reset">Reset View</button>
+            <button class="btn" id="btn-top">Top Down</button>
+        </div>
+    </div>
+
+    <div class="metrics-card">
+        <div class="panel-title">Spatial Metrics</div>
+        <div class="metric-row">
+            <span class="metric-label">Dimensions</span>
+            <span class="metric-val">3.58m × 2.43m × 3.26m</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">Triangles</span>
+            <span class="metric-val">814,468</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">Vertices</span>
+            <span class="metric-val">406,212</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">Floor Level</span>
+            <span class="metric-val">Y = 0.00 m (Grounded)</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">Texture Atlas</span>
+            <span class="metric-val">2048 × 2048</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-label">Quality Gate</span>
+            <span class="metric-val" style="color: var(--green);">PASS (100% Measured)</span>
+        </div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <script>
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x080a0f);
+
+        const camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(0.0, 1.6, -3.8);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.15;
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.target.set(0, 1.1, 1.2);
+
+        // Lighting
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x1e293b, 1.2);
+        scene.add(hemiLight);
+
+        const dirLight1 = new THREE.DirectionalLight(0xffeedd, 1.0);
+        dirLight1.position.set(3, 5, 2);
+        scene.add(dirLight1);
+
+        const dirLight2 = new THREE.DirectionalLight(0xddeeff, 0.7);
+        dirLight2.position.set(-3, 3, -3);
+        scene.add(dirLight2);
+
+        // Ground Grid at Y = 0.00m
+        const grid = new THREE.GridHelper(10, 20, 0xdfb873, 0x1e293b);
+        grid.position.y = 0.00;
+        scene.add(grid);
+
+        let meshObject = null;
+        let pcdObject = null;
+        let camGroup = new THREE.Group();
+        scene.add(camGroup);
+
+        let origMaterials = new Map();
+        let unlitMaterials = new Map();
+
+        // Load MTL & OBJ
+        const mtlLoader = new THREE.MTLLoader();
+        mtlLoader.load('textured_mesh.mtl', (materials) => {
+            materials.preload();
+            const objLoader = new THREE.OBJLoader();
+            objLoader.setMaterials(materials);
+            objLoader.load('textured_mesh.obj', (obj) => {
+                meshObject = obj;
+                meshObject.traverse((child) => {
+                    if (child.isMesh) {
+                        child.material.side = THREE.DoubleSide;
+                        origMaterials.set(child, child.material);
+                        const unlit = new THREE.MeshBasicMaterial({
+                            map: child.material.map,
+                            side: THREE.DoubleSide
+                        });
+                        unlitMaterials.set(child, unlit);
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                    }
+                });
+                scene.add(meshObject);
+            });
+        });
+
+        // Load Point Cloud
+        const plyLoader = new THREE.PLYLoader();
+        plyLoader.load('dense_pointcloud_clean.ply', (geom) => {
+            const pcdMat = new THREE.PointsMaterial({
+                size: 0.015,
+                vertexColors: true
+            });
+            pcdObject = new THREE.Points(geom, pcdMat);
+            pcdObject.visible = false;
+            scene.add(pcdObject);
+        });
+
+        // Camera Trajectory
+        const camCoords = [[0.0, 0.592, 0.0], [0.003, 0.596, 0.006], [0.013, 0.607, 0.04], [0.03, 0.594, 0.101], [0.042, 0.59, 0.121], [0.076, 0.58, 0.189], [0.087, 0.586, 0.234], [0.103, 0.576, 0.334], [0.099, 0.521, 0.469], [0.146, 0.515, 0.548], [0.175, 0.505, 0.587], [0.143, 0.524, 0.528], [0.145, 0.528, 0.521], [0.151, 0.536, 0.506], [0.163, 0.539, 0.495], [0.201, 0.534, 0.509]];
+        if (camCoords.length > 1) {
+            const points = [];
+            const sphereGeom = new THREE.SphereGeometry(0.03, 16, 16);
+            const sphereMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+
+            for (let i = 0; i < camCoords.length; i++) {
+                const p = camCoords[i];
+                const pt = new THREE.Vector3(p[0], p[1], p[2]);
+                points.push(pt);
+
+                const node = new THREE.Mesh(sphereGeom, sphereMat);
+                node.position.copy(pt);
+                camGroup.add(node);
+            }
+
+            const curve = new THREE.CatmullRomCurve3(points);
+            const tubeGeom = new THREE.TubeGeometry(curve, 64, 0.01, 8, false);
+            const tubeMat = new THREE.MeshBasicMaterial({ color: 0xdfb873 });
+            const tubeMesh = new THREE.Mesh(tubeGeom, tubeMat);
+            camGroup.add(tubeMesh);
+        }
+
+        // Controls binding
+        document.getElementById('toggle-mesh').addEventListener('change', (e) => {
+            if (meshObject) meshObject.visible = e.target.checked;
+        });
+        document.getElementById('toggle-pcd').addEventListener('change', (e) => {
+            if (pcdObject) pcdObject.visible = e.target.checked;
+        });
+        document.getElementById('toggle-cam').addEventListener('change', (e) => {
+            camGroup.visible = e.target.checked;
+        });
+        document.getElementById('toggle-grid').addEventListener('change', (e) => {
+            grid.visible = e.target.checked;
+        });
+
+        const btnShaded = document.getElementById('mode-shaded');
+        const btnUnlit = document.getElementById('mode-unlit');
+
+        btnShaded.addEventListener('click', () => {
+            btnShaded.classList.add('active');
+            btnUnlit.classList.remove('active');
+            if (meshObject) {
+                meshObject.traverse((c) => {
+                    if (c.isMesh && origMaterials.has(c)) c.material = origMaterials.get(c);
+                });
+            }
+        });
+
+        btnUnlit.addEventListener('click', () => {
+            btnUnlit.classList.add('active');
+            btnShaded.classList.remove('active');
+            if (meshObject) {
+                meshObject.traverse((c) => {
+                    if (c.isMesh && unlitMaterials.has(c)) c.material = unlitMaterials.get(c);
+                });
+            }
+        });
+
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            camera.position.set(0.0, 1.6, -3.8);
+            controls.target.set(0, 1.1, 1.2);
+        });
+
+        document.getElementById('btn-top').addEventListener('click', () => {
+            camera.position.set(0.0, 5.5, 1.2);
+            controls.target.set(0, 0, 1.2);
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>

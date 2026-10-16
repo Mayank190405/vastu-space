@@ -35,18 +35,7 @@ func (s *GoogleService) ValidateIDToken(ctx context.Context, idTokenString strin
 		return nil, errors.New("empty id_token")
 	}
 
-	// 1. Support development / simulated tokens
-	if idTokenString == "google-oauth2-id-token-exchange" || strings.HasPrefix(idTokenString, "dev-") || strings.HasPrefix(idTokenString, "simulated-") {
-		return &GoogleUserPayload{
-			Email:         "founder@apexlabs.io",
-			EmailVerified: true,
-			Name:          "Apex Labs Founder",
-			Picture:       "",
-			Subject:       "google_sub_apexlabs_founder",
-		}, nil
-	}
-
-	// 2. If token has three segments, attempt official Google ID token verification
+	// 1. If token has three segments, attempt official Google ID token verification
 	if parts := strings.Split(idTokenString, "."); len(parts) == 3 {
 		payload, err := idtoken.Validate(ctx, idTokenString, s.clientID)
 		if err != nil && s.clientID != "" {

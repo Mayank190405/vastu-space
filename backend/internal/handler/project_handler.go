@@ -923,7 +923,7 @@ func (h *ProjectHandler) GetRender(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	project, err := h.projectService.GetProject(r.Context(), projectID)
+	_, err = h.projectService.GetProject(r.Context(), projectID)
 	if err != nil {
 		JSONError(w, http.StatusNotFound, "project not found")
 		return
@@ -931,31 +931,14 @@ func (h *ProjectHandler) GetRender(w http.ResponseWriter, r *http.Request) {
 
 	summaryPath := filepath.Join(h.uploadDir, "renders", projectID.String(), "digital_twin_summary.json")
 	var summaryData map[string]interface{}
-	if data, err := os.ReadFile(summaryPath); err == nil {
-		_ = json.Unmarshal(data, &summaryData)
-	} else {
-		summaryData = map[string]interface{}{
-			"version": "v3.0.0-permanent-escalation",
-			"project_id": projectID.String(),
-			"project_name": project.Name,
-			"quality_status": "PASS",
-			"quality_score": 0.985,
-			"stages_executed": 25,
-			"statistics": map[string]interface{}{
-				"mesh_vertices": 17000,
-				"mesh_triangles": 32666,
-				"room_dimensions": "1.47m × 2.39m × 3.08m",
-				"texture_resolution": "2048 × 2048",
-			},
-			"assets": map[string]interface{}{
-				"obj_mesh": fmt.Sprintf("/renders/%s/textured_mesh.obj", projectID.String()),
-				"mtl_material": fmt.Sprintf("/renders/%s/textured_mesh.mtl", projectID.String()),
-				"texture_atlas": fmt.Sprintf("/renders/%s/texture_atlas.jpg", projectID.String()),
-				"ply_mesh": fmt.Sprintf("/renders/%s/mesh.ply", projectID.String()),
-				"point_cloud": fmt.Sprintf("/renders/%s/dense_pointcloud_clean.ply", projectID.String()),
-				"viewing_link": fmt.Sprintf("/view/%s", projectID.String()),
-			},
-		}
+	data, err := os.ReadFile(summaryPath)
+	if err != nil {
+		JSONError(w, http.StatusNotFound, "reconstruction digital twin render not found for this project")
+		return
+	}
+	if err := json.Unmarshal(data, &summaryData); err != nil {
+		JSONError(w, http.StatusInternalServerError, "failed to parse digital twin summary")
+		return
 	}
 
 	JSONSuccess(w, http.StatusOK, "Digital twin render retrieved", summaryData)

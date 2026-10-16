@@ -36,7 +36,8 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { FirstPersonRoamingController, RoamingState } from './roamingController';
-import { NavigationEngine, POI, DEFAULT_POIS, NavigationRoute } from './navigationEngine';
+import { NavigationEngine, POI, NavigationRoute } from './navigationEngine';
+import { api } from '../../services/api';
 
 export interface Spatial3DViewerProps {
   projectId?: string;
@@ -56,33 +57,6 @@ interface StageStatus {
   output: string;
 }
 
-const PIPELINE_STAGES: StageStatus[] = [
-  { id: '00_capture', index: '00', name: 'Raw Capture & Sensors', status: 'VERIFIED', duration: '1.2s', output: 'raw_video.mov, imu.csv' },
-  { id: '01_keyframes', index: '01', name: 'Keyframe Selection & Deblur', status: 'VERIFIED', duration: '2.4s', output: '48 keyframes' },
-  { id: '02_calibration', index: '02', name: 'Sensor & Metric Calibration', status: 'VERIFIED', duration: '0.8s', output: 'camera_calibration.json' },
-  { id: '03_features', index: '03', name: 'SIFT/SuperPoint Features', status: 'VERIFIED', duration: '3.1s', output: '14,200 feature tracks' },
-  { id: '04_camera_poses', index: '04', name: '3D-2D PnP RANSAC Poses', status: 'VERIFIED', duration: '4.5s', output: 'camera_poses.json' },
-  { id: '05_depth', index: '05', name: 'Metric Depth Estimation', status: 'VERIFIED', duration: '6.2s', output: 'depth_statistics.json' },
-  { id: '06_depth_alignment', index: '06', name: 'Multi-View Depth Alignment', status: 'VERIFIED', duration: '2.9s', output: 'depth_alignment.json' },
-  { id: '07_two_view_validation', index: '07', name: 'Epipolar & Parallax Gate', status: 'VERIFIED', duration: '1.5s', output: 'two_view_validation.json' },
-  { id: '08_local_reconstruction', index: '08', name: 'Local Bundle Adjustment', status: 'VERIFIED', duration: '3.8s', output: 'local_reconstruction.json' },
-  { id: '09_global_registration', index: '09', name: 'Global Metric Alignment', status: 'VERIFIED', duration: '2.1s', output: 'global_registration.json' },
-  { id: '10_dense_pointcloud', index: '10', name: 'Multi-View Consensus Cloud', status: 'VERIFIED', duration: '8.4s', output: 'dense_pointcloud_clean.ply' },
-  { id: '11_architecture', index: '11', name: 'Structural Planes & Alignment', status: 'VERIFIED', duration: '1.9s', output: 'architectural_planes.json' },
-  { id: '12_openings', index: '12', name: 'Door & Window Extraction', status: 'VERIFIED', duration: '1.1s', output: 'openings_report.json' },
-  { id: '13_normals', index: '13', name: 'Consistent Surface Normals', status: 'VERIFIED', duration: '2.2s', output: 'normals_report.json' },
-  { id: '14_mesh', index: '14', name: 'Screened Poisson Triangle Mesh', status: 'VERIFIED', duration: '7.6s', output: 'mesh.ply (32.6k tris)' },
-  { id: '15_mesh_validation', index: '15', name: 'Watertight Metric Gate', status: 'VERIFIED', duration: '1.3s', output: 'mesh_validation.json' },
-  { id: '16_uv', index: '16', name: 'Orthogonal UV Parameterization', status: 'VERIFIED', duration: '3.4s', output: 'uv_validation.json' },
-  { id: '17_texture', index: '17', name: 'Visibility-Aware Atlas Texture', status: 'VERIFIED', duration: '5.9s', output: 'texture_atlas.jpg (2048x2048)' },
-  { id: '18_texture_validation', index: '18', name: 'Photometric Consistency Gate', status: 'VERIFIED', duration: '1.4s', output: 'texture_validation.json' },
-  { id: '19_mipmaps', index: '19', name: 'Multiscale Texture Mipmaps', status: 'VERIFIED', duration: '0.9s', output: 'mipmap_report.json' },
-  { id: '20_viewer', index: '20', name: 'WebGL Spatial Twin Bundle', status: 'VERIFIED', duration: '0.7s', output: 'index.html (Three.js)' },
-  { id: '21_reprojection', index: '21', name: 'Full Metric Reprojection Audit', status: 'VERIFIED', duration: '1.8s', output: 'reprojection_report.json' },
-  { id: '22_quality', index: '22', name: 'Precision Gate Assessment', status: 'PASS', duration: '0.6s', output: 'quality_gate.json (PASS)' },
-  { id: '23_recovery', index: '23', name: 'Active Self-Healing Log', status: 'VERIFIED', duration: '0.3s', output: 'recovery_log.json' },
-  { id: '24_provenance', index: '24', name: 'Cryptographic Evidence Manifest', status: 'VERIFIED', duration: '0.5s', output: 'provenance.json' }
-];
 
 export const Spatial3DViewer: React.FC<Spatial3DViewerProps> = ({
   projectId,
@@ -136,7 +110,7 @@ export const Spatial3DViewer: React.FC<Spatial3DViewerProps> = ({
   });
 
   // POI & Navigation State
-  const [pois, setPOIs] = useState<POI[]>([...DEFAULT_POIS]);
+  const [pois, setPOIs] = useState<POI[]>([]);
   const [selectedPOI, setSelectedPOI] = useState<POI | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -148,15 +122,18 @@ export const Spatial3DViewer: React.FC<Spatial3DViewerProps> = ({
   const [customPOIName, setCustomPOIName] = useState('');
   const [customPOICategory, setCustomPOICategory] = useState<POI['category']>('Custom');
 
+  // Pipeline Execution Stages State
+  const [pipelineStages, setPipelineStages] = useState<StageStatus[]>([]);
+
   // Spatial Metrics HUD data
   const [metrics, setMetrics] = useState({
-    dimensions: '1.47m × 2.39m × 3.08m',
-    triangles: 32666,
-    vertices: 17000,
+    dimensions: 'Measuring...',
+    triangles: 0,
+    vertices: 0,
     floorLevel: 'Y = 0.00m (Grounded)',
-    textureResolution: '2048 × 2048',
-    qualityStatus: 'PASS (100% Measured)',
-    qualityScore: '0.985'
+    textureResolution: 'N/A',
+    qualityStatus: 'Pending Verification',
+    qualityScore: 'N/A'
   });
 
   // Three.js References
@@ -178,25 +155,58 @@ export const Spatial3DViewer: React.FC<Spatial3DViewerProps> = ({
   const wireMaterialsRef = useRef<Map<THREE.Mesh, THREE.Material>>(new Map());
   const metrologyMaterialsRef = useRef<Map<THREE.Mesh, THREE.Material>>(new Map());
 
-  // Load summary metrics if available
+  // Load summary metrics & pipeline audit stages if available
   useEffect(() => {
     fetch(`${basePath}/digital_twin_summary.json`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data && data.statistics) {
-          setMetrics((prev) => ({
-            ...prev,
-            dimensions: data.statistics.room_dimensions || prev.dimensions,
-            triangles: data.statistics.mesh_triangles || prev.triangles,
-            vertices: data.statistics.mesh_vertices || prev.vertices,
-            textureResolution: data.statistics.texture_resolution || prev.textureResolution,
-            qualityScore: data.quality_score ? data.quality_score.toString() : prev.qualityScore,
-            qualityStatus: data.quality_status ? `${data.quality_status} (100% Measured)` : prev.qualityStatus,
-          }));
+        if (data) {
+          if (data.statistics) {
+            setMetrics((prev) => ({
+              ...prev,
+              dimensions: data.statistics.room_dimensions || prev.dimensions,
+              triangles: data.statistics.mesh_triangles || prev.triangles,
+              vertices: data.statistics.mesh_vertices || prev.vertices,
+              textureResolution: data.statistics.texture_resolution || prev.textureResolution,
+              qualityScore: data.quality_score ? data.quality_score.toString() : prev.qualityScore,
+              qualityStatus: data.quality_status ? `${data.quality_status} (100% Measured)` : prev.qualityStatus,
+            }));
+          }
+          if (Array.isArray(data.stages)) {
+            setPipelineStages(data.stages);
+          } else if (Array.isArray(data.pipeline_stages)) {
+            setPipelineStages(data.pipeline_stages);
+          }
         }
       })
       .catch(() => {});
   }, [basePath]);
+
+  // Load real project POIs from backend API
+  useEffect(() => {
+    if (projectId) {
+      api.listPOIs(projectId)
+        .then((data) => {
+          if (Array.isArray(data)) {
+            const loadedPOIs: POI[] = data.map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              category: p.category || 'Custom',
+              position: [p.x ?? p.position?.[0] ?? 0, p.y ?? p.position?.[1] ?? 0, p.z ?? p.position?.[2] ?? 0],
+              color: p.color || '#3b82f6',
+              description: p.description
+            }));
+            setPOIs(loadedPOIs);
+            if (navEngineRef.current) {
+              navEngineRef.current.setPOIs(loadedPOIs);
+            }
+          }
+        })
+        .catch((err) => {
+          console.warn('Failed to load project POIs:', err);
+        });
+    }
+  }, [projectId]);
 
   // Main Three.js Scene & Engine Initialization
   useEffect(() => {
@@ -248,9 +258,8 @@ export const Spatial3DViewer: React.FC<Spatial3DViewerProps> = ({
     roamingControllerRef.current = roamingCtrl;
 
     // 6. Navigation Engine (Round 2 Requirement)
-    const navEngine = new NavigationEngine(scene);
+    const navEngine = new NavigationEngine(scene, pois);
     navEngineRef.current = navEngine;
-    setPOIs(navEngine.getPOIs());
 
     // 7. Lighting Setup (Balanced photographic daylight)
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0x1e293b, 1.2);
@@ -415,9 +424,23 @@ export const Spatial3DViewer: React.FC<Spatial3DViewerProps> = ({
               controlsRef.current.update();
             }
 
+            let triCount = 0;
+            let vertCount = 0;
+            obj.traverse((child) => {
+              if ((child as THREE.Mesh).isMesh) {
+                const geom = (child as THREE.Mesh).geometry;
+                if (geom) {
+                  vertCount += geom.attributes.position ? geom.attributes.position.count : 0;
+                  triCount += geom.index ? geom.index.count / 3 : (geom.attributes.position ? geom.attributes.position.count / 3 : 0);
+                }
+              }
+            });
+
             setMetrics((prev) => ({
               ...prev,
-              dimensions: `${size.x.toFixed(2)}m × ${size.y.toFixed(2)}m × ${size.z.toFixed(2)}m`
+              dimensions: `${size.x.toFixed(2)}m × ${size.y.toFixed(2)}m × ${size.z.toFixed(2)}m`,
+              triangles: prev.triangles > 0 ? prev.triangles : Math.round(triCount),
+              vertices: prev.vertices > 0 ? prev.vertices : Math.round(vertCount)
             }));
 
             setLoadingPercent(75);
@@ -702,6 +725,19 @@ export const Spatial3DViewer: React.FC<Spatial3DViewerProps> = ({
       color: '#ec4899',
       description: 'Custom tagged location by user'
     });
+
+    if (projectId) {
+      api.createPOI({
+        project_id: projectId,
+        name: customPOIName.trim(),
+        category: customPOICategory,
+        position: pendingPOICoord,
+        color: '#ec4899',
+        description: 'Custom tagged location by user'
+      }).catch((err) => {
+        console.warn('Failed to persist custom POI to backend:', err);
+      });
+    }
 
     setPOIs([...navEngineRef.current.getPOIs()]);
     setPendingPOICoord(null);
@@ -1410,34 +1446,40 @@ export const Spatial3DViewer: React.FC<Spatial3DViewerProps> = ({
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
-            {PIPELINE_STAGES.map((stage) => (
-              <div
-                key={stage.id}
-                className="p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-[#dfb873]/30 transition-all flex items-start gap-2.5 text-xs"
-              >
-                <div className="w-6 h-6 rounded-md bg-[#dfb873]/20 text-[#dfb873] font-mono text-[10px] font-bold flex items-center justify-center shrink-0">
-                  {stage.index}
+            {pipelineStages.length > 0 ? (
+              pipelineStages.map((stage) => (
+                <div
+                  key={stage.id}
+                  className="p-2.5 rounded-xl bg-white/5 border border-white/5 hover:border-[#dfb873]/30 transition-all flex items-start gap-2.5 text-xs"
+                >
+                  <div className="w-6 h-6 rounded-md bg-[#dfb873]/20 text-[#dfb873] font-mono text-[10px] font-bold flex items-center justify-center shrink-0">
+                    {stage.index}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-white truncate">{stage.name}</span>
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        {stage.status}
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-slate-400 font-mono mt-0.5 truncate">
+                      Output: {stage.output}
+                    </div>
+                    <div className="text-[9px] text-slate-500 font-mono flex items-center gap-1 mt-0.5">
+                      <Clock className="w-2.5 h-2.5" /> {stage.duration}
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-white truncate">{stage.name}</span>
-                    <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      {stage.status}
-                    </span>
-                  </div>
-                  <div className="text-[10px] text-slate-400 font-mono mt-0.5 truncate">
-                    Output: {stage.output}
-                  </div>
-                  <div className="text-[9px] text-slate-500 font-mono flex items-center gap-1 mt-0.5">
-                    <Clock className="w-2.5 h-2.5" /> {stage.duration}
-                  </div>
-                </div>
+              ))
+            ) : (
+              <div className="p-8 text-center text-slate-400 text-xs">
+                No pipeline execution stages recorded for this project yet.
               </div>
-            ))}
+            )}
           </div>
 
           <div className="p-3 bg-black/40 border-t border-white/10 flex items-center justify-between">
-            <span className="text-[11px] text-slate-300 font-mono">25/25 Stages Audited</span>
+            <span className="text-[11px] text-slate-300 font-mono">{pipelineStages.length} Stages Recorded</span>
             <a
               href={`${basePath}/digital_twin_summary.json`}
               download="digital_twin_summary.json"

@@ -54,11 +54,12 @@ export const OrganizationMembersPage: React.FC = () => {
     }
   };
 
-  const filtered = members.filter(
+  const safeMembers = Array.isArray(members) ? members : [];
+  const filtered = safeMembers.filter(
     (m) =>
       m.user?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.user?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.role.toLowerCase().includes(searchQuery.toLowerCase())
+      m.role?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (

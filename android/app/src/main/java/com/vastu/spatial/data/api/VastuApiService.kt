@@ -112,6 +112,26 @@ interface VastuApiService {
 
     @GET("api/v1/uploads/{sessionId}/status")
     suspend fun getUploadStatus(@Path("sessionId") sessionId: String): Response<ApiResponse<UploadSessionDto>>
+
+    // ==========================================
+    // POI & Spatial Navigation Endpoints
+    // ==========================================
+
+    @GET("api/v1/projects/{projectId}/pois")
+    suspend fun getPOIs(@Path("projectId") projectId: String): Response<ApiResponse<List<PoiDto>>>
+
+    @POST("api/v1/projects/{projectId}/pois")
+    suspend fun createPOI(@Path("projectId") projectId: String, @Body request: CreatePoiDto): Response<ApiResponse<PoiDto>>
+
+    @DELETE("api/v1/projects/{projectId}/pois/{poiId}")
+    suspend fun deletePOI(@Path("projectId") projectId: String, @Path("poiId") poiId: String): Response<ApiResponse<Unit>>
+
+    // ==========================================
+    // Job Status Endpoints
+    // ==========================================
+
+    @GET("api/v1/jobs/{jobId}")
+    suspend fun getJob(@Path("jobId") jobId: String): Response<ApiResponse<JobDto>>
 }
 
 // Session Token Storage with Hardware-Backed Encryption

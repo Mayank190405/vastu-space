@@ -72,15 +72,8 @@ def get_projects_from_db():
                 })
         return projects
     except Exception as e:
-        print(f"Warning: Failed querying postgres docker directly ({e}). Using discovered projects.")
-        return [
-            {"id": "917217df-f991-4097-acec-4d077022877a", "name": "Test project new", "project_code": "PRJ-A8NAB4", "project_type": "Building", "status": "active", "total_area_sqft": 2500.0},
-            {"id": "233cf5e3-b233-48e9-bbea-fc762431a9f5", "name": "Test Project", "project_code": "PRJ-TEST01", "project_type": "Building", "status": "active", "total_area_sqft": 3000.0},
-            {"id": "d21c4fb0-d887-4114-b879-5b707c66fc21", "name": "test", "project_code": "PRJ-852ZFW", "project_type": "Building", "status": "IN PROGRESS", "total_area_sqft": 1800.0},
-            {"id": "5425ee6c-460a-4508-8e84-918cbcc57f42", "name": "krads", "project_code": "PRJ-DX3CL7", "project_type": "Office", "status": "ACTIVE", "total_area_sqft": 4500.0},
-            {"id": "e44c519f-6fc0-4f83-b790-84638adb5b15", "name": "The Grand Atrium Convention Center", "project_code": "PRJ-2UL2WR", "project_type": "Convention Centre", "status": "DRAFT", "total_area_sqft": 15000.0},
-            {"id": "e7c37145-eb7b-46ae-9aaf-2b8240f70501", "name": "test", "project_code": "PRJ-XN46DS", "project_type": "Commercial Office", "status": "DRAFT", "total_area_sqft": 5200.0}
-        ]
+        print(f"Error querying postgres: {e}")
+        return []
 
 def seed_project_render(project: dict):
     p_id = project["id"]

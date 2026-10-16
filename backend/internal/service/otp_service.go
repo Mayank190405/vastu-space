@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"vastu/backend/internal/domain"
@@ -51,10 +52,16 @@ func (s *OTPService) GenerateAndSendOTP(ctx context.Context, email, fullName str
 		purposeTitle = "Password Reset"
 	}
 
+	log.Printf("🔐 [VĀSTU OTP] Generated OTP code %s for %s (%s)", code, email, purposeTitle)
+
 	// Dispatch email via Hostinger SSL SMTP on port 465
 	if s.mailer != nil {
 		go func() {
-			_ = s.mailer.SendOTPEmail(email, fullName, code, purposeTitle)
+			if err := s.mailer.SendOTPEmail(email, fullName, code, purposeTitle); err != nil {
+				log.Printf("⚠️ [VĀSTU MAILER WARNING] SMTP failed to deliver OTP to %s: %v", email, err)
+			} else {
+				log.Printf("✅ [VĀSTU MAILER SUCCESS] OTP email successfully delivered to %s", email)
+			}
 		}()
 	}
 

@@ -2,18 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   ArrowLeft,
-  Box,
   ShieldCheck,
   Download,
   Share2,
-  Copy,
   Check,
-  Building2,
-  MapPin,
-  ExternalLink,
-  Layers,
-  Sparkles,
-  Info
+  AlertTriangle
 } from 'lucide-react';
 import { api } from '../../services/api';
 import { Project } from '../../types';
@@ -26,6 +19,7 @@ export const ProjectViewingPage: React.FC = () => {
 
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
 
@@ -33,14 +27,20 @@ export const ProjectViewingPage: React.FC = () => {
   const isInApp = location.pathname.startsWith('/projects/');
 
   useEffect(() => {
-    if (!projectId) return;
+    if (!projectId) {
+      setError('No project ID specified in URL.');
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    api.getProject(projectId)
+    setError(null);
+    api
+      .getProject(projectId)
       .then((data) => {
         setProject(data);
       })
-      .catch((err) => {
-        console.warn('Could not load project metadata via authenticated API, using public defaults', err);
+      .catch((err: any) => {
+        setError(err.message || 'Project not found or access restricted.');
       })
       .finally(() => {
         setLoading(false);
@@ -55,8 +55,40 @@ export const ProjectViewingPage: React.FC = () => {
     setTimeout(() => setCopiedLink(false), 2500);
   };
 
-  const projectName = project?.name || 'Spatial 3D Digital Twin';
-  const projectCode = project?.project_code || (projectId ? projectId.substring(0, 8).toUpperCase() : 'PRJ-TWIN');
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#080a0f] flex items-center justify-center text-slate-200">
+        <div className="flex flex-col items-center space-y-3">
+          <div className="w-8 h-8 border-2 border-[#dfb873] border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-semibold text-slate-400">Loading spatial project details...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !project) {
+    return (
+      <div className="min-h-screen bg-[#080a0f] flex flex-col items-center justify-center text-slate-200 p-6 text-center">
+        <div className="max-w-md bg-[#0d1118] border border-red-900/50 p-6 rounded-2xl space-y-4 shadow-2xl">
+          <div className="w-12 h-12 bg-red-950/50 border border-red-800/50 text-red-400 rounded-xl flex items-center justify-center mx-auto">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <h2 className="text-lg font-bold text-white font-serif-brand">Spatial Project Unavailable</h2>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            {error || `Project ID ${projectId} could not be loaded from the database.`}
+          </p>
+          <div className="pt-2 flex justify-center gap-3">
+            <button
+              onClick={() => navigate('/projects')}
+              className="px-4 py-2 bg-[#dfb873] hover:bg-[#c9a25b] text-[#0b0f17] font-bold text-xs rounded-xl transition"
+            >
+              Go to Projects
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#080a0f] text-slate-100 flex flex-col">
@@ -80,10 +112,10 @@ export const ProjectViewingPage: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-sm sm:text-base font-bold text-white font-serif-brand tracking-wide truncate max-w-[200px] sm:max-w-md">
-                  {projectName}
+                  {project.name}
                 </h1>
                 <span className="hidden sm:inline-block font-mono text-[10px] px-2 py-0.5 rounded bg-white/10 text-[#dfb873] border border-[#dfb873]/25 font-semibold">
-                  {projectCode}
+                  {project.project_code || projectId?.substring(0, 8).toUpperCase()}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-[11px] text-slate-400">
@@ -92,7 +124,7 @@ export const ProjectViewingPage: React.FC = () => {
                   <span className="text-emerald-400 font-semibold">Evidence-Driven Standard</span>
                 </span>
                 <span>&bull;</span>
-                <span>25-Stage Metric Twin</span>
+                <span>Spatial Digital Twin</span>
               </div>
             </div>
           </div>
@@ -124,7 +156,7 @@ export const ProjectViewingPage: React.FC = () => {
               <div className="absolute right-0 mt-2 w-64 bg-[#0d1118] border border-[#dfb873]/30 rounded-xl shadow-2xl p-2 z-50 space-y-1">
                 <a
                   href={`/renders/${projectId}/textured_mesh.obj`}
-                  download={`${projectName}-textured-mesh.obj`}
+                  download={`${project.name}-textured-mesh.obj`}
                   className="flex items-center justify-between px-3 py-2 text-xs text-slate-200 hover:bg-white/5 rounded-lg transition-all"
                 >
                   <span>Textured 3D Mesh (.OBJ)</span>
@@ -132,7 +164,7 @@ export const ProjectViewingPage: React.FC = () => {
                 </a>
                 <a
                   href={`/renders/${projectId}/dense_pointcloud_clean.ply`}
-                  download={`${projectName}-pointcloud.ply`}
+                  download={`${project.name}-pointcloud.ply`}
                   className="flex items-center justify-between px-3 py-2 text-xs text-slate-200 hover:bg-white/5 rounded-lg transition-all"
                 >
                   <span>Consensus Point Cloud (.PLY)</span>
@@ -140,7 +172,7 @@ export const ProjectViewingPage: React.FC = () => {
                 </a>
                 <a
                   href={`/renders/${projectId}/digital_twin_summary.json`}
-                  download={`${projectName}-summary.json`}
+                  download={`${project.name}-summary.json`}
                   className="flex items-center justify-between px-3 py-2 text-xs text-slate-200 hover:bg-white/5 rounded-lg transition-all"
                 >
                   <span>Audit & Metric Summary (.JSON)</span>
@@ -156,9 +188,9 @@ export const ProjectViewingPage: React.FC = () => {
       <main className="flex-1 relative w-full h-[calc(100vh-4rem)]">
         <Spatial3DViewer
           projectId={projectId}
-          modelName={projectName}
-          projectCode={projectCode}
-          projectType={project?.project_type}
+          modelName={project.name}
+          projectCode={project.project_code}
+          projectType={project.project_type}
           isStandalone={true}
         />
       </main>

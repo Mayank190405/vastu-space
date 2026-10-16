@@ -265,36 +265,7 @@ func (s *NavigationService) CalculateRoute(ctx context.Context, req domain.NavRo
 	}
 
 	if len(path) == 0 || path[0] != startNode.ID {
-		// Fallback direct path
-		d := distance3D(startX, startY, startZ, targetX, targetY, targetZ)
-		return &domain.NavRouteResponse{
-			ProjectID:              req.ProjectID,
-			TotalDistanceMeters:    math.Round(d*100) / 100,
-			EstimatedWalkSeconds:   int(d / 1.2),
-			IsWheelchairAccessible: true,
-			Waypoints: []map[string]float64{
-				{"x": startX, "y": startY, "z": startZ},
-				{"x": targetX, "y": targetY, "z": targetZ},
-			},
-			Steps: []domain.RouteStep{
-				{
-					StepIndex:      1,
-					Instruction:    fmt.Sprintf("Walk %.1f meters to target position", d),
-					TurnType:       "straight",
-					DistanceMeters: math.Round(d*100) / 100,
-					FromPosition:   map[string]float64{"x": startX, "y": startY, "z": startZ},
-					ToPosition:     map[string]float64{"x": targetX, "y": targetY, "z": targetZ},
-				},
-				{
-					StepIndex:      2,
-					Instruction:    "Arrived at destination",
-					TurnType:       "arrive",
-					DistanceMeters: 0,
-					FromPosition:   map[string]float64{"x": targetX, "y": targetY, "z": targetZ},
-					ToPosition:     map[string]float64{"x": targetX, "y": targetY, "z": targetZ},
-				},
-			},
-		}, nil
+		return nil, fmt.Errorf("no connected route found between start position and target in navigation graph")
 	}
 
 	// Assemble Waypoints and Step instructions

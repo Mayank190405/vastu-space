@@ -15,6 +15,7 @@ class QualitySignalType(str, Enum):
     LOW_FEATURE_DENSITY = "LOW_FEATURE_DENSITY"
     INADEQUATE_COVERAGE = "INADEQUATE_COVERAGE"
     TRACKING_DEGRADATION = "TRACKING_DEGRADATION"
+    PURE_ROTATION_WITHOUT_TRANSLATION = "PURE_ROTATION_WITHOUT_TRANSLATION"
 
 
 class LiveTelemetrySnapshot(BaseModel):
@@ -31,6 +32,9 @@ class LiveTelemetrySnapshot(BaseModel):
     tracking_inlier_count: int = 150
     reprojection_error_px: float = 0.85
     is_tracking_lost: bool = False
+    coverage_fraction: Optional[float] = None
+    floor_coverage_fraction: Optional[float] = None
+    is_pivoting_in_place: Optional[bool] = None
 
 
 class QualitySignalEvaluation(BaseModel):
@@ -50,6 +54,8 @@ class QualitySignalEvaluator:
     # Deterministic Numeric Thresholds
     MAX_LINEAR_VELOCITY_MPS = 0.80
     MAX_ANGULAR_VELOCITY_RADPS = 1.20
+    MIN_TRANSLATION_VELOCITY_MPS = 0.15
+    MIN_ANGULAR_VELOCITY_FOR_PIVOT_RADPS = 0.26  # ~15 deg/sec
     MIN_LAPLACIAN_VARIANCE = 100.0
     MAX_MOTION_BLUR_SCORE = 0.40
     MAX_ROTATION_DELTA_DEG = 15.0
@@ -176,6 +182,24 @@ class QualitySignalEvaluator:
                     measured_value=round(telemetry.reprojection_error_px, 2),
                     threshold_value=cls.MAX_REPROJECTION_ERROR_PX,
                     instruction="Tracking unstable. Aim camera toward previously scanned features."
+                )
+            )
+
+        # 8. Pure Rotation Without Translation Baseline
+        is_pivoting = (
+            (telemetry.angular_velocity_radps > cls.MIN_ANGULAR_VELOCITY_FOR_PIVOT_RADPS and
+             telemetry.linear_velocity_mps < cls.MIN_TRANSLATION_VELOCITY_MPS) or
+            (telemetry.is_pivoting_in_place is True)
+        )
+        if is_pivoting:
+            results.append(
+                QualitySignalEvaluation(
+                    signal_type=QualitySignalType.PURE_ROTATION_WITHOUT_TRANSLATION,
+                    triggered=True,
+                    severity="WARNING",
+                    measured_value=round(telemetry.angular_velocity_radps, 2),
+                    threshold_value=cls.MIN_TRANSLATION_VELOCITY_MPS,
+                    instruction="Walk sideways along room perimeter! Do not twist in place without translation baseline."
                 )
             )
 

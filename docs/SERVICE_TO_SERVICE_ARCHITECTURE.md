@@ -2,6 +2,7 @@
 
 **Document type**: Canonical map of every runtime plane, service, and why it exists  
 **Status**: Aligned to the code in this repository  
+**Full technical handoff (constants, schemas, gates, protocols):** [TECHNICAL_SYSTEM_MANUAL.md](./TECHNICAL_SYSTEM_MANUAL.md)  
 **Related**: [BACKEND_SERVICE_INVENTORY.md](./BACKEND_SERVICE_INVENTORY.md), [API_INVENTORY.md](./API_INVENTORY.md), [floorplan_edge_ai_supervisor_architecture.md](./floorplan_edge_ai_supervisor_architecture.md)
 
 This document is the product path as the system is actually built: who talks to whom, over which port or queue, and **why that hop exists**. It is not a marketing overlay. Where two stacks still run in parallel, that is stated plainly.

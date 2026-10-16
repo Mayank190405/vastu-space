@@ -104,10 +104,12 @@ func main() {
 	r.Use(chimw.Timeout(60 * time.Second))
 
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"*"},
+		AllowOriginFunc: func(r *http.Request, origin string) bool {
+			return true
+		},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-		ExposedHeaders:   []string{"Link"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "X-Requested-With"},
+		ExposedHeaders:   []string{"Link", "Authorization"},
 		AllowCredentials: true,
 		MaxAge:           300,
 	}))
@@ -240,6 +242,7 @@ func main() {
 			// Digital Twin Render & Viewing Link
 			r.Get("/{projectId}/render", projectHandler.GetRender)
 			r.Get("/{projectId}/view-link", projectHandler.GetViewingLink)
+			r.Get("/{projectId}/pois", poiHandler.ListByProject)
 		})
 
 		// 4. Captures Core Service Routes (Protected)

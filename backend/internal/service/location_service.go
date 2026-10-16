@@ -63,19 +63,22 @@ func (s *LocationService) Search(ctx context.Context, query string) ([]LocationS
 	req.Header.Set("User-Agent", "VastuSpatial/1.0 (contact@vastuspatial.cloud)")
 
 	resp, err := s.httpClient.Do(req)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		// Fallback to local heuristic parsing so users can still search offline / behind firewalls
-		return s.fallbackSearch(query), nil
+	if err != nil {
+		return nil, fmt.Errorf("location service network error: %w", err)
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("location service returned status %d", resp.StatusCode)
+	}
+
 	var rawResults []nominatimResult
 	if err := json.NewDecoder(resp.Body).Decode(&rawResults); err != nil {
-		return s.fallbackSearch(query), nil
+		return nil, fmt.Errorf("failed to decode location response: %w", err)
 	}
 
 	if len(rawResults) == 0 {
-		return s.fallbackSearch(query), nil
+		return []LocationSearchResult{}, nil
 	}
 
 	var results []LocationSearchResult
@@ -164,34 +167,6 @@ func (s *LocationService) ReverseGeocode(ctx context.Context, lat, lon float64) 
 		Latitude:     lat,
 		Longitude:    lon,
 	}, nil
-}
-
-func (s *LocationService) fallbackSearch(q string) []LocationSearchResult {
-	parts := strings.Split(q, ",")
-	line1 := strings.TrimSpace(parts[0])
-	city := "Bangalore"
-	state := "Karnataka"
-	if len(parts) > 1 {
-		city = strings.TrimSpace(parts[1])
-	}
-	if len(parts) > 2 {
-		state = strings.TrimSpace(parts[2])
-	}
-
-	return []LocationSearchResult{
-		{
-			PlaceID:      fmt.Sprintf("local_%d", time.Now().UnixNano()),
-			DisplayName:  fmt.Sprintf("%s, %s, %s, India", line1, city, state),
-			AddressLine1: line1,
-			Area:         line1,
-			City:         city,
-			State:        state,
-			Pincode:      "560001",
-			Country:      "India",
-			Latitude:     12.9716,
-			Longitude:    77.5946,
-		},
-	}
 }
 
 func extractLine1(addr map[string]string) string {

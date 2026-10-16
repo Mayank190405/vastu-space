@@ -22,6 +22,7 @@
 		A1A100022C774AE7895F9B02 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1B100022C774AE7895F9B02 /* DashboardView.swift */; };
 		A1A100032C774AE7895F9B03 /* ProjectCreationWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1B100032C774AE7895F9B03 /* ProjectCreationWizardView.swift */; };
 		A1A100042C774AE7895F9B04 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1B100042C774AE7895F9B04 /* ProfileView.swift */; };
+		A1A100092C774AE7895F9B09 /* QRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1B100092C774AE7895F9B09 /* QRScannerView.swift */; };
 		A1A100052C774AE7895F9B05 /* vastu_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = B1B100052C774AE7895F9B05 /* vastu_logo.png */; };
 		A1A100062C774AE7895F9B06 /* vastu_archway_hero.png in Resources */ = {isa = PBXBuildFile; fileRef = B1B100062C774AE7895F9B06 /* vastu_archway_hero.png */; };
 		A1A100072C774AE7895F9B07 /* PermissionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1B100072C774AE7895F9B07 /* PermissionManager.swift */; };
@@ -33,6 +34,8 @@
 		D86D8F111C8C40D1967183E0 /* CaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAE5DC0C2FF4465C9277F8D4 /* CaptureView.swift */; };
 		E02D55A4983A4FF7B7C4D328 /* VastuSpatialApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0F38AF31FB14307BB3FF35F /* VastuSpatialApp.swift */; };
 		F86F535D270048F69FFDF05D /* AVCameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6365353A7C6A417CBB5CD72F /* AVCameraManager.swift */; };
+		A1A100102C774AE7895F9B10 /* MobileDepthSemanticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1B100102C774AE7895F9B10 /* MobileDepthSemanticEngine.swift */; };
+		A1A100112C774AE7895F9B11 /* VastuSpatialMobileNet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1B100112C774AE7895F9B11 /* VastuSpatialMobileNet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -52,10 +55,13 @@
 		B1B100022C774AE7895F9B02 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DashboardView.swift; path = VastuSpatial/Views/Dashboard/DashboardView.swift; sourceTree = "<group>"; };
 		B1B100032C774AE7895F9B03 /* ProjectCreationWizardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProjectCreationWizardView.swift; path = VastuSpatial/Views/Projects/ProjectCreationWizardView.swift; sourceTree = "<group>"; };
 		B1B100042C774AE7895F9B04 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileView.swift; path = VastuSpatial/Views/Profile/ProfileView.swift; sourceTree = "<group>"; };
+		B1B100092C774AE7895F9B09 /* QRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = QRScannerView.swift; path = VastuSpatial/Views/QRScannerView.swift; sourceTree = "<group>"; };
 		B1B100052C774AE7895F9B05 /* vastu_logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = vastu_logo.png; path = VastuSpatial/Resources/vastu_logo.png; sourceTree = "<group>"; };
 		B1B100062C774AE7895F9B06 /* vastu_archway_hero.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = vastu_archway_hero.png; path = VastuSpatial/Resources/vastu_archway_hero.png; sourceTree = "<group>"; };
 		B1B100072C774AE7895F9B07 /* PermissionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PermissionManager.swift; path = VastuSpatial/Sensors/PermissionManager.swift; sourceTree = "<group>"; };
 		B1B100082C774AE7895F9B08 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = VastuSpatial/Resources/Assets.xcassets; sourceTree = "<group>"; };
+		B1B100102C774AE7895F9B10 /* MobileDepthSemanticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MobileDepthSemanticEngine.swift; path = VastuSpatial/Models/MobileDepthSemanticEngine.swift; sourceTree = "<group>"; };
+		B1B100112C774AE7895F9B11 /* VastuSpatialMobileNet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VastuSpatialMobileNet.swift; path = VastuSpatial/Models/VastuSpatialMobileNet.swift; sourceTree = "<group>"; };
 		B1E32E81A97F48EEA78FB134 /* StorageMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = StorageMonitor.swift; path = VastuSpatial/Camera/StorageMonitor.swift; sourceTree = "<group>"; };
 		B370ECE59030419F8085E52F /* LocalCaptureStorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LocalCaptureStorageManager.swift; path = VastuSpatial/Storage/LocalCaptureStorageManager.swift; sourceTree = "<group>"; };
 		C23DC89EFDD647B582BC3842 /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AuthView.swift; path = VastuSpatial/Views/Auth/AuthView.swift; sourceTree = "<group>"; };
@@ -107,6 +113,7 @@
 				B1B100022C774AE7895F9B02 /* DashboardView.swift */,
 				B1B100032C774AE7895F9B03 /* ProjectCreationWizardView.swift */,
 				B1B100042C774AE7895F9B04 /* ProfileView.swift */,
+				B1B100092C774AE7895F9B09 /* QRScannerView.swift */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -179,6 +186,8 @@
 			isa = PBXGroup;
 			children = (
 				3675E38ABB33473D8A7C15D3 /* SpatialModels.swift */,
+				B1B100102C774AE7895F9B10 /* MobileDepthSemanticEngine.swift */,
+				B1B100112C774AE7895F9B11 /* VastuSpatialMobileNet.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -259,6 +268,8 @@
 				6370F46C4A3B4FDABFE6B269 /* StorageMonitor.swift in Sources */,
 				B2AFCA757B294C33A03F3EE9 /* VideoValidator.swift in Sources */,
 				94FCF5727678478C9361238C /* SpatialModels.swift in Sources */,
+				A1A100102C774AE7895F9B10 /* MobileDepthSemanticEngine.swift in Sources */,
+				A1A100112C774AE7895F9B11 /* VastuSpatialMobileNet.swift in Sources */,
 				50B5001FB8E449A3A482FBFD /* VastuAPIClient.swift in Sources */,
 				1F7363CA2C774AE7895F9B88 /* IMUValidator.swift in Sources */,
 				BBC9EDF55FB3426FBE15E1AC /* MotionSensorManager.swift in Sources */,
@@ -276,6 +287,7 @@
 				A1A100032C774AE7895F9B03 /* ProjectCreationWizardView.swift in Sources */,
 				A1A100042C774AE7895F9B04 /* ProfileView.swift in Sources */,
 				A1A100072C774AE7895F9B07 /* PermissionManager.swift in Sources */,
+				A1A100092C774AE7895F9B09 /* QRScannerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

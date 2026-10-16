@@ -2,7 +2,7 @@
 
 **Document Version**: 3.0.0  
 **Status**: Target architecture mapped onto the **live** service flows  
-**Companion**: [SERVICE_TO_SERVICE_ARCHITECTURE.md](./SERVICE_TO_SERVICE_ARCHITECTURE.md) (every service, who calls whom, why)
+**Companions**: [SERVICE_TO_SERVICE_ARCHITECTURE.md](./SERVICE_TO_SERVICE_ARCHITECTURE.md) (who calls whom), [TECHNICAL_SYSTEM_MANUAL.md](./TECHNICAL_SYSTEM_MANUAL.md) (every constant, schema, and gate)
 
 This document is the same product as v2 (blueprint + offline capture AI + reconstruction self-correction) written as the **actual operator path**: Auth → ProjectService floors → floor_plans → CaptureService SOP → on-device CaptureQualityEngine → UploadService → Orchestrator/Asynq → 25-stage twin worker → quality/rescan → Model/Viewer.
 

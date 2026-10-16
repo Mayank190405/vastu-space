@@ -1,18 +1,18 @@
 {
-  "final_verdict": "WARNING",
-  "overall_descriptive_score": 0.931,
-  "timestamp": "2026-09-06 15:25:53",
+  "final_verdict": "FAIL",
+  "overall_descriptive_score": 0.9,
+  "timestamp": "2026-09-22 00:29:19",
   "category_scores": {
     "CAPTURE": 1.0,
-    "CAMERA": 0.633,
-    "PARALLAX": 0.2,
-    "DEPTH": 0.983,
-    "REGISTRATION": 0.936,
+    "CAMERA": 0.385,
+    "PARALLAX": 0.202,
+    "DEPTH": 0.998,
+    "REGISTRATION": 0.883,
     "POINT_CLOUD": 1.0,
     "GEOMETRY": 0.98,
     "MESH": 1.0,
-    "TEXTURE": 0.996,
-    "REPROJECTION": 0.828,
+    "TEXTURE": 1.0,
+    "REPROJECTION": 0.809,
     "COVERAGE": 0.95
   },
   "category_gates": {
@@ -23,7 +23,7 @@
     "REGISTRATION": true,
     "POINT_CLOUD": true,
     "GEOMETRY": true,
-    "MESH": true,
+    "MESH": false,
     "TEXTURE": true,
     "REPROJECTION": true,
     "COVERAGE": true
@@ -31,7 +31,7 @@
   "parallax_audit": {
     "gate_passed": false,
     "status": "INSUFFICIENT_TRANSLATION_FOR_METRIC_RECONSTRUCTION",
-    "total_baseline_displacement_m": 0.03,
+    "total_baseline_displacement_m": 0.0303,
     "threshold_min_baseline_m": 0.1,
     "user_guidance": "CAPTURE GUIDANCE: Please capture room video using a smooth sliding (truck/dolly) lateral motion across the floor rather than pivoting from a stationary spot."
   },

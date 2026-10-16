@@ -105,7 +105,6 @@ export const EmployeeJoinPage: React.FC = () => {
 
     setIsSubmitting(true);
     setSubmitError(null);
-    const startTime = Date.now();
     try {
       const res = await api.submitEmployeeJoin({
         org_code: effectiveOrgCode,
@@ -115,11 +114,6 @@ export const EmployeeJoinPage: React.FC = () => {
         phone: phone.trim(),
         password: password,
       });
-
-      const elapsed = Date.now() - startTime;
-      if (elapsed < 2000) {
-        await new Promise((resolve) => setTimeout(resolve, 2000 - elapsed));
-      }
 
       setSession({
         user: res.user,

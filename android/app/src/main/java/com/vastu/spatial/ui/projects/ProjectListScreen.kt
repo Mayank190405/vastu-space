@@ -12,9 +12,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -33,6 +35,13 @@ import com.vastu.spatial.data.model.FloorDto
 import com.vastu.spatial.data.model.ProjectDto
 import com.vastu.spatial.ui.theme.*
 import kotlinx.coroutines.launch
+
+enum class ProjectSortOption(val displayName: String) {
+    RECENT("Recent"),
+    NAME("Name"),
+    STATUS("Status"),
+    TYPE("Type")
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,10 +79,52 @@ fun ProjectListScreen(
     var isLoadingFloors by remember { mutableStateOf(false) }
     var showFloorSelectionDialog by remember { mutableStateOf(false) }
 
+    // Enhanced project selection
+    var searchText by remember { mutableStateOf("") }
+    var selectedProjectType by remember { mutableStateOf("All") }
+    var selectedStatus by remember { mutableStateOf("All") }
+    var sortBy by remember { mutableStateOf(ProjectSortOption.RECENT) }
+    var showFilterMenu by remember { mutableStateOf(false) }
+    var showSortMenu by remember { mutableStateOf(false) }
+
     val supportedTypes = listOf(
         "Building", "Mall", "Office", "Warehouse", "Hospital",
         "Hotel", "Campus", "Convention Centre", "Villa", "Apartment Complex"
     )
+    
+    // Computed properties for filtering and sorting
+    val filteredProjects: List<ProjectDto> by remember(searchText, selectedProjectType, selectedStatus, sortBy, projects) {
+        var result = projects
+        
+        // Filter by search text
+        if (searchText.isNotBlank()) {
+            result = result.filter { project ->
+                project.name.contains(searchText, ignoreCase = true) ||
+                (project.projectType?.contains(searchText, ignoreCase = true) == true) ||
+                (project.location?.contains(searchText, ignoreCase = true) == true)
+            }
+        }
+        
+        // Filter by project type
+        if (selectedProjectType != "All") {
+            result = result.filter { it.projectType == selectedProjectType }
+        }
+        
+        // Filter by status
+        if (selectedStatus != "All") {
+            result = result.filter { it.status == selectedStatus }
+        }
+        
+        // Sort
+        result = when (sortBy) {
+            ProjectSortOption.RECENT -> result.sortedByDescending { it.createdAt }
+            ProjectSortOption.NAME -> result.sortedBy { it.name }
+            ProjectSortOption.STATUS -> result.sortedBy { it.status ?: "" }
+            ProjectSortOption.TYPE -> result.sortedBy { it.projectType ?: "" }
+        }
+        
+        result
+    }
 
     val loadProjects = {
         coroutineScope.launch {
@@ -150,58 +201,90 @@ fun ProjectListScreen(
         },
         containerColor = BrandParchment
     ) { padding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = BrandBronze
+            // Search and Filter Bar
+            if (!isLoading && projects.isNotEmpty()) {
+                SearchAndFilterBar(
+                    searchText = searchText,
+                    onSearchTextChange = { searchText = it },
+                    selectedProjectType = selectedProjectType,
+                    onProjectTypeChange = { selectedProjectType = it },
+                    selectedStatus = selectedStatus,
+                    onStatusChange = { selectedStatus = it },
+                    sortBy = sortBy,
+                    onSortChange = { sortBy = it },
+                    showFilterMenu = showFilterMenu,
+                    onFilterMenuToggle = { showFilterMenu = it },
+                    showSortMenu = showSortMenu,
+                    onSortMenuToggle = { showSortMenu = it },
+                    supportedTypes = supportedTypes
                 )
-            } else if (projects.isEmpty()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        Icons.Default.Layers,
-                        contentDescription = null,
-                        tint = BrandBronze,
-                        modifier = Modifier.size(56.dp)
+            }
+            
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f)
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = BrandBronze
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        "No Projects Yet",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = BrandText
+                } else if (filteredProjects.isEmpty() && searchText.isNotBlank()) {
+                    EmptySearchStateView(
+                        onClearFilters = {
+                            searchText = ""
+                            selectedProjectType = "All"
+                            selectedStatus = "All"
+                        }
                     )
-                    Text(
-                        "Create your first architectural project to begin scanning floors and spatial structures.",
-                        color = BrandTextMuted,
-                        fontSize = 14.sp,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = { showCreateDialog = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = BrandBronze)
+                } else if (projects.isEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        Text("Create First Project", color = BrandIvory, fontWeight = FontWeight.Bold)
+                        Icon(
+                            Icons.Default.Layers,
+                            contentDescription = null,
+                            tint = BrandBronze,
+                            modifier = Modifier.size(56.dp)
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            "No Projects Yet",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = BrandText
+                        )
+                        Text(
+                            "Create your first architectural project to begin scanning floors and spatial structures.",
+                            color = BrandTextMuted,
+                            fontSize = 14.sp,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = { showCreateDialog = true },
+                            colors = ButtonDefaults.buttonColors(containerColor = BrandBronze)
+                        ) {
+                            Text("Create First Project", color = BrandIvory, fontWeight = FontWeight.Bold)
+                        }
                     }
-                }
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
-                    items(projects) { project ->
+                } else {
+                    LazyColumn(
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        items(filteredProjects) { project ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -532,6 +615,255 @@ fun ProjectListScreen(
                 }
             }
         )
+    }
+}
+
+// MARK: - Enhanced Search and Filter Bar
+
+@Composable
+fun SearchAndFilterBar(
+    searchText: String,
+    onSearchTextChange: (String) -> Unit,
+    selectedProjectType: String,
+    onProjectTypeChange: (String) -> Unit,
+    selectedStatus: String,
+    onStatusChange: (String) -> Unit,
+    sortBy: ProjectSortOption,
+    onSortChange: (ProjectSortOption) -> Unit,
+    showFilterMenu: Boolean,
+    onFilterMenuToggle: (Boolean) -> Unit,
+    showSortMenu: Boolean,
+    onSortMenuToggle: (Boolean) -> Unit,
+    supportedTypes: List<String>
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(BrandParchment)
+            .padding(16.dp)
+    ) {
+        // Search Bar
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(BrandIvory, RoundedCornerShape(10.dp))
+                .border(1.dp, BrandBorder, RoundedCornerShape(10.dp))
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                Icons.Default.Search,
+                contentDescription = "Search",
+                tint = BrandTextMuted,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            androidx.compose.foundation.text.KeyboardOptions(
+                keyboardType = androidx.compose.ui.text.input.KeyboardType.Text
+            )
+            BasicTextField(
+                value = searchText,
+                onValueChange = onSearchTextChange,
+                modifier = Modifier.weight(1f),
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    color = BrandText,
+                    fontSize = 14.sp
+                ),
+                singleLine = true,
+                cursorBrush = androidx.compose.ui.graphics.SolidColor(BrandBronze)
+            )
+            if (searchText.isNotBlank()) {
+                IconButton(
+                    onClick = { onSearchTextChange("") },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Clear",
+                        tint = BrandTextMuted,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        // Filter Chips Row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Project Type Filter
+            FilterChip(
+                selected = selectedProjectType,
+                options = listOf("All") + supportedTypes,
+                onSelect = onProjectTypeChange,
+                onMenuToggle = onFilterMenuToggle
+            )
+            
+            // Status Filter
+            FilterChip(
+                selected = selectedStatus,
+                options = listOf("All", "Ready", "Processing", "Completed"),
+                onSelect = onStatusChange,
+                onMenuToggle = onFilterMenuToggle
+            )
+            
+            // Sort Option
+            Box {
+                Button(
+                    onClick = { onSortMenuToggle(true) },
+                    modifier = Modifier
+                        .background(BrandIvory, RoundedCornerShape(8.dp))
+                        .border(1.dp, BrandBorder, RoundedCornerShape(8.dp))
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = androidx.compose.ui.graphics.Color.Transparent
+                    )
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.ArrowDropDown,
+                            contentDescription = "Sort",
+                            tint = BrandText,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text(
+                            sortBy.displayName,
+                            color = BrandText,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+                
+                DropdownMenu(
+                    expanded = showSortMenu,
+                    onDismissRequest = { onSortMenuToggle(false) }
+                ) {
+                    ProjectSortOption.values().forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option.displayName) },
+                            onClick = {
+                                onSortChange(option)
+                                onSortMenuToggle(false)
+                            },
+                            trailingIcon = {
+                                if (sortBy == option) {
+                                    Icon(Icons.Default.Check, contentDescription = null)
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FilterChip(
+    selected: String,
+    options: List<String>,
+    onSelect: (String) -> Unit,
+    onMenuToggle: (Boolean) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    
+    Box {
+        Button(
+            onClick = { expanded = true },
+            modifier = Modifier
+                .background(BrandIvory, RoundedCornerShape(8.dp))
+                .border(1.dp, BrandBorder, RoundedCornerShape(8.dp))
+                .padding(horizontal = 10.dp, vertical = 6.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = androidx.compose.ui.graphics.Color.Transparent
+            )
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    selected,
+                    color = BrandText,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Icon(
+                    Icons.Default.ArrowDropDown,
+                    contentDescription = "Filter",
+                    tint = BrandText,
+                    modifier = Modifier.size(12.dp)
+                )
+            }
+        }
+        
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        onSelect(option)
+                        expanded = false
+                    },
+                    trailingIcon = {
+                        if (selected == option) {
+                            Icon(Icons.Default.Check, contentDescription = null)
+                        }
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun EmptySearchStateView(
+    onClearFilters: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            Icons.Default.Search,
+            contentDescription = "No results",
+            tint = BrandTextMuted.copy(alpha = 0.5f),
+            modifier = Modifier.size(48.dp)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            "No projects found",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = BrandText
+        )
+        Text(
+            "Try adjusting your search or filters",
+            color = BrandTextMuted,
+            fontSize = 14.sp,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = onClearFilters,
+            colors = ButtonDefaults.buttonColors(containerColor = BrandBronze)
+        ) {
+            Text("Clear Filters", color = BrandIvory, fontWeight = FontWeight.Bold)
+        }
     }
 }
 

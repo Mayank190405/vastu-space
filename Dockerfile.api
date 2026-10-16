@@ -1,30 +1,20 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies for OpenCV and networking
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
     curl \
+    libgl1 \
     libglib2.0-0 \
-    libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python requirements
-COPY requirements-api.txt .
+COPY requirements-api.txt ./
 RUN pip install --no-cache-dir -r requirements-api.txt
 
-# Copy Python modules used by control plane
-COPY api/ ./api/
-COPY core/ ./core/
-COPY storage/ ./storage/
-COPY geometry/ ./geometry/
-COPY navigation/ ./navigation/
+COPY . .
 
-ENV PYTHONPATH=/app
 ENV PORT=8000
 EXPOSE 8000
-
-HEALTHCHECK --interval=15s --timeout=5s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8000/health || exit 1
 
 CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -32,6 +32,9 @@ public struct DashboardView: View {
     @State private var showTeamSheet: Bool = false
     @State private var showAddMemberSheet: Bool = false
     
+    // QR Code Scanning
+    @State private var showQRScanner: Bool = false
+    
     public init() {}
     
     public var body: some View {
@@ -67,6 +70,13 @@ public struct DashboardView: View {
                     )
                     
                     Spacer()
+                    
+                    // QR Code Scanner Button
+                    Button(action: { showQRScanner = true }) {
+                        Image(systemName: "qrcode.viewfinder")
+                            .font(.system(size: 17))
+                            .foregroundColor(VastuColors.brandText)
+                    }
                     
                     // Notification Bell with Badge
                     ZStack(alignment: .topTrailing) {
@@ -312,6 +322,11 @@ public struct DashboardView: View {
                     )
                 }
             }
+            .sheet(isPresented: $showQRScanner) {
+                QRScannerView { scannedCode in
+                    handleQRCodeScanned(scannedCode)
+                }
+            }
         }
         .task {
             await loadProjects()
@@ -356,6 +371,34 @@ public struct DashboardView: View {
                 print("Failed to load team: \(error)")
             }
             isLoadingTeam = false
+        }
+    }
+    
+    private func handleQRCodeScanned(_ code: String) {
+        // Parse the QR code to extract session information
+        // Expected format: "vastuspatial://capture/{sessionId}?projectId={projectId}"
+        // Or session code: "V-{sessionId}"
+        
+        if code.hasPrefix("vastuspatial://capture/") {
+            // Handle deep link format
+            if let url = URL(string: code) {
+                let sessionId = url.pathComponents.last
+                let projectId = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+                    .queryItems?.first(where: { $0.name == "projectId" })?.value
+                
+                if let sessionId = sessionId, let projectId = projectId {
+                    // Find the project and start capture
+                    if let project = projects.first(where: { $0.id == projectId }) {
+                        startCaptureForProject(project)
+                    }
+                }
+            }
+        } else if code.hasPrefix("V-") {
+            // Handle session code format
+            let sessionId = String(code.dropFirst(2))
+            // In real implementation, validate session code with backend
+            print("Session code scanned: \(sessionId)")
+            // For now, just show alert
         }
     }
 }

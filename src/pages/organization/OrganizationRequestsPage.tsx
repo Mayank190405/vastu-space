@@ -103,7 +103,7 @@ export const OrganizationRequestsPage: React.FC = () => {
 
       {loading ? (
         <div className="py-12 text-center text-xs text-[#695541]">Loading pending requests...</div>
-      ) : requests.length === 0 ? (
+      ) : (!Array.isArray(requests) || requests.length === 0) ? (
         <div className="glass-panel p-12 rounded-2xl border border-[#C5A059]/30 text-center space-y-2 shadow-md">
           <UserCheck className="w-10 h-10 text-[#8F6834] mx-auto" />
           <h3 className="text-sm font-bold text-[#2E2218] font-serif-brand">All Requests Clear</h3>

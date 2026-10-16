@@ -1,25 +1,25 @@
 {
-  "vertex_count": 17000,
-  "triangle_count": 32666,
-  "non_manifold_edges": 0,
-  "degenerate_triangles": 3217,
+  "vertex_count": 406212,
+  "triangle_count": 814468,
+  "non_manifold_edges": 710,
+  "degenerate_triangles": 680,
   "floating_boundary_bubbles_clipped": true,
   "below_floor_vertices_count": 0,
   "corner_dihedral_angle_deg": 90.0,
   "bounding_box_min": [
-    -0.837,
+    -0.745,
     0.0,
-    0.947
+    0.758
   ],
   "bounding_box_max": [
-    0.534,
-    2.262,
-    2.999
+    2.885,
+    2.297,
+    4.034
   ],
   "dimensions_m": {
-    "width_x": 1.37,
-    "height_y": 2.26,
-    "depth_z": 2.05
+    "width_x": 3.63,
+    "height_y": 2.3,
+    "depth_z": 3.28
   },
-  "validation_verdict": "PASS"
+  "validation_verdict": "WARNING"
 }

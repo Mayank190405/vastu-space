@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft,
   Compass,
@@ -12,19 +12,23 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { MobileARNavigationController, ARNavigationState } from '../../components/viewer/arController';
-import { DEFAULT_POIS, POI } from '../../components/viewer/navigationEngine';
+import { POI } from '../../components/viewer/navigationEngine';
+import { api } from '../../services/api';
 
 export const ARNavigationPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const projectId = searchParams.get('projectId') || '';
   const arContainerRef = useRef<HTMLDivElement>(null);
   const controllerRef = useRef<MobileARNavigationController | null>(null);
 
-  const [selectedPOI, setSelectedPOI] = useState<POI>(DEFAULT_POIS[0]);
+  const [pois, setPOIs] = useState<POI[]>([]);
+  const [selectedPOI, setSelectedPOI] = useState<POI | null>(null);
   const [arState, setARState] = useState<ARNavigationState>({
     hasCamera: false,
     compassHeading: 0,
-    bearingToTarget: 45,
-    distanceToTarget: 3.8,
+    bearingToTarget: 0,
+    distanceToTarget: 0,
     turnDirection: 'straight'
   });
 
@@ -41,9 +45,6 @@ export const ARNavigationPage: React.FC = () => {
     );
     controllerRef.current = controller;
 
-    // Set initial target bearing
-    controller.setTargetLocation(65, 4.2);
-
     return () => {
       controller.dispose();
     };
@@ -53,13 +54,36 @@ export const ARNavigationPage: React.FC = () => {
     setSelectedPOI(poi);
     setShowPOIList(false);
     if (controllerRef.current) {
-      // Calculate a target bearing based on POI coordinates
+      // Calculate a target bearing based on real POI coordinates
       const angle = Math.atan2(poi.position[0], -poi.position[2]) * (180 / Math.PI);
       const normalizedBearing = (angle + 360) % 360;
       const dist = Math.hypot(poi.position[0], poi.position[2]) * 2.2;
       controllerRef.current.setTargetLocation(Math.round(normalizedBearing), parseFloat(dist.toFixed(1)));
     }
   };
+
+  useEffect(() => {
+    if (projectId) {
+      api.listPOIs(projectId)
+        .then((data) => {
+          if (Array.isArray(data) && data.length > 0) {
+            const loaded: POI[] = data.map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              category: p.category || 'Custom',
+              position: [p.x ?? p.position?.[0] ?? 0, p.y ?? p.position?.[1] ?? 0, p.z ?? p.position?.[2] ?? 0],
+              color: p.color || '#3b82f6',
+              description: p.description
+            }));
+            setPOIs(loaded);
+            handleSelectPOI(loaded[0]);
+          }
+        })
+        .catch((err) => {
+          console.warn('Failed to fetch project POIs:', err);
+        });
+    }
+  }, [projectId]);
 
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden font-sans select-none">
@@ -126,7 +150,7 @@ export const ARNavigationPage: React.FC = () => {
               </h3>
               <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
                 <span>Destination:</span>
-                <span className="text-[#dfb873] font-semibold">{selectedPOI.name}</span>
+                <span className="text-[#dfb873] font-semibold">{selectedPOI ? selectedPOI.name : 'No waypoint selected'}</span>
               </p>
             </div>
           </div>
@@ -149,33 +173,39 @@ export const ARNavigationPage: React.FC = () => {
           </div>
 
           <div className="flex-1 overflow-y-auto py-3 space-y-2">
-            {DEFAULT_POIS.map((poi) => (
-              <button
-                key={poi.id}
-                onClick={() => handleSelectPOI(poi)}
-                className={`w-full p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
-                  selectedPOI.id === poi.id
-                    ? 'bg-[#dfb873]/20 border-[#dfb873] text-white shadow-lg'
-                    : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
-                }`}
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full"
-                      style={{ backgroundColor: poi.color }}
-                    />
-                    <span className="font-bold text-xs text-white">{poi.name}</span>
+            {pois.length > 0 ? (
+              pois.map((poi) => (
+                <button
+                  key={poi.id}
+                  onClick={() => handleSelectPOI(poi)}
+                  className={`w-full p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
+                    selectedPOI?.id === poi.id
+                      ? 'bg-[#dfb873]/20 border-[#dfb873] text-white shadow-lg'
+                      : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full"
+                        style={{ backgroundColor: poi.color }}
+                      />
+                      <span className="font-bold text-xs text-white">{poi.name}</span>
+                    </div>
+                    <span className="text-[10px] text-slate-400 mt-0.5 block">
+                      {poi.description}
+                    </span>
                   </div>
-                  <span className="text-[10px] text-slate-400 mt-0.5 block">
-                    {poi.description}
-                  </span>
-                </div>
-                {selectedPOI.id === poi.id && (
-                  <CheckCircle2 className="w-4 h-4 text-[#dfb873]" />
-                )}
-              </button>
-            ))}
+                  {selectedPOI?.id === poi.id && (
+                    <CheckCircle2 className="w-4 h-4 text-[#dfb873]" />
+                  )}
+                </button>
+              ))
+            ) : (
+              <div className="p-8 text-center text-slate-400 text-xs">
+                No POIs recorded for this project yet.
+              </div>
+            )}
           </div>
         </div>
       )}

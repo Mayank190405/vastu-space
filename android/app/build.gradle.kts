@@ -80,6 +80,10 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:$cameraVersion")
     implementation("androidx.camera:camera-video:$cameraVersion")
     implementation("androidx.camera:camera-view:$cameraVersion")
+    implementation("androidx.camera:camera-mlkit:$cameraVersion")
+
+    // ML Kit for QR Code Scanning
+    implementation("com.google.mlkit:barcode-scanning:17.2.0")
 
     // Room Database
     val roomVersion = "2.6.1"

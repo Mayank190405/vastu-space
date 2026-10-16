@@ -49,11 +49,14 @@ public class VastuAPIClient: ObservableObject {
     #if targetEnvironment(simulator)
     private static let defaultBaseURL = "http://localhost:8080"
     #else
-    private static let defaultBaseURL = "http://192.168.74.216:8080"
+    private static let defaultBaseURL = "http://192.168.31.33:8080"
     #endif
     
     @Published public var baseURL: String = {
-        if let saved = UserDefaults.standard.string(forKey: "vastu_api_base_url"), !saved.contains("192.168.163.216") {
+        if let saved = UserDefaults.standard.string(forKey: "vastu_api_base_url"),
+           !saved.isEmpty,
+           !saved.contains("192.168.74.216"),
+           !saved.contains("192.168.163.216") {
             return saved
         }
         return defaultBaseURL
@@ -61,6 +64,20 @@ public class VastuAPIClient: ObservableObject {
         didSet {
             UserDefaults.standard.set(baseURL, forKey: "vastu_api_base_url")
         }
+    }
+    
+    public func setBaseURL(_ newURL: String) {
+        var formatted = newURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !formatted.starts(with: "http://") && !formatted.starts(with: "https://") {
+            formatted = "http://" + formatted
+        }
+        let parts = formatted.components(separatedBy: "://")
+        if parts.count == 2 && !parts[1].contains(":") {
+            formatted = formatted + ":8080"
+        }
+        self.baseURL = formatted
+        UserDefaults.standard.set(formatted, forKey: "vastu_api_base_url")
+        print("🔧 [VastuAPI] Set baseURL to: \(formatted)")
     }
     private let session = URLSession.shared
     
@@ -275,29 +292,72 @@ public class VastuAPIClient: ObservableObject {
     }
     
     // ==========================================
+    // POI & Job Endpoints
+    // ==========================================
+    
+    public func getPOIs(projectId: String) async throws -> [POIDTO] {
+        let response: ApiResponse<[POIDTO]> = try await get(path: "/api/v1/projects/\(projectId)/pois")
+        return response.data ?? []
+    }
+    
+    public func createPOI(projectId: String, request: CreatePOIRequest) async throws -> POIDTO {
+        let response: ApiResponse<POIDTO> = try await post(path: "/api/v1/projects/\(projectId)/pois", body: request)
+        guard let data = response.data else {
+            throw NSError(domain: "VastuAPI", code: 400, userInfo: [NSLocalizedDescriptionKey: response.error ?? "Failed to create POI"])
+        }
+        return data
+    }
+    
+    public func deletePOI(projectId: String, poiId: String) async throws {
+        let _: ApiResponse<[String: String]> = try await delete(path: "/api/v1/projects/\(projectId)/pois/\(poiId)")
+    }
+    
+    public func getJob(jobId: String) async throws -> JobDTO {
+        let response: ApiResponse<JobDTO> = try await get(path: "/api/v1/jobs/\(jobId)")
+        guard let data = response.data else {
+            throw NSError(domain: "VastuAPI", code: 404, userInfo: [NSLocalizedDescriptionKey: "Job not found"])
+        }
+        return data
+    }
+    
+    // ==========================================
     // Private Network Helpers
     // ==========================================
     
     private func get<T: Codable>(path: String, requiresAuth: Bool = true) async throws -> T {
         guard let url = URL(string: "\(baseURL)\(path)") else { throw URLError(.badURL) }
+        print("🌐 [VastuAPI GET] \(url.absoluteString)")
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
+        request.timeoutInterval = 12.0
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         if requiresAuth, let token = KeychainHelper.shared.getToken() {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
-        let (data, response) = try await session.data(for: request)
-        guard let httpResp = response as? HTTPURLResponse, (200...299).contains(httpResp.statusCode) else {
-            let errMsg = String(data: data, encoding: .utf8) ?? "HTTP Error"
-            throw NSError(domain: "VastuAPI", code: (response as? HTTPURLResponse)?.statusCode ?? 500, userInfo: [NSLocalizedDescriptionKey: errMsg])
+        do {
+            let (data, response) = try await session.data(for: request)
+            guard let httpResp = response as? HTTPURLResponse else {
+                throw NSError(domain: "VastuAPI", code: 500, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
+            }
+            print("✅ [VastuAPI GET Response] Status \(httpResp.statusCode) from \(path)")
+            guard (200...299).contains(httpResp.statusCode) else {
+                let errMsg = String(data: data, encoding: .utf8) ?? "HTTP Error \(httpResp.statusCode)"
+                print("❌ [VastuAPI GET Error] Status \(httpResp.statusCode): \(errMsg)")
+                throw NSError(domain: "VastuAPI", code: httpResp.statusCode, userInfo: [NSLocalizedDescriptionKey: errMsg])
+            }
+            return try JSONDecoder().decode(T.self, from: data)
+        } catch {
+            print("🚨 [VastuAPI GET Failed] \(path) error: \(error.localizedDescription)")
+            throw error
         }
-        return try JSONDecoder().decode(T.self, from: data)
     }
     
     private func post<B: Codable, T: Codable>(path: String, body: B, requiresAuth: Bool = true) async throws -> T {
         guard let url = URL(string: "\(baseURL)\(path)") else { throw URLError(.badURL) }
+        print("🌐 [VastuAPI POST] \(url.absoluteString)")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
+        request.timeoutInterval = 12.0
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         if requiresAuth, let token = KeychainHelper.shared.getToken() {
@@ -305,27 +365,49 @@ public class VastuAPIClient: ObservableObject {
         }
         request.httpBody = try JSONEncoder().encode(body)
         
-        let (data, response) = try await session.data(for: request)
-        guard let httpResp = response as? HTTPURLResponse, (200...299).contains(httpResp.statusCode) else {
-            let errMsg = String(data: data, encoding: .utf8) ?? "HTTP Error"
-            throw NSError(domain: "VastuAPI", code: (response as? HTTPURLResponse)?.statusCode ?? 500, userInfo: [NSLocalizedDescriptionKey: errMsg])
+        do {
+            let (data, response) = try await session.data(for: request)
+            guard let httpResp = response as? HTTPURLResponse else {
+                throw NSError(domain: "VastuAPI", code: 500, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
+            }
+            print("✅ [VastuAPI POST Response] Status \(httpResp.statusCode) from \(path)")
+            guard (200...299).contains(httpResp.statusCode) else {
+                let errMsg = String(data: data, encoding: .utf8) ?? "HTTP Error \(httpResp.statusCode)"
+                print("❌ [VastuAPI POST Error] Status \(httpResp.statusCode): \(errMsg)")
+                throw NSError(domain: "VastuAPI", code: httpResp.statusCode, userInfo: [NSLocalizedDescriptionKey: errMsg])
+            }
+            return try JSONDecoder().decode(T.self, from: data)
+        } catch {
+            print("🚨 [VastuAPI POST Failed] \(path) error: \(error.localizedDescription)")
+            throw error
         }
-        return try JSONDecoder().decode(T.self, from: data)
     }
     
     private func delete<T: Codable>(path: String, requiresAuth: Bool = true) async throws -> T {
         guard let url = URL(string: "\(baseURL)\(path)") else { throw URLError(.badURL) }
+        print("🌐 [VastuAPI DELETE] \(url.absoluteString)")
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
+        request.timeoutInterval = 12.0
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         if requiresAuth, let token = KeychainHelper.shared.getToken() {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
-        let (data, response) = try await session.data(for: request)
-        guard let httpResp = response as? HTTPURLResponse, (200...299).contains(httpResp.statusCode) else {
-            let errMsg = String(data: data, encoding: .utf8) ?? "HTTP Error"
-            throw NSError(domain: "VastuAPI", code: (response as? HTTPURLResponse)?.statusCode ?? 500, userInfo: [NSLocalizedDescriptionKey: errMsg])
+        do {
+            let (data, response) = try await session.data(for: request)
+            guard let httpResp = response as? HTTPURLResponse else {
+                throw NSError(domain: "VastuAPI", code: 500, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
+            }
+            print("✅ [VastuAPI DELETE Response] Status \(httpResp.statusCode) from \(path)")
+            guard (200...299).contains(httpResp.statusCode) else {
+                let errMsg = String(data: data, encoding: .utf8) ?? "HTTP Error \(httpResp.statusCode)"
+                print("❌ [VastuAPI DELETE Error] Status \(httpResp.statusCode): \(errMsg)")
+                throw NSError(domain: "VastuAPI", code: httpResp.statusCode, userInfo: [NSLocalizedDescriptionKey: errMsg])
+            }
+            return (try? JSONDecoder().decode(T.self, from: data)) ?? (ApiResponse<[String: String]>(success: true, message: "Deleted", data: nil, error: nil) as! T)
+        } catch {
+            print("🚨 [VastuAPI DELETE Failed] \(path) error: \(error.localizedDescription)")
+            throw error
         }
-        return (try? JSONDecoder().decode(T.self, from: data)) ?? (ApiResponse<[String: String]>(success: true, message: "Deleted", data: nil, error: nil) as! T)
     }
 }

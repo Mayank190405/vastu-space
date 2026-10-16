@@ -203,6 +203,43 @@ public class CaptureQualityEngine: NSObject, ObservableObject, AVSpeechSynthesiz
         speechSynthesizer.speak(utterance)
     }
     
+    @Published public var overallCoverageScore: Float = 0.0
+    @Published public var floorCoverageScore: Float = 0.0
+    @Published public var wallCoverageScore: Float = 0.0
+    @Published public var isGatedComplete: Bool = false
+    
+    public func updateCoverage(overall: Float, floor: Float, walls: Float) {
+        self.overallCoverageScore = min(1.0, max(0.0, overall))
+        self.floorCoverageScore = min(1.0, max(0.0, floor))
+        self.wallCoverageScore = min(1.0, max(0.0, walls))
+        self.isGatedComplete = (overallCoverageScore >= 0.85 && floorCoverageScore >= 0.80 && wallCoverageScore >= 0.70)
+    }
+    
+    public func verifyCompletionGate() -> (canComplete: Bool, defectMessage: String?) {
+        if overallCoverageScore < 0.85 {
+            let pct = Int(overallCoverageScore * 100)
+            let msg = "Capture incomplete. Overall coverage is \(pct)%, required 85%."
+            speakInstruction(text: "\(msg) Sweep unobserved areas before completing.", priority: .warning, category: "GATE_INCOMPLETE")
+            activeWarning = "COVERAGE < 85%"
+            return (false, msg)
+        }
+        if floorCoverageScore < 0.80 {
+            let pct = Int(floorCoverageScore * 100)
+            let msg = "Floor coverage is \(pct)%, required 80%. Tilt phone downward to scan floor."
+            speakInstruction(text: msg, priority: .warning, category: "GATE_FLOOR")
+            activeWarning = "SCAN FLOOR SURFACE"
+            return (false, msg)
+        }
+        if wallCoverageScore < 0.70 {
+            let pct = Int(wallCoverageScore * 100)
+            let msg = "Wall coverage is \(pct)%, required 70%. Sweep perimeter walls."
+            speakInstruction(text: msg, priority: .warning, category: "GATE_WALLS")
+            activeWarning = "SCAN WALL SURFACES"
+            return (false, msg)
+        }
+        return (true, nil)
+    }
+
     public func evaluateTelemetry(
         velocityMps: Float,
         angularVelocityRadps: Float,
@@ -214,6 +251,18 @@ public class CaptureQualityEngine: NSObject, ObservableObject, AVSpeechSynthesiz
         if trackingLost {
             speakInstruction(text: "Tracking lost. Aim camera toward previously scanned areas.", priority: .critical, category: "TRACKING_LOST")
             activeWarning = "TRACKING DEGRADED"
+            return
+        }
+        
+        // Translation baseline check: alert if user twists in place without translation baseline
+        if velocityMps < 0.15 && angularVelocityRadps > 0.26 { // > 15 deg/s
+            speakInstruction(text: "Walk sideways along room perimeter! Do not twist in place without translation baseline.", priority: .warning, category: "PURE_ROTATION")
+            activeWarning = "TWISTING IN PLACE — WALK SIDEWAYS"
+            qualityFeedback = QualityFeedback(
+                level: .insufficientOverlap,
+                title: "TRANSLATION BASELINE REQUIRED",
+                correctiveAction: "Step sideways along perimeter instead of rotating in place"
+            )
             return
         }
         
@@ -245,6 +294,16 @@ public class CaptureQualityEngine: NSObject, ObservableObject, AVSpeechSynthesiz
     }
     
     public func advanceStage() {
+        if currentStageIndex == sopStages.count - 1 {
+            // Final stage: gate completion
+            let gate = verifyCompletionGate()
+            if !gate.canComplete {
+                return // Block completion until gate passes
+            }
+            speakInstruction(text: "Scan complete! Space captured successfully.", priority: .confirmation, category: "STAGE_CONFIRM")
+            return
+        }
+        
         if currentStageIndex < sopStages.count - 1 {
             let current = sopStages[currentStageIndex]
             speakInstruction(text: current.completionNotice, priority: .confirmation, category: "STAGE_CONFIRM")
@@ -255,3 +314,4 @@ public class CaptureQualityEngine: NSObject, ObservableObject, AVSpeechSynthesiz
         }
     }
 }
+

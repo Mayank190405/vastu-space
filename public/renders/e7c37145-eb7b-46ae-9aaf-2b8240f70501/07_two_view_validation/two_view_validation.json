@@ -1,7 +1,7 @@
 {
   "gate_passed": true,
-  "overlap_ratio": 0.996,
-  "depth_residual_m": 0.0331,
+  "overlap_ratio": 0.949,
+  "depth_residual_m": 0.0815,
   "reprojection_error_px": 1.45,
   "depth_ordering_consistent": true,
   "error_reason": null

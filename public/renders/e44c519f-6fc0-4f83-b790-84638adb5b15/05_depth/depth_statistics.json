@@ -5,131 +5,131 @@
   "frame_statistics": [
     {
       "frame_id": 0,
-      "min_depth_m": 0.989,
-      "max_depth_m": 3.658,
-      "median_depth_m": 2.12,
-      "confidence_ratio": 0.992,
-      "clutter_ratio": 0.202
+      "min_depth_m": 0.8,
+      "max_depth_m": 4.2,
+      "median_depth_m": 2.562,
+      "confidence_ratio": 0.999,
+      "clutter_ratio": 0.204
     },
     {
       "frame_id": 1,
-      "min_depth_m": 0.979,
-      "max_depth_m": 3.735,
-      "median_depth_m": 2.053,
-      "confidence_ratio": 0.992,
-      "clutter_ratio": 0.202
+      "min_depth_m": 0.8,
+      "max_depth_m": 4.19,
+      "median_depth_m": 2.718,
+      "confidence_ratio": 0.999,
+      "clutter_ratio": 0.152
     },
     {
       "frame_id": 2,
-      "min_depth_m": 0.983,
-      "max_depth_m": 3.651,
-      "median_depth_m": 2.31,
-      "confidence_ratio": 0.992,
-      "clutter_ratio": 0.196
+      "min_depth_m": 1.05,
+      "max_depth_m": 4.144,
+      "median_depth_m": 2.722,
+      "confidence_ratio": 0.999,
+      "clutter_ratio": 0.139
     },
     {
       "frame_id": 3,
-      "min_depth_m": 0.99,
-      "max_depth_m": 3.618,
-      "median_depth_m": 2.308,
-      "confidence_ratio": 0.99,
-      "clutter_ratio": 0.197
+      "min_depth_m": 1.079,
+      "max_depth_m": 3.631,
+      "median_depth_m": 2.556,
+      "confidence_ratio": 0.999,
+      "clutter_ratio": 0.304
     },
     {
       "frame_id": 4,
-      "min_depth_m": 0.939,
-      "max_depth_m": 3.611,
-      "median_depth_m": 2.407,
-      "confidence_ratio": 0.99,
-      "clutter_ratio": 0.196
+      "min_depth_m": 1.067,
+      "max_depth_m": 3.671,
+      "median_depth_m": 2.455,
+      "confidence_ratio": 0.999,
+      "clutter_ratio": 0.354
     },
     {
       "frame_id": 5,
-      "min_depth_m": 0.963,
-      "max_depth_m": 3.629,
-      "median_depth_m": 2.339,
-      "confidence_ratio": 0.99,
-      "clutter_ratio": 0.205
+      "min_depth_m": 1.044,
+      "max_depth_m": 3.725,
+      "median_depth_m": 2.741,
+      "confidence_ratio": 0.998,
+      "clutter_ratio": 0.223
     },
     {
       "frame_id": 6,
-      "min_depth_m": 0.947,
-      "max_depth_m": 3.558,
-      "median_depth_m": 2.523,
-      "confidence_ratio": 0.99,
-      "clutter_ratio": 0.201
+      "min_depth_m": 1.047,
+      "max_depth_m": 3.605,
+      "median_depth_m": 2.822,
+      "confidence_ratio": 0.998,
+      "clutter_ratio": 0.187
     },
     {
       "frame_id": 7,
-      "min_depth_m": 0.85,
-      "max_depth_m": 3.664,
-      "median_depth_m": 2.335,
-      "confidence_ratio": 0.988,
-      "clutter_ratio": 0.207
+      "min_depth_m": 1.042,
+      "max_depth_m": 3.55,
+      "median_depth_m": 2.997,
+      "confidence_ratio": 0.999,
+      "clutter_ratio": 0.192
     },
     {
       "frame_id": 8,
-      "min_depth_m": 0.8,
-      "max_depth_m": 3.766,
-      "median_depth_m": 2.138,
-      "confidence_ratio": 0.976,
-      "clutter_ratio": 0.219
+      "min_depth_m": 1.024,
+      "max_depth_m": 3.667,
+      "median_depth_m": 2.925,
+      "confidence_ratio": 1.0,
+      "clutter_ratio": 0.187
     },
     {
       "frame_id": 9,
-      "min_depth_m": 0.8,
-      "max_depth_m": 3.808,
-      "median_depth_m": 2.128,
-      "confidence_ratio": 0.984,
-      "clutter_ratio": 0.208
+      "min_depth_m": 1.06,
+      "max_depth_m": 3.778,
+      "median_depth_m": 2.622,
+      "confidence_ratio": 0.999,
+      "clutter_ratio": 0.268
     },
     {
       "frame_id": 10,
-      "min_depth_m": 0.8,
-      "max_depth_m": 3.826,
-      "median_depth_m": 2.107,
-      "confidence_ratio": 0.983,
-      "clutter_ratio": 0.228
+      "min_depth_m": 1.052,
+      "max_depth_m": 3.734,
+      "median_depth_m": 2.732,
+      "confidence_ratio": 0.999,
+      "clutter_ratio": 0.245
     },
     {
       "frame_id": 11,
-      "min_depth_m": 0.8,
-      "max_depth_m": 3.903,
-      "median_depth_m": 2.108,
-      "confidence_ratio": 0.978,
-      "clutter_ratio": 0.231
+      "min_depth_m": 1.062,
+      "max_depth_m": 3.627,
+      "median_depth_m": 2.77,
+      "confidence_ratio": 0.999,
+      "clutter_ratio": 0.226
     },
     {
       "frame_id": 12,
-      "min_depth_m": 0.8,
-      "max_depth_m": 3.882,
-      "median_depth_m": 2.19,
-      "confidence_ratio": 0.975,
-      "clutter_ratio": 0.199
+      "min_depth_m": 1.057,
+      "max_depth_m": 3.724,
+      "median_depth_m": 2.856,
+      "confidence_ratio": 0.999,
+      "clutter_ratio": 0.203
     },
     {
       "frame_id": 13,
-      "min_depth_m": 0.8,
-      "max_depth_m": 3.9,
-      "median_depth_m": 2.217,
-      "confidence_ratio": 0.96,
-      "clutter_ratio": 0.206
+      "min_depth_m": 1.06,
+      "max_depth_m": 3.851,
+      "median_depth_m": 2.869,
+      "confidence_ratio": 0.999,
+      "clutter_ratio": 0.181
     },
     {
       "frame_id": 14,
-      "min_depth_m": 0.8,
-      "max_depth_m": 3.76,
-      "median_depth_m": 2.189,
-      "confidence_ratio": 0.967,
-      "clutter_ratio": 0.191
+      "min_depth_m": 1.061,
+      "max_depth_m": 3.887,
+      "median_depth_m": 2.807,
+      "confidence_ratio": 0.999,
+      "clutter_ratio": 0.193
     },
     {
       "frame_id": 15,
-      "min_depth_m": 0.8,
-      "max_depth_m": 3.747,
-      "median_depth_m": 2.363,
-      "confidence_ratio": 0.978,
-      "clutter_ratio": 0.188
+      "min_depth_m": 0.968,
+      "max_depth_m": 3.84,
+      "median_depth_m": 2.724,
+      "confidence_ratio": 0.988,
+      "clutter_ratio": 0.191
     }
   ]
 }

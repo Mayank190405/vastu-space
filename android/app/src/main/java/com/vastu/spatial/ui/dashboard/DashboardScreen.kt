@@ -24,6 +24,7 @@ import com.vastu.spatial.data.api.ApiClient
 import com.vastu.spatial.data.model.FloorDto
 import com.vastu.spatial.data.model.ProjectDto
 import com.vastu.spatial.ui.theme.*
+import com.vastu.spatial.ui.qr.QRScannerScreen
 import kotlinx.coroutines.launch
 
 import com.vastu.spatial.ui.profile.ProfileScreen
@@ -41,6 +42,7 @@ fun DashboardScreen(
     val tokenManager = ApiClient.getTokenManager()
     var selectedOrg by remember { mutableStateOf("Personal Workspace") }
     var showOrgMenu by remember { mutableStateOf(false) }
+    var showQRScanner by remember { mutableStateOf(false) }
 
     fun refreshProjects() {
         isLoading = true
@@ -163,6 +165,16 @@ fun DashboardScreen(
                     }
 
                     Spacer(modifier = Modifier.weight(1f))
+
+                    // QR Code Scanner Button
+                    IconButton(onClick = { showQRScanner = true }) {
+                        Icon(Icons.Default.CameraAlt, contentDescription = "Scan QR Code", tint = BrandText)
+                    }
+
+                    // Notification Bell
+                    IconButton(onClick = {}) {
+                        Icon(Icons.Default.Notifications, contentDescription = "Notifications", tint = BrandText)
+                    }
 
                     // Org Switcher Pill Dropdown
                     Box {
@@ -356,6 +368,47 @@ fun DashboardScreen(
                 }
             }
         }
+    }
+    
+    if (showQRScanner) {
+        QRScannerScreen(
+            onCodeScanned = { code ->
+                handleQRCodeScanned(code, projects, onSelectProjectForCapture)
+                showQRScanner = false
+            },
+            onDismiss = { showQRScanner = false }
+        )
+    }
+}
+
+private fun handleQRCodeScanned(
+    code: String,
+    projects: List<ProjectDto>,
+    onSelectProjectForCapture: (ProjectDto, FloorDto?) -> Unit
+) {
+    // Parse the QR code to extract session information
+    // Expected format: "vastuspatial://capture/{sessionId}?projectId={projectId}"
+    // Or session code: "V-{sessionId}"
+    
+    if (code.startsWith("vastuspatial://capture/")) {
+        // Handle deep link format
+        val uri = android.net.Uri.parse(code)
+        val sessionId = uri.lastPathSegment
+        val projectId = uri.getQueryParameter("projectId")
+        
+        if (sessionId != null && projectId != null) {
+            // Find the project and start capture
+            val project = projects.find { it.id == projectId }
+            if (project != null) {
+                onSelectProjectForCapture(project, null)
+            }
+        }
+    } else if (code.startsWith("V-")) {
+        // Handle session code format
+        val sessionId = code.substring(2)
+        // In real implementation, validate session code with backend
+        println("Session code scanned: $sessionId")
+        // For now, just show alert
     }
 }
 

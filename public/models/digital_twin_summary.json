@@ -1,15 +1,15 @@
 {
   "version": "v3.0.0-permanent-escalation",
-  "timestamp": "2026-09-06 15:25:53",
-  "quality_status": "WARNING",
-  "quality_score": 0.931,
-  "elapsed_seconds": 60.23,
+  "timestamp": "2026-09-22 00:29:19",
+  "quality_status": "FAIL",
+  "quality_score": 0.9,
+  "elapsed_seconds": 157.02,
   "stages_executed": 25,
   "statistics": {
-    "mesh_vertices": 17000,
-    "mesh_triangles": 32666,
-    "point_cloud_density": 278672,
-    "room_dimensions": "1.47m x 2.39m x 3.08m",
+    "mesh_vertices": 406212,
+    "mesh_triangles": 814468,
+    "point_cloud_density": 335607,
+    "room_dimensions": "3.58m x 2.43m x 3.26m",
     "texture_resolution": "2048x2048"
   },
   "assets": {
@@ -17,6 +17,7 @@
     "texture_atlas": "/Users/kradsagency/Desktop/vastu-namma-space/digital_twin_output/texture_atlas.png",
     "ply_mesh": "/Users/kradsagency/Desktop/vastu-namma-space/digital_twin_output/mesh.ply",
     "point_cloud": "/Users/kradsagency/Desktop/vastu-namma-space/digital_twin_output/dense_pointcloud.ply",
-    "webgl_viewer": "/Users/kradsagency/Desktop/vastu-namma-space/digital_twin_output/index.html"
+    "webgl_viewer": "/Users/kradsagency/Desktop/vastu-namma-space/digital_twin_output/index.html",
+    "supervisor_diagnostics": "/Users/kradsagency/Desktop/vastu-namma-space/digital_twin_output/supervisor_diagnostics.json"
   }
 }

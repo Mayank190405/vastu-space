@@ -26,61 +26,26 @@ export interface NavigationRoute {
   isWheelchairCompliant: boolean;
 }
 
-export const DEFAULT_POIS: POI[] = [
-  {
-    id: 'poi-entrance',
-    name: 'Main Entrance & Reception',
-    category: 'Entrance',
-    position: [0.0, 0.15, -1.8],
-    color: '#10b981',
-    description: 'Primary ingress point, check-in desk, and visitor badge terminal'
-  },
-  {
-    id: 'poi-workspace',
-    name: 'Collaborative Workspace',
-    category: 'Workplace',
-    position: [0.65, 0.15, 0.45],
-    color: '#3b82f6',
-    description: 'Ergonomic workstations, high-speed power drops, and task lighting'
-  },
-  {
-    id: 'poi-meeting',
-    name: 'Executive Conference Pod',
-    category: 'Meeting',
-    position: [-0.65, 0.15, 1.15],
-    color: '#8b5cf6',
-    description: 'Acoustically isolated 8-person conference room with AV display'
-  },
-  {
-    id: 'poi-amenity',
-    name: 'Pantry & Coffee Bar',
-    category: 'Facility',
-    position: [-0.85, 0.15, -0.6],
-    color: '#f59e0b',
-    description: 'Refreshment counter, espresso machine, and recycling depot'
-  },
-  {
-    id: 'poi-exit',
-    name: 'Emergency Fire Exit',
-    category: 'Safety',
-    position: [0.85, 0.15, -1.2],
-    color: '#ef4444',
-    description: 'Emergency egress stairwell door with illuminated fire signage'
-  }
-];
-
 export class NavigationEngine {
-  private pois: POI[] = [...DEFAULT_POIS];
+  private pois: POI[] = [];
   private scene: THREE.Scene;
   private markerGroup = new THREE.Group();
   private pathGroup = new THREE.Group();
   private pathMesh: THREE.Mesh | null = null;
   private pathUniforms: { [key: string]: { value: any } } = {};
 
-  constructor(scene: THREE.Scene) {
+  constructor(scene: THREE.Scene, initialPOIs: POI[] = []) {
     this.scene = scene;
     this.scene.add(this.markerGroup);
     this.scene.add(this.pathGroup);
+    if (initialPOIs.length > 0) {
+      this.pois = [...initialPOIs];
+      this.rebuildPOIMarkers();
+    }
+  }
+
+  public setPOIs(pois: POI[]) {
+    this.pois = [...pois];
     this.rebuildPOIMarkers();
   }
 
@@ -197,7 +162,8 @@ export class NavigationEngine {
   public calculateRoute(
     startPoint: THREE.Vector3,
     targetPOI: POI,
-    requireWheelchair: boolean = false
+    requireWheelchair: boolean = false,
+    explicitWaypoints?: THREE.Vector3[]
   ): NavigationRoute {
     const endPoint = new THREE.Vector3(
       targetPOI.position[0],
@@ -205,40 +171,13 @@ export class NavigationEngine {
       targetPOI.position[2]
     );
 
-    // Corridor Navigation Hub: center of walkable room
-    const hub = new THREE.Vector3(0.0, 0.05, 0.0);
-
-    const waypoints: THREE.Vector3[] = [];
-    waypoints.push(new THREE.Vector3(startPoint.x, 0.05, startPoint.z));
-
-    // If straight line distance is large or crosses obstacles, route through the central corridor hub
-    const directDist = startPoint.distanceTo(endPoint);
-    if (directDist > 1.8) {
-      // Intermediate waypoint to clear furniture boundaries
-      const midPointA = new THREE.Vector3(
-        startPoint.x * 0.4 + hub.x * 0.6,
-        0.05,
-        startPoint.z * 0.4 + hub.z * 0.6
-      );
-      const midPointB = new THREE.Vector3(
-        endPoint.x * 0.4 + hub.x * 0.6,
-        0.05,
-        endPoint.z * 0.4 + hub.z * 0.6
-      );
-      waypoints.push(midPointA);
-      waypoints.push(hub);
-      waypoints.push(midPointB);
+    let waypoints: THREE.Vector3[] = [];
+    if (explicitWaypoints && explicitWaypoints.length >= 2) {
+      waypoints = explicitWaypoints.map((p) => new THREE.Vector3(p.x, 0.05, p.z));
     } else {
-      // Add a slight arc to conform to natural walking trajectories
-      const midPoint = new THREE.Vector3(
-        (startPoint.x + endPoint.x) / 2 + 0.15,
-        0.05,
-        (startPoint.z + endPoint.z) / 2 - 0.15
-      );
-      waypoints.push(midPoint);
+      waypoints.push(new THREE.Vector3(startPoint.x, 0.05, startPoint.z));
+      waypoints.push(new THREE.Vector3(endPoint.x, 0.05, endPoint.z));
     }
-
-    waypoints.push(endPoint);
 
     // Generate smooth Catmull-Rom spline curve points
     const curve = new THREE.CatmullRomCurve3(waypoints, false, 'centripetal');

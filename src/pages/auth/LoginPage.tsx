@@ -94,9 +94,14 @@ export const LoginPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      await api.sendOTP(email, 'LOGIN');
+      const res = await api.sendOTP(email, 'LOGIN');
       setOtpSent(true);
-      setSuccessMsg(`Verification code sent to ${email}`);
+      setOtpCode('');
+      if (res?.debug_otp) {
+        setSuccessMsg(`Verification code sent to ${email} (Dev Code: ${res.debug_otp})`);
+      } else {
+        setSuccessMsg(`Verification code sent to ${email}`);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to send OTP. Please verify email address.');
     } finally {
@@ -114,11 +119,12 @@ export const LoginPage: React.FC = () => {
     setError(null);
     try {
       const res = await api.verifyOTP(email, otpCode, 'LOGIN');
-      if (res.user && res.tokens) {
+      if (res.user && (res.tokens || res.token)) {
         const activeMembership = res.memberships?.find((m) => m.status === 'active');
         setSession({
           user: res.user,
           tokens: res.tokens,
+          token: res.token,
           activeOrg: extractActiveOrg(activeMembership),
           activeRole: activeMembership?.role,
           memberships: res.memberships,
@@ -149,6 +155,7 @@ export const LoginPage: React.FC = () => {
       setSession({
         user: res.user,
         tokens: res.tokens,
+        token: res.token,
         activeOrg: extractActiveOrg(activeMembership),
         activeRole: activeMembership?.role,
         memberships: res.memberships,
@@ -172,6 +179,7 @@ export const LoginPage: React.FC = () => {
       setSession({
         user: res.user,
         tokens: res.tokens,
+        token: res.token,
         activeOrg: extractActiveOrg(activeMembership),
         activeRole: activeMembership?.role,
         memberships: res.memberships,

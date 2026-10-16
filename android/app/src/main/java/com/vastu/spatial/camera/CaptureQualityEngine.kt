@@ -161,6 +161,52 @@ class CaptureQualityEngine(context: Context? = null) : TextToSpeech.OnInitListen
         }
     }
 
+    private val _overallCoverageScore = MutableStateFlow(0.0f)
+    val overallCoverageScore: StateFlow<Float> = _overallCoverageScore
+
+    private val _floorCoverageScore = MutableStateFlow(0.0f)
+    val floorCoverageScore: StateFlow<Float> = _floorCoverageScore
+
+    private val _wallCoverageScore = MutableStateFlow(0.0f)
+    val wallCoverageScore: StateFlow<Float> = _wallCoverageScore
+
+    private val _isGatedComplete = MutableStateFlow(false)
+    val isGatedComplete: StateFlow<Boolean> = _isGatedComplete
+
+    fun updateCoverage(overall: Float, floor: Float, walls: Float) {
+        _overallCoverageScore.value = Math.min(1.0f, Math.max(0.0f, overall))
+        _floorCoverageScore.value = Math.min(1.0f, Math.max(0.0f, floor))
+        _wallCoverageScore.value = Math.min(1.0f, Math.max(0.0f, walls))
+        _isGatedComplete.value = (_overallCoverageScore.value >= 0.85f &&
+                                 _floorCoverageScore.value >= 0.80f &&
+                                 _wallCoverageScore.value >= 0.70f)
+    }
+
+    fun verifyCompletionGate(): Pair<Boolean, String?> {
+        if (_overallCoverageScore.value < 0.85f) {
+            val pct = (_overallCoverageScore.value * 100).toInt()
+            val msg = "Capture incomplete. Overall coverage is $pct%, required 85%."
+            speakInstruction("$msg Sweep unobserved areas before completing.", AndroidTTSPriority.WARNING, "GATE_INCOMPLETE")
+            _activeWarning.value = "COVERAGE < 85%"
+            return Pair(false, msg)
+        }
+        if (_floorCoverageScore.value < 0.80f) {
+            val pct = (_floorCoverageScore.value * 100).toInt()
+            val msg = "Floor coverage is $pct%, required 80%. Tilt phone downward to scan floor."
+            speakInstruction(msg, AndroidTTSPriority.WARNING, "GATE_FLOOR")
+            _activeWarning.value = "SCAN FLOOR SURFACE"
+            return Pair(false, msg)
+        }
+        if (_wallCoverageScore.value < 0.70f) {
+            val pct = (_wallCoverageScore.value * 100).toInt()
+            val msg = "Wall coverage is $pct%, required 70%. Sweep perimeter walls."
+            speakInstruction(msg, AndroidTTSPriority.WARNING, "GATE_WALLS")
+            _activeWarning.value = "SCAN WALL SURFACES"
+            return Pair(false, msg)
+        }
+        return Pair(true, null)
+    }
+
     fun evaluateTelemetry(
         velocityMps: Float,
         angularVelocityRadps: Float,
@@ -176,6 +222,18 @@ class CaptureQualityEngine(context: Context? = null) : TextToSpeech.OnInitListen
                 QualityLevel.RESCAN_REQUIRED,
                 "Tracking Degraded",
                 "Re-aim camera at features already scanned to recover tracking"
+            )
+            return
+        }
+
+        // Translation baseline check: alert if user twists in place without translation baseline
+        if (velocityMps < 0.15f && angularVelocityRadps > 0.26f) { // > 15 deg/s
+            speakInstruction("Walk sideways along room perimeter! Do not twist in place without translation baseline.", AndroidTTSPriority.WARNING, "PURE_ROTATION")
+            _activeWarning.value = "TWISTING IN PLACE — WALK SIDEWAYS"
+            _qualityFeedback.value = QualityFeedback(
+                QualityLevel.WARNING_INSUFFICIENT_OVERLAP,
+                "Translation Baseline Required",
+                "Step sideways along perimeter instead of rotating in place"
             )
             return
         }
@@ -233,6 +291,16 @@ class CaptureQualityEngine(context: Context? = null) : TextToSpeech.OnInitListen
     }
 
     fun advanceStage() {
+        if (_currentStageIndex.value == sopStages.size - 1) {
+            // Final stage: verify 85% completion gate
+            val gate = verifyCompletionGate()
+            if (!gate.first) {
+                return // Block completion until gate passes
+            }
+            speakInstruction("Scan complete! Space captured successfully.", AndroidTTSPriority.CONFIRMATION, "STAGE_CONFIRM")
+            return
+        }
+
         if (_currentStageIndex.value < sopStages.size - 1) {
             val current = sopStages[_currentStageIndex.value]
             speakInstruction(current.completionNotice, AndroidTTSPriority.CONFIRMATION, "STAGE_CONFIRM")
@@ -248,3 +316,4 @@ class CaptureQualityEngine(context: Context? = null) : TextToSpeech.OnInitListen
         tts?.shutdown()
     }
 }
+

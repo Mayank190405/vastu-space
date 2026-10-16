@@ -2,8 +2,8 @@
   "calibration_source": "estimated",
   "camera_model": "PINHOLE",
   "original_resolution": [
-    2160,
-    3840
+    360,
+    640
   ],
   "processing_resolution": [
     540,

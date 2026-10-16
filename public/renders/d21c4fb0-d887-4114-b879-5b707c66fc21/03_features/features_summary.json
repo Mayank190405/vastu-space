@@ -1,122 +1,122 @@
 [
   {
     "pair": "00_01",
-    "matches": 946,
-    "good_matches": 490,
-    "ransac_inliers": 459,
-    "inlier_ratio": 0.937,
-    "translation_mag_m": 0.0054
+    "matches": 1058,
+    "good_matches": 470,
+    "ransac_inliers": 254,
+    "inlier_ratio": 0.54,
+    "translation_mag_m": 0.0077
   },
   {
     "pair": "01_02",
-    "matches": 935,
-    "good_matches": 464,
-    "ransac_inliers": 350,
-    "inlier_ratio": 0.754,
-    "translation_mag_m": 0.0175
+    "matches": 1047,
+    "good_matches": 398,
+    "ransac_inliers": 163,
+    "inlier_ratio": 0.41,
+    "translation_mag_m": 0.0374
   },
   {
     "pair": "02_03",
-    "matches": 922,
-    "good_matches": 405,
-    "ransac_inliers": 241,
-    "inlier_ratio": 0.595,
-    "translation_mag_m": 0.0393
+    "matches": 1046,
+    "good_matches": 444,
+    "ransac_inliers": 171,
+    "inlier_ratio": 0.385,
+    "translation_mag_m": 0.0648
   },
   {
     "pair": "03_04",
-    "matches": 950,
-    "good_matches": 446,
+    "matches": 1131,
+    "good_matches": 558,
     "ransac_inliers": 298,
-    "inlier_ratio": 0.668,
-    "translation_mag_m": 0.027
+    "inlier_ratio": 0.534,
+    "translation_mag_m": 0.0235
   },
   {
     "pair": "04_05",
-    "matches": 963,
-    "good_matches": 505,
-    "ransac_inliers": 435,
-    "inlier_ratio": 0.861,
-    "translation_mag_m": 0.0105
+    "matches": 1174,
+    "good_matches": 366,
+    "ransac_inliers": 132,
+    "inlier_ratio": 0.361,
+    "translation_mag_m": 0.0762
   },
   {
     "pair": "05_06",
-    "matches": 1005,
-    "good_matches": 500,
-    "ransac_inliers": 347,
-    "inlier_ratio": 0.694,
-    "translation_mag_m": 0.0264
+    "matches": 1009,
+    "good_matches": 246,
+    "ransac_inliers": 101,
+    "inlier_ratio": 0.411,
+    "translation_mag_m": 0.0471
   },
   {
     "pair": "06_07",
-    "matches": 990,
-    "good_matches": 455,
-    "ransac_inliers": 335,
-    "inlier_ratio": 0.736,
-    "translation_mag_m": 0.0243
+    "matches": 855,
+    "good_matches": 290,
+    "ransac_inliers": 127,
+    "inlier_ratio": 0.438,
+    "translation_mag_m": 0.1017
   },
   {
     "pair": "07_08",
-    "matches": 996,
-    "good_matches": 458,
-    "ransac_inliers": 337,
-    "inlier_ratio": 0.736,
-    "translation_mag_m": 0.0268
+    "matches": 835,
+    "good_matches": 315,
+    "ransac_inliers": 128,
+    "inlier_ratio": 0.406,
+    "translation_mag_m": 0.1454
   },
   {
     "pair": "08_09",
-    "matches": 953,
-    "good_matches": 473,
-    "ransac_inliers": 254,
-    "inlier_ratio": 0.537,
-    "translation_mag_m": 0.0375
+    "matches": 772,
+    "good_matches": 233,
+    "ransac_inliers": 64,
+    "inlier_ratio": 0.275,
+    "translation_mag_m": 0.0925
   },
   {
     "pair": "09_10",
-    "matches": 967,
-    "good_matches": 525,
-    "ransac_inliers": 456,
-    "inlier_ratio": 0.869,
-    "translation_mag_m": 0.0087
+    "matches": 702,
+    "good_matches": 282,
+    "ransac_inliers": 106,
+    "inlier_ratio": 0.376,
+    "translation_mag_m": 0.0489
   },
   {
     "pair": "10_11",
-    "matches": 981,
-    "good_matches": 492,
-    "ransac_inliers": 308,
-    "inlier_ratio": 0.626,
-    "translation_mag_m": 0.0348
+    "matches": 840,
+    "good_matches": 326,
+    "ransac_inliers": 149,
+    "inlier_ratio": 0.457,
+    "translation_mag_m": 0.0698
   },
   {
     "pair": "11_12",
-    "matches": 1015,
-    "good_matches": 491,
-    "ransac_inliers": 352,
-    "inlier_ratio": 0.717,
-    "translation_mag_m": 0.0224
+    "matches": 865,
+    "good_matches": 443,
+    "ransac_inliers": 287,
+    "inlier_ratio": 0.648,
+    "translation_mag_m": 0.0085
   },
   {
     "pair": "12_13",
-    "matches": 954,
-    "good_matches": 469,
-    "ransac_inliers": 346,
-    "inlier_ratio": 0.738,
-    "translation_mag_m": 0.0183
+    "matches": 934,
+    "good_matches": 422,
+    "ransac_inliers": 221,
+    "inlier_ratio": 0.524,
+    "translation_mag_m": 0.0177
   },
   {
     "pair": "13_14",
-    "matches": 1002,
-    "good_matches": 513,
-    "ransac_inliers": 461,
-    "inlier_ratio": 0.899,
-    "translation_mag_m": 0.0059
+    "matches": 864,
+    "good_matches": 408,
+    "ransac_inliers": 241,
+    "inlier_ratio": 0.591,
+    "translation_mag_m": 0.0166
   },
   {
     "pair": "14_15",
-    "matches": 1025,
-    "good_matches": 518,
-    "ransac_inliers": 413,
-    "inlier_ratio": 0.797,
-    "translation_mag_m": 0.0102
+    "matches": 896,
+    "good_matches": 312,
+    "ransac_inliers": 139,
+    "inlier_ratio": 0.446,
+    "translation_mag_m": 0.0411
   }
 ]

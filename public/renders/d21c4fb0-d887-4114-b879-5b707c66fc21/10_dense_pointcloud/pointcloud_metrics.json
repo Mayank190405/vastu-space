@@ -1,24 +1,24 @@
 {
-  "total_points": 278672,
+  "total_points": 335607,
   "bounding_box_min": [
-    -0.865,
-    -0.093,
-    0.949
+    -0.716,
+    -0.062,
+    0.801
   ],
   "bounding_box_max": [
-    0.609,
-    2.293,
-    4.029
+    2.866,
+    2.368,
+    4.058
   ],
   "dimensions_m": {
-    "width_x": 1.47,
-    "height_y": 2.39,
-    "depth_z": 3.08
+    "width_x": 3.58,
+    "height_y": 2.43,
+    "depth_z": 3.26
   },
   "floor_level_m": 0.0,
   "spatial_variance": [
-    0.1394,
-    0.4287,
-    0.5086
+    0.8076,
+    0.4069,
+    0.4074
   ]
 }

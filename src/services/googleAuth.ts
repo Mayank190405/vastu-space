@@ -13,7 +13,7 @@ declare global {
  * Dynamically loads Google Identity Services SDK
  */
 export function loadGoogleSDK(): Promise<void> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     if (typeof window === 'undefined') return resolve();
     if (window.google?.accounts?.id || window.google?.accounts?.oauth2) return resolve();
 
@@ -31,23 +31,21 @@ export function loadGoogleSDK(): Promise<void> {
     script.defer = true;
     script.onload = () => resolve();
     script.onerror = () => {
-      console.warn('Google Identity Services script failed to load, using dev fallback.');
-      resolve();
+      reject(new Error('Failed to load Google Identity Services SDK'));
     };
     document.head.appendChild(script);
   });
 }
 
 /**
- * Triggers Google Sign-In Popup & returns Google ID / access token
+ * Triggers Google Sign-In Popup & returns verified Google ID / access token
  */
 export async function triggerGoogleSignIn(): Promise<string> {
   await loadGoogleSDK();
 
   return new Promise((resolve, reject) => {
     if (!window.google?.accounts) {
-      // Fallback for dev / offline / blocked third-party scripts
-      return resolve('google-oauth2-id-token-exchange');
+      return reject(new Error('Google Identity Services SDK not available'));
     }
 
     let completed = false;
@@ -61,24 +59,21 @@ export async function triggerGoogleSignIn(): Promise<string> {
           prompt: 'select_account',
           callback: async (tokenResponse: any) => {
             if (tokenResponse.error) {
-              if (tokenResponse.error === 'popup_closed_by_user') {
-                return reject(new Error('Google Sign-In popup closed by user'));
-              }
-              // Fallback to dev token
-              return resolve('google-oauth2-id-token-exchange');
+              return reject(new Error(`Google Sign-In error: ${tokenResponse.error}`));
             }
 
             if (tokenResponse.access_token) {
               completed = true;
               return resolve(tokenResponse.access_token);
             }
+            return reject(new Error('No access token received from Google'));
           },
         });
 
         tokenClient.requestAccessToken({ prompt: 'select_account' });
         return;
       } catch (e) {
-        console.warn('OAuth2 token client failed, trying GIS ID credential prompt...', e);
+        console.warn('OAuth2 token client initialization error', e);
       }
     }
 
@@ -92,7 +87,7 @@ export async function triggerGoogleSignIn(): Promise<string> {
               completed = true;
               resolve(response.credential);
             } else {
-              resolve('google-oauth2-id-token-exchange');
+              reject(new Error('No credentials returned from Google'));
             }
           },
           auto_select: false,
@@ -101,17 +96,15 @@ export async function triggerGoogleSignIn(): Promise<string> {
 
         window.google.accounts.id.prompt((notification: any) => {
           if (!completed && (notification.isNotDisplayed() || notification.isSkippedMoment())) {
-            // Popup was suppressed or dismissed, fallback to dev token
-            resolve('google-oauth2-id-token-exchange');
+            reject(new Error('Google Sign-In prompt was suppressed or dismissed'));
           }
         });
         return;
       } catch (e) {
-        console.warn('GIS id.initialize failed, fallback to dev token', e);
+        return reject(new Error(`Google Identity initialization failed: ${e}`));
       }
     }
 
-    // Default fallback
-    resolve('google-oauth2-id-token-exchange');
+    reject(new Error('Google Sign-In authentication method unavailable'));
   });
 }

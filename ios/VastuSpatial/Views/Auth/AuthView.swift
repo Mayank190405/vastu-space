@@ -129,9 +129,12 @@ public struct AuthView: View {
                         resendTimer: resendTimer,
                         isLoading: isLoading,
                         errorMessage: errorMessage,
-                        onBack: { currentStep = .welcomeLogin },
+                        onBack: { 
+                            errorMessage = nil
+                            currentStep = .welcomeLogin 
+                        },
                         onVerify: { verifyOtpAndProceed() },
-                        onResend: { startOtpTimer() }
+                        onResend: { resendOtp(contact: contact) }
                     )
                     
                 case .completeProfile:
@@ -278,26 +281,67 @@ public struct AuthView: View {
     // ==========================================
     
     private func submitLoginOrSignup() {
-        let contact = contactInput.trimmingCharacters(in: .whitespaces)
+        let contact = contactInput.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !contact.isEmpty else {
             errorMessage = "Please enter your email or mobile number"
             return
+        }
+        
+        let targetEmail: String
+        if contact.contains("@") {
+            targetEmail = contact
+        } else {
+            let digitsOnly = contact.filter { $0.isNumber }
+            if digitsOnly.count >= 10 {
+                targetEmail = "\(digitsOnly)@phone.vastu.space"
+            } else {
+                errorMessage = "Please enter a valid email address (e.g. user@vastu.space)"
+                return
+            }
         }
         
         errorMessage = nil
         isLoading = true
         
         Task {
-            // For instant seamless demo + backend integration:
-            // Send real OTP request if it's an email
-            if contact.contains("@") {
-                try? await apiClient.requestOtp(request: OtpRequest(email: contact, purpose: isCreateAccountTab ? "register" : "login"))
+            do {
+                let purpose = isCreateAccountTab ? "USER_SIGNUP" : "LOGIN"
+                print("🚀 [AuthView] Requesting OTP for \(targetEmail) (purpose: \(purpose)) to \(apiClient.baseURL)...")
+                let msg = try await apiClient.requestOtp(request: OtpRequest(email: targetEmail, purpose: purpose))
+                print("🎉 [AuthView] OTP Request success: \(msg)")
+                await MainActor.run {
+                    isLoading = false
+                    startOtpTimer()
+                    currentStep = .otpVerification(contact: targetEmail)
+                }
+            } catch {
+                print("❌ [AuthView] Failed to request OTP: \(error)")
+                await MainActor.run {
+                    isLoading = false
+                    errorMessage = "Failed to connect to backend: \(error.localizedDescription)"
+                }
             }
-            
-            await MainActor.run {
-                isLoading = false
-                startOtpTimer()
-                currentStep = .otpVerification(contact: contact)
+        }
+    }
+    
+    private func resendOtp(contact: String) {
+        isLoading = true
+        errorMessage = nil
+        Task {
+            do {
+                let purpose = isCreateAccountTab ? "USER_SIGNUP" : "LOGIN"
+                print("🚀 [AuthView] Resending OTP to \(contact)...")
+                _ = try await apiClient.requestOtp(request: OtpRequest(email: contact, purpose: purpose))
+                await MainActor.run {
+                    isLoading = false
+                    startOtpTimer()
+                }
+            } catch {
+                print("❌ [AuthView] Resend OTP failed: \(error)")
+                await MainActor.run {
+                    isLoading = false
+                    errorMessage = "Resend failed: \(error.localizedDescription)"
+                }
             }
         }
     }
@@ -316,32 +360,35 @@ public struct AuthView: View {
     }
     
     private func verifyOtpAndProceed() {
-        let code = otpDigits.joined()
-        if code.count < 6 {
-            // Auto fill for convenience if empty
-            otpDigits = ["1", "2", "3", "4", "5", "6"]
+        let code = otpDigits.joined().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard code.count == 6 else {
+            errorMessage = "Please enter the complete 6-digit code"
+            return
         }
         
         isLoading = true
         errorMessage = nil
         Task {
             do {
-                if contactInput.contains("@") {
-                    _ = try await apiClient.verifyOtp(request: VerifyOtpRequest(email: contactInput, otpCode: code.isEmpty ? "123456" : code))
-                }
+                let contact = contactInput.trimmingCharacters(in: .whitespacesAndNewlines)
+                let targetEmail = contact.contains("@") ? contact : "\(contact.filter { $0.isNumber })@phone.vastu.space"
+                let purpose = isCreateAccountTab ? "USER_SIGNUP" : "LOGIN"
+                print("🚀 [AuthView] Verifying OTP \(code) for \(targetEmail)...")
+                _ = try await apiClient.verifyOtp(request: VerifyOtpRequest(email: targetEmail, otpCode: code, purpose: purpose))
                 await MainActor.run {
                     isLoading = false
                     if isCreateAccountTab {
-                        profileEmail = contactInput
+                        profileEmail = targetEmail
                         currentStep = .completeProfile
                     } else {
                         apiClient.isAuthenticated = true
                     }
                 }
             } catch {
+                print("❌ [AuthView] OTP verification error: \(error)")
                 await MainActor.run {
                     isLoading = false
-                    errorMessage = error.localizedDescription
+                    errorMessage = "Invalid verification code: \(error.localizedDescription)"
                 }
             }
         }
@@ -519,6 +566,10 @@ struct WelcomeLoginView: View {
     let onCreateOrg: () -> Void
     let onJoinOrgWithCode: (String) -> Void
     let onSocialLogin: (String) -> Void
+    
+    @ObservedObject private var apiClient = VastuAPIClient.shared
+    @State private var showServerConfig: Bool = false
+    @State private var serverInput: String = ""
     
     var body: some View {
         ScrollView {
@@ -831,11 +882,45 @@ struct WelcomeLoginView: View {
                     Circle().fill(VastuColors.brandBorder).frame(width: 6, height: 6)
                     Circle().fill(VastuColors.brandBorder).frame(width: 6, height: 6)
                 }
+                
+                // Server Config Pill
+                Button(action: {
+                    serverInput = apiClient.baseURL
+                    showServerConfig = true
+                }) {
+                    HStack(spacing: 5) {
+                        Circle().fill(Color.green).frame(width: 6, height: 6)
+                        Text("API: \(apiClient.baseURL)")
+                            .font(.system(size: 10, weight: .medium, design: .monospaced))
+                            .foregroundColor(VastuColors.brandTextMuted)
+                        Image(systemName: "pencil")
+                            .font(.system(size: 9))
+                            .foregroundColor(VastuColors.brandBronze)
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(VastuColors.brandIvory)
+                    .cornerRadius(8)
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(VastuColors.brandBorder, lineWidth: 1))
+                }
+                .padding(.top, 2)
             }
             .padding(.top, 8)
             .padding(.bottom, 6)
             .frame(maxWidth: .infinity)
             .background(VastuColors.brandIvory.ignoresSafeArea(edges: .bottom))
+        }
+        .alert("Server Endpoint", isPresented: $showServerConfig) {
+            TextField("http://192.168.31.33:8080", text: $serverInput)
+            Button("Save") {
+                apiClient.setBaseURL(serverInput)
+            }
+            Button("Reset Default (192.168.31.33:8080)") {
+                apiClient.setBaseURL("http://192.168.31.33:8080")
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Ensure your iPhone is connected to the same Wi-Fi network as your Mac.")
         }
     }
 }

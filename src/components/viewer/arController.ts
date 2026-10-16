@@ -18,8 +18,8 @@ export class MobileARNavigationController {
   private arrowGroup = new THREE.Group();
 
   private compassHeading = 0; // Degrees 0-360
-  private targetBearing = 45; // Simulated initial target bearing
-  private distanceToTarget = 4.2;
+  private targetBearing = 0;
+  private distanceToTarget = 0;
 
   private onStateChange?: (state: ARNavigationState) => void;
   private animId?: number;

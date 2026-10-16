@@ -1,0 +1,774 @@
+openapi: 3.1.0
+info:
+  title: VĀSTU Spatial Computing Platform API
+  description: Authoritative single source of truth API contract for iOS, Android, and Web clients.
+  version: 3.0.0
+servers:
+  - url: /api/v1
+    description: Production API v1 Gateway
+paths:
+  /auth/login:
+    post:
+      summary: Authenticate user via email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Successful authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  /auth/signup/organization:
+    post:
+      summary: Register a new organization and owner account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrgSignupRequest'
+      responses:
+        '201':
+          description: Organization and owner created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  /auth/join/org:
+    post:
+      summary: Join an organization as employee or member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeJoinRequest'
+      responses:
+        '200':
+          description: Membership request submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  /auth/otp/send:
+    post:
+      summary: Send one-time passcode for login or verification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+                purpose:
+                  type: string
+                  enum: [LOGIN, ORG_SIGNUP, EMPLOYEE_SIGNUP]
+      responses:
+        '200':
+          description: OTP dispatched
+
+  /auth/otp/verify:
+    post:
+      summary: Verify one-time passcode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, otp]
+              properties:
+                email:
+                  type: string
+                otp:
+                  type: string
+      responses:
+        '200':
+          description: Successful verification
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  /auth/me:
+    get:
+      summary: Get current authenticated user profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+
+  /organizations/me:
+    get:
+      summary: Get current authenticated user organization
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Current organization details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+
+  /projects:
+    get:
+      summary: List all active spatial twin projects
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+
+  /projects/create-full:
+    post:
+      summary: Create new project with structured floors and specifications
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectCreationInput'
+      responses:
+        '201':
+          description: Project created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+
+  /projects/{projectId}:
+    get:
+      summary: Retrieve project details by ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Project details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+
+  /projects/{projectId}/floors:
+    get:
+      summary: List floors in a project
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of floors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectFloor'
+
+  /projects/{projectId}/render:
+    get:
+      summary: Retrieve verified 3D digital twin render summary and assets
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Digital twin render summary and asset URIs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalTwinSummary'
+        '404':
+          description: Reconstruction render not found for this project
+
+  /projects/{projectId}/pois:
+    get:
+      summary: List all spatial points of interest (POIs) in a project
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of POIs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SpatialPOI'
+
+  /pois:
+    post:
+      summary: Create a new 3D spatial POI
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePOIInput'
+      responses:
+        '201':
+          description: POI created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpatialPOI'
+
+  /pois/{id}:
+    delete:
+      summary: Delete a spatial POI
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: POI deleted
+
+  /uploads/sessions:
+    post:
+      summary: Initialize a resumable chunked upload session
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InitUploadSessionInput'
+      responses:
+        '201':
+          description: Upload session initialized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadSession'
+
+  /uploads/{sessionId}/chunk/{chunkIndex}:
+    put:
+      summary: Upload a binary chunk with SHA-256 verification
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: chunkIndex
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Chunk received and verified
+
+  /uploads/{sessionId}/complete:
+    post:
+      summary: Finalize and assemble uploaded capture package
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                final_checksum_sha256:
+                  type: string
+      responses:
+        '200':
+          description: Upload complete and assembled
+
+  /jobs:
+    post:
+      summary: Enqueue a spatial reconstruction processing job
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJobInput'
+      responses:
+        '201':
+          description: Job enqueued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessingJob'
+
+  /jobs/{id}:
+    get:
+      summary: Retrieve processing job status and progress
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Processing job status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessingJob'
+
+  /jobs/project/{projectId}:
+    get:
+      summary: List all processing jobs for a project
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of jobs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProcessingJob'
+
+  /navigation/route:
+    post:
+      summary: Calculate navigable path on spatial graph
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NavRouteRequest'
+      responses:
+        '200':
+          description: Computed route
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NavRouteResponse'
+        '400':
+          description: No connected route found
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AuthResponse:
+      type: object
+      required: [user, tokens]
+      properties:
+        user:
+          $ref: '#/components/schemas/UserProfile'
+        tokens:
+          type: object
+          required: [access_token, refresh_token]
+          properties:
+            access_token:
+              type: string
+            refresh_token:
+              type: string
+
+    UserProfile:
+      type: object
+      required: [id, email, full_name]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        full_name:
+          type: string
+        role:
+          type: string
+
+    Organization:
+      type: object
+      required: [id, name, org_code]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        org_code:
+          type: string
+
+    OrgSignupRequest:
+      type: object
+      required: [org_name, owner_name, email, phone, password]
+      properties:
+        org_name:
+          type: string
+        owner_name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        password:
+          type: string
+
+    EmployeeJoinRequest:
+      type: object
+      required: [org_code, full_name, email, phone, password]
+      properties:
+        org_code:
+          type: string
+        full_name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        password:
+          type: string
+        invite_token:
+          type: string
+
+    Project:
+      type: object
+      required: [id, name, project_code, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        project_code:
+          type: string
+        project_type:
+          type: string
+        status:
+          type: string
+        total_area_sqft:
+          type: number
+        precision_gate_cm:
+          type: number
+        created_at:
+          type: string
+          format: date-time
+
+    ProjectCreationInput:
+      type: object
+      required: [name, project_type]
+      properties:
+        name:
+          type: string
+        project_type:
+          type: string
+        description:
+          type: string
+        address:
+          type: object
+
+    ProjectFloor:
+      type: object
+      required: [id, project_id, name, floor_number]
+      properties:
+        id:
+          type: string
+          format: uuid
+        project_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        floor_number:
+          type: integer
+        area_value:
+          type: number
+
+    SpatialPOI:
+      type: object
+      required: [id, project_id, name, position]
+      properties:
+        id:
+          type: string
+          format: uuid
+        project_id:
+          type: string
+          format: uuid
+        floor_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        category:
+          type: string
+        position:
+          type: array
+          items:
+            type: number
+          minItems: 3
+          maxItems: 3
+        color:
+          type: string
+        description:
+          type: string
+
+    CreatePOIInput:
+      type: object
+      required: [project_id, name, position]
+      properties:
+        project_id:
+          type: string
+          format: uuid
+        floor_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        category:
+          type: string
+        position:
+          type: array
+          items:
+            type: number
+          minItems: 3
+          maxItems: 3
+        color:
+          type: string
+        description:
+          type: string
+
+    InitUploadSessionInput:
+      type: object
+      required: [project_id, file_name, file_size_bytes, total_chunks]
+      properties:
+        project_id:
+          type: string
+          format: uuid
+        floor_id:
+          type: string
+          format: uuid
+        file_name:
+          type: string
+        file_size_bytes:
+          type: integer
+        total_chunks:
+          type: integer
+        chunk_size_bytes:
+          type: integer
+
+    UploadSession:
+      type: object
+      required: [session_id, project_id, status]
+      properties:
+        session_id:
+          type: string
+          format: uuid
+        project_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        chunks_received:
+          type: array
+          items:
+            type: integer
+
+    ProcessingJob:
+      type: object
+      required: [id, project_id, status, current_stage, progress]
+      properties:
+        id:
+          type: string
+          format: uuid
+        project_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [QUEUED, PROCESSING, COMPLETED, FAILED]
+        current_stage:
+          type: string
+        progress:
+          type: integer
+        error_message:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    CreateJobInput:
+      type: object
+      required: [project_id, capture_session_id]
+      properties:
+        project_id:
+          type: string
+          format: uuid
+        capture_session_id:
+          type: string
+          format: uuid
+        job_type:
+          type: string
+
+    NavRouteRequest:
+      type: object
+      required: [project_id, start_position, target_position]
+      properties:
+        project_id:
+          type: string
+          format: uuid
+        start_position:
+          type: object
+          required: [x, y, z]
+          properties:
+            x: { type: number }
+            y: { type: number }
+            z: { type: number }
+        target_position:
+          type: object
+          required: [x, y, z]
+          properties:
+            x: { type: number }
+            y: { type: number }
+            z: { type: number }
+        require_wheelchair:
+          type: boolean
+
+    NavRouteResponse:
+      type: object
+      required: [project_id, total_distance_meters, estimated_walk_seconds, waypoints]
+      properties:
+        project_id:
+          type: string
+          format: uuid
+        total_distance_meters:
+          type: number
+        estimated_walk_seconds:
+          type: integer
+        is_wheelchair_accessible:
+          type: boolean
+        waypoints:
+          type: array
+          items:
+            type: object
+            properties:
+              x: { type: number }
+              y: { type: number }
+              z: { type: number }
+
+    DigitalTwinSummary:
+      type: object
+      required: [project_id, quality_status, assets]
+      properties:
+        project_id:
+          type: string
+        project_name:
+          type: string
+        quality_status:
+          type: string
+          enum: [PASS, WARNING, FAIL]
+        quality_score:
+          type: number
+        stages_executed:
+          type: integer
+        statistics:
+          type: object
+        assets:
+          type: object
+          properties:
+            obj_mesh: { type: string }
+            mtl_material: { type: string }
+            texture_atlas: { type: string }
+            ply_mesh: { type: string }
+            point_cloud: { type: string }
+            viewing_link: { type: string }

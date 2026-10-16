@@ -29,26 +29,19 @@ interface MobilePairingModalProps {
 export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
   project,
   sessionId,
-  sessionCode = 'V-8824',
+  sessionCode,
   operatorName,
   floorName,
   onClose,
   onLaunchWebStudio
 }) => {
+  const effectiveSessionCode = sessionCode || `V-${sessionId.slice(0, 4).toUpperCase()}`;
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedDeepLink, setCopiedDeepLink] = useState(false);
   const [surveyorStatus, setSurveyorStatus] = useState<'WAITING' | 'CONNECTED' | 'RECORDING'>('WAITING');
 
   const mobileWebUrl = `${window.location.origin}/capture/${sessionId}`;
   const iosDeepLink = `vastuspatial://capture/${sessionId}?projectId=${project.id}`;
-
-  // Simulate surveyor connecting after 10 seconds if active
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setSurveyorStatus('CONNECTED');
-    }, 12000);
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(mobileWebUrl);
@@ -117,7 +110,7 @@ export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
                   Mobile App Capture Session
                 </h2>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#FAF3E0] text-[#8F6834] border border-[#D9C4A1]">
-                  {sessionCode}
+                  {effectiveSessionCode}
                 </span>
               </div>
               <p className="text-xs text-[#695541]">
@@ -167,7 +160,7 @@ export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
                     Open the <strong>VĀSTU Spatial App</strong> on your iPhone or Android phone.
                   </li>
                   <li>
-                    Scan this QR code or enter Pairing Code <strong className="font-mono text-[#8F6834] bg-[#FAF3E0] px-1 py-0.5 rounded">{sessionCode}</strong>.
+                    Scan this QR code or enter Pairing Code <strong className="font-mono text-[#8F6834] bg-[#FAF3E0] px-1 py-0.5 rounded">{effectiveSessionCode}</strong>.
                   </li>
                   <li>
                     Follow the app prompt to <strong>show the whole place</strong> (360° scan).

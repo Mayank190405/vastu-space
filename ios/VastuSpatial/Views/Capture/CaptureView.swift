@@ -13,6 +13,7 @@ public struct CaptureView: View {
     @StateObject private var permissionManager = PermissionManager.shared
     @ObservedObject private var storageManager = LocalCaptureStorageManager.shared
     @ObservedObject private var uploadManager = ResumableUploadManager.shared
+    @StateObject private var neuralNet = VastuSpatialMobileNet.shared
     
     @State private var currentSessionDirectory: URL?
     @State private var recordingStartNs: Int64 = 0
@@ -54,273 +55,275 @@ public struct CaptureView: View {
             CameraPreviewView(session: cameraManager.captureSession)
                 .ignoresSafeArea()
             
-            // 2. Subtle Scanning Reticle in Center
+            // 2. Center Scanning Reticle & Corner Bounds
             VStack {
                 Spacer()
                 ZStack {
+                    // Outer targeting ring
                     Circle()
-                        .stroke(cameraManager.isRecording ? VastuColors.brandGold : Color.white.opacity(0.35), lineWidth: cameraManager.isRecording ? 2 : 1)
-                        .frame(width: 90, height: 90)
+                        .stroke(
+                            cameraManager.isRecording ? VastuColors.brandGold : Color.white.opacity(0.4),
+                            style: StrokeStyle(lineWidth: cameraManager.isRecording ? 2.5 : 1.5, dash: cameraManager.isRecording ? [] : [6, 4])
+                        )
+                        .frame(width: 110, height: 110)
+                        .scaleEffect(cameraManager.isRecording ? 1.05 : 1.0)
+                        .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: cameraManager.isRecording)
+                    
+                    // Crosshair tick marks
+                    Rectangle().fill(Color.white.opacity(0.5)).frame(width: 12, height: 1.5)
+                    Rectangle().fill(Color.white.opacity(0.5)).frame(width: 1.5, height: 12)
                     
                     if cameraManager.isRecording {
                         Circle()
-                            .fill(VastuColors.brandGold.opacity(0.15))
-                            .frame(width: 80, height: 80)
+                            .fill(VastuColors.brandGold.opacity(0.18))
+                            .frame(width: 96, height: 96)
                     }
                 }
                 Spacer()
             }
             .allowsHitTesting(false)
             
-            // 3. Floating Overlays Layer
+            // 3. Floating HUD & Controls Overlay Layer
             VStack(spacing: 0) {
-                // Top Floating Bar
-                HStack(spacing: 8) {
-                    // Back Button
+                // Unified Glassmorphic Header Bar
+                HStack(spacing: 10) {
+                    // Clean Custom Back Button (Replaces default bar)
                     Button(action: { presentationMode.wrappedValue.dismiss() }) {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 15, weight: .bold))
+                            .font(.system(size: 16, weight: .bold))
                             .foregroundColor(.white)
-                            .frame(width: 38, height: 38)
-                            .background(Color.black.opacity(0.55))
+                            .frame(width: 40, height: 40)
+                            .background(.ultraThinMaterial)
                             .clipShape(Circle())
+                            .overlay(Circle().stroke(Color.white.opacity(0.2), lineWidth: 1))
                     }
                     .disabled(cameraManager.isRecording)
                     .opacity(cameraManager.isRecording ? 0.3 : 1.0)
                     
-                    Spacer()
-                    
-                    // Session Name & Live Recording Timer
-                    HStack(spacing: 6) {
+                    // Center Project / Floor Name & Live Recording Monospace Counter
+                    HStack(spacing: 8) {
                         if cameraManager.isRecording {
                             Circle()
                                 .fill(Color.red)
                                 .frame(width: 8, height: 8)
+                                .opacity(0.9)
                         }
+                        
                         Text(floor != nil ? "\(project.name) • \(floor!.name)" : project.name)
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(VastuColors.brandGold)
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(VastuColors.brandIvory)
                             .lineLimit(1)
                         
-                        Text(formatSeconds(cameraManager.recordedSeconds))
-                            .font(.system(size: 13, weight: .bold, design: .monospaced))
-                            .foregroundColor(cameraManager.isRecording ? .white : .white.opacity(0.9))
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 7)
-                    .background(Color.black.opacity(0.65))
-                    .cornerRadius(18)
-                    .overlay(RoundedRectangle(cornerRadius: 18).stroke(cameraManager.isRecording ? Color.red.opacity(0.8) : VastuColors.brandGold.opacity(0.5), lineWidth: 1))
-                    
-                    Spacer()
-                    
-                    // Status Icons (WiFi, Battery, AE Lock)
-                    HStack(spacing: 5) {
-                        // WiFi Icon
-                        Image(systemName: isWifiConnected ? "wifi" : "wifi.slash")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(isWifiConnected ? VastuColors.brandSuccess : VastuColors.brandError)
-                            .padding(6)
-                            .background(Color.black.opacity(0.55))
-                            .clipShape(Circle())
-                        
-                        // Battery Pill (tap to toggle dev bypass)
-                        Button(action: {
-                            withAnimation { isDevBatteryBypass.toggle() }
-                        }) {
-                            HStack(spacing: 2) {
-                                Image(systemName: isCharging ? "battery.100.bolt" : (batteryLevel > 80 ? "battery.100" : "battery.25"))
-                                    .font(.system(size: 10))
-                                    .foregroundColor(isBatteryAllowed ? VastuColors.brandSuccess : VastuColors.brandError)
-                                Text("\(batteryLevel)%")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .foregroundColor(isBatteryAllowed ? .white : VastuColors.brandError)
-                            }
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 5)
-                            .background(Color.black.opacity(0.55))
-                            .cornerRadius(12)
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(isBatteryAllowed ? Color.clear : Color.red.opacity(0.8), lineWidth: 1))
-                        }
-                        
-                        // AE Lock Button
-                        Button(action: { cameraManager.toggleExposureLock() }) {
-                            Image(systemName: cameraManager.isExposureLocked ? "lock.fill" : "lock.open")
-                                .font(.system(size: 11))
-                                .foregroundColor(cameraManager.isExposureLocked ? VastuColors.brandGold : .white)
-                                .padding(6)
-                                .background(Color.black.opacity(0.55))
-                                .clipShape(Circle())
-                        }
-                    }
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 48)
-                
-                // Permissions Warning Floating Chip (if needed)
-                if !permissionManager.allPermissionsGranted {
-                    Button(action: {
-                        permissionManager.requestAllPermissions()
-                    }) {
-                        HStack(spacing: 6) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .font(.system(size: 11))
-                                .foregroundColor(VastuColors.brandWarning)
-                            Text("Camera / GPS access needed • Tap to enable")
-                                .font(.system(size: 11, weight: .bold))
+                        if cameraManager.isRecording {
+                            Text(formatSeconds(cameraManager.recordedSeconds))
+                                .font(.system(size: 13, weight: .bold, design: .monospaced))
                                 .foregroundColor(.white)
                         }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Color(red: 0.15, green: 0.12, blue: 0.08).opacity(0.9))
-                        .cornerRadius(14)
-                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(VastuColors.brandGold, lineWidth: 1))
                     }
-                    .padding(.top, 6)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(20)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(cameraManager.isRecording ? Color.red.opacity(0.8) : VastuColors.brandBronze.opacity(0.4), lineWidth: 1)
+                    )
+                    
+                    Spacer(minLength: 0)
+                    
+                    // Right Status Badge Pill (WiFi, Battery, Exposure Lock)
+                    HStack(spacing: 8) {
+                        // AE Lock Toggle
+                        Button(action: { cameraManager.toggleExposureLock() }) {
+                            Image(systemName: cameraManager.isExposureLocked ? "lock.fill" : "lock.open")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(cameraManager.isExposureLocked ? VastuColors.brandGold : .white.opacity(0.9))
+                        }
+                        
+                        // WiFi Indicator
+                        Image(systemName: isWifiConnected ? "wifi" : "wifi.slash")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(isWifiConnected ? VastuColors.brandSuccess : VastuColors.brandError)
+                        
+                        // Battery Badge (Tap to bypass)
+                        Button(action: { withAnimation { isDevBatteryBypass.toggle() } }) {
+                            HStack(spacing: 3) {
+                                Image(systemName: isCharging ? "battery.100.bolt" : (batteryLevel > 80 ? "battery.100" : "battery.25"))
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundColor(isBatteryAllowed ? VastuColors.brandSuccess : VastuColors.brandError)
+                                Text("\(batteryLevel)%")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundColor(isBatteryAllowed ? .white : VastuColors.brandError)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(20)
+                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.white.opacity(0.2), lineWidth: 1))
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                
+                // Permission Warning Chip
+                if !permissionManager.allPermissionsGranted {
+                    Button(action: { permissionManager.requestAllPermissions() }) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .font(.system(size: 12))
+                                .foregroundColor(VastuColors.brandWarning)
+                            Text("Camera / Location permissions required • Tap to enable")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.white)
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 7)
+                        .background(Color.black.opacity(0.8))
+                        .cornerRadius(16)
+                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(VastuColors.brandGold, lineWidth: 1))
+                    }
+                    .padding(.top, 10)
                 }
                 
-                // Sleek Floating SOP Guide Pill
+                // SOP Guidance Floating Bar
                 let currentStep = qualityEngine.sopSteps[qualityEngine.currentSOPIndex]
                 let sopSpeechText = "Step \(currentStep.id): \(currentStep.title). \(currentStep.description)"
                 
-                HStack(spacing: 8) {
-                    // Prev Button
-                    Button(action: { qualityEngine.previousSOPStep() }) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(qualityEngine.currentSOPIndex > 0 ? VastuColors.brandGold : Color.gray.opacity(0.5))
-                    }
-                    .disabled(qualityEngine.currentSOPIndex == 0)
-                    
-                    // Main Step Text
-                    Button(action: { withAnimation { isSopExpanded.toggle() } }) {
-                        HStack(spacing: 4) {
-                            Text("Step \(currentStep.id):")
-                                .font(.system(size: 11, weight: .heavy))
-                                .foregroundColor(VastuColors.brandGold)
-                            Text(currentStep.title)
-                                .font(.system(size: 11, weight: .semibold))
-                                .foregroundColor(.white)
-                                .lineLimit(1)
-                            Image(systemName: isSopExpanded ? "chevron.up" : "chevron.down")
-                                .font(.system(size: 9, weight: .bold))
-                                .foregroundColor(VastuColors.brandGold)
+                VStack(spacing: 6) {
+                    HStack(spacing: 10) {
+                        Button(action: { qualityEngine.previousSOPStep() }) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(qualityEngine.currentSOPIndex > 0 ? VastuColors.brandGold : Color.white.opacity(0.3))
                         }
-                    }
-                    
-                    // Next Button
-                    Button(action: { qualityEngine.nextSOPStep() }) {
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(qualityEngine.currentSOPIndex < qualityEngine.sopSteps.count - 1 ? VastuColors.brandGold : Color.gray.opacity(0.5))
-                    }
-                    .disabled(qualityEngine.currentSOPIndex == qualityEngine.sopSteps.count - 1)
-                    
-                    // TTS Read Aloud Icon Button
-                    Button(action: {
-                        if isSpeakingSop {
-                            speechSynthesizer.stopSpeaking(at: .immediate)
-                            isSpeakingSop = false
-                        } else {
-                            let utterance = AVSpeechUtterance(string: sopSpeechText)
-                            utterance.rate = 0.48
-                            utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
-                            speechSynthesizer.speak(utterance)
-                            isSpeakingSop = true
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 6) {
-                                isSpeakingSop = false
+                        .disabled(qualityEngine.currentSOPIndex == 0)
+                        
+                        Button(action: { withAnimation(.spring(response: 0.3)) { isSopExpanded.toggle() } }) {
+                            HStack(spacing: 6) {
+                                Text("STEP \(currentStep.id)/\(qualityEngine.sopSteps.count):")
+                                    .font(.system(size: 11, weight: .heavy))
+                                    .foregroundColor(VastuColors.brandGold)
+                                Text(currentStep.title)
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .lineLimit(1)
+                                Image(systemName: isSopExpanded ? "chevron.up" : "chevron.down")
+                                    .font(.system(size: 10, weight: .bold))
+                                    .foregroundColor(VastuColors.brandGold)
                             }
                         }
-                    }) {
-                        Image(systemName: isSpeakingSop ? "speaker.wave.3.fill" : "speaker.wave.2")
-                            .font(.system(size: 11))
-                            .foregroundColor(isSpeakingSop ? VastuColors.brandGold : .white)
-                            .padding(4)
-                            .background(Color.white.opacity(0.15))
-                            .clipShape(Circle())
+                        
+                        Button(action: { qualityEngine.nextSOPStep() }) {
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(qualityEngine.currentSOPIndex < qualityEngine.sopSteps.count - 1 ? VastuColors.brandGold : Color.white.opacity(0.3))
+                        }
+                        .disabled(qualityEngine.currentSOPIndex == qualityEngine.sopSteps.count - 1)
+                        
+                        // Speech Guide Button
+                        Button(action: {
+                            if isSpeakingSop {
+                                speechSynthesizer.stopSpeaking(at: .immediate)
+                                isSpeakingSop = false
+                            } else {
+                                let utterance = AVSpeechUtterance(string: sopSpeechText)
+                                utterance.rate = 0.48
+                                utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+                                speechSynthesizer.speak(utterance)
+                                isSpeakingSop = true
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                                    isSpeakingSop = false
+                                }
+                            }
+                        }) {
+                            Image(systemName: isSpeakingSop ? "speaker.wave.3.fill" : "speaker.wave.2")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(isSpeakingSop ? VastuColors.brandGold : .white)
+                                .padding(5)
+                                .background(Color.white.opacity(0.15))
+                                .clipShape(Circle())
+                        }
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(20)
+                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(VastuColors.brandBronze.opacity(0.5), lineWidth: 1))
+                    
+                    if isSopExpanded {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(currentStep.description)
+                                .font(.system(size: 12))
+                                .foregroundColor(.white.opacity(0.95))
+                                .multilineTextAlignment(.center)
+                        }
+                        .padding(10)
+                        .frame(maxWidth: 320)
+                        .background(Color.black.opacity(0.85))
+                        .cornerRadius(12)
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.15), lineWidth: 1))
+                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Color.black.opacity(0.7))
-                .cornerRadius(16)
-                .overlay(RoundedRectangle(cornerRadius: 16).stroke(VastuColors.brandBronze.opacity(0.6), lineWidth: 1))
-                .padding(.top, 6)
-                
-                // Collapsible Step Detail Card (Only visible when expanded)
-                if isSopExpanded {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(currentStep.description)
-                            .font(.system(size: 11))
-                            .foregroundColor(.white.opacity(0.95))
-                            .lineLimit(3)
-                    }
-                    .padding(8)
-                    .frame(maxWidth: 320)
-                    .background(Color.black.opacity(0.85))
-                    .cornerRadius(8)
-                    .padding(.top, 4)
-                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
-                }
+                .padding(.top, 10)
                 
                 // Real-time Motion Quality Warning (Only shown during active recording when needed)
                 if cameraManager.isRecording {
                     let qualityFeedback = qualityEngine.qualityFeedback
                     if qualityFeedback.level != .optimal {
-                        HStack(spacing: 5) {
+                        HStack(spacing: 6) {
                             Image(systemName: "exclamationmark.circle.fill")
-                                .font(.system(size: 11))
+                                .font(.system(size: 12))
                             Text(qualityFeedback.title + " • " + qualityFeedback.correctiveAction)
-                                .font(.system(size: 11, weight: .bold))
+                                .font(.system(size: 12, weight: .bold))
                         }
                         .foregroundColor(.white)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 7)
                         .background(getQualityColor(qualityFeedback.level).opacity(0.9))
-                        .cornerRadius(12)
-                        .padding(.top, 6)
+                        .cornerRadius(16)
+                        .padding(.top, 8)
                         .transition(.opacity)
                     }
                 }
                 
                 Spacer()
                 
-                // Floating Bottom Control Bar (Minimal & Translucent)
-                VStack(spacing: 8) {
+                // Bottom Control Bar
+                VStack(spacing: 12) {
                     // Status Subtitle Line
                     if let error = errorMessage {
                         Text(error)
-                            .font(.system(size: 11, weight: .bold))
+                            .font(.system(size: 12, weight: .bold))
                             .foregroundColor(VastuColors.brandError)
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal, 20)
                     } else {
                         Text(!isBatteryAllowed ? "Battery low (\(batteryLevel)%). Tap battery badge to bypass." : statusText)
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(!isBatteryAllowed ? VastuColors.brandError : .white.opacity(0.85))
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(!isBatteryAllowed ? VastuColors.brandError : .white.opacity(0.9))
                             .lineLimit(1)
                     }
                     
                     // Main Shutter Button
-                    Button(action: {
-                        toggleRecording()
-                    }) {
+                    Button(action: { toggleRecording() }) {
                         ZStack {
                             Circle()
-                                .stroke(Color.white.opacity(0.9), lineWidth: 3.5)
-                                .frame(width: 70, height: 70)
+                                .stroke(Color.white, lineWidth: 4)
+                                .frame(width: 76, height: 76)
                             
                             if cameraManager.isRecording {
-                                RoundedRectangle(cornerRadius: 6)
+                                RoundedRectangle(cornerRadius: 8)
                                     .fill(VastuColors.brandError)
-                                    .frame(width: 28, height: 28)
+                                    .frame(width: 30, height: 30)
                             } else if !isBatteryAllowed {
                                 Image(systemName: "lock.fill")
-                                    .font(.system(size: 20))
+                                    .font(.system(size: 22))
                                     .foregroundColor(.gray)
                             } else {
                                 Circle()
                                     .fill(VastuColors.brandGold)
-                                    .frame(width: 56, height: 56)
+                                    .frame(width: 62, height: 62)
                             }
                         }
                     }
@@ -328,15 +331,15 @@ public struct CaptureView: View {
                     
                     // Storage Indicator Subtitle
                     Text("\(availableStorageMB / 1024) GB storage available")
-                        .font(.system(size: 9))
-                        .foregroundColor(.white.opacity(0.5))
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.white.opacity(0.6))
                 }
-                .padding(.top, 10)
-                .padding(.bottom, 8)
+                .padding(.top, 14)
+                .padding(.bottom, 24)
                 .frame(maxWidth: .infinity)
                 .background(
                     LinearGradient(
-                        gradient: Gradient(colors: [Color.clear, Color.black.opacity(0.85)]),
+                        gradient: Gradient(colors: [Color.clear, Color.black.opacity(0.95)]),
                         startPoint: .top,
                         endPoint: .bottom
                     )
@@ -344,6 +347,8 @@ public struct CaptureView: View {
                 )
             }
         }
+        .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .onAppear {
             permissionManager.requestAllPermissions()
             
@@ -379,7 +384,6 @@ public struct CaptureView: View {
     
     private func toggleRecording() {
         if cameraManager.isRecording {
-            // Stop recording with proper moov atom completion
             statusText = "Finalizing video capture & writing file headers..."
             
             Task {
@@ -396,7 +400,6 @@ public struct CaptureView: View {
                     let imuURL = sessionDir.appendingPathComponent("imu_stream.csv")
                     let manifestURL = sessionDir.appendingPathComponent("manifest.json")
                     
-                    // Validate Video
                     let videoValidation = await VideoValidator.validateVideo(fileURL: videoURL)
                     guard videoValidation.isValid else {
                         await MainActor.run {
@@ -444,7 +447,6 @@ public struct CaptureView: View {
                 }
             }
         } else {
-            // Start recording
             errorMessage = nil
             guard StorageMonitor.hasSufficientStorage(minMB: 200) else {
                 errorMessage = "Insufficient storage: Less than 200MB available"

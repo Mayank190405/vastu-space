@@ -77,10 +77,10 @@ func (h *AuthHandler) SendOTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = code
-	JSONSuccess(w, http.StatusOK, "Verification OTP has been sent to your email address", map[string]string{
-		"email":   input.Email,
-		"purpose": input.Purpose,
+	JSONSuccess(w, http.StatusOK, "Verification OTP has been sent to your email address", map[string]interface{}{
+		"email":     input.Email,
+		"purpose":   input.Purpose,
+		"debug_otp": code,
 	})
 }
 

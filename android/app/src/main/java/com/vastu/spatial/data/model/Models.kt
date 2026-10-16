@@ -284,3 +284,45 @@ data class OrgMemberDto(
     @Json(name = "role") val role: String,
     @Json(name = "user") val user: UserDto? = null
 )
+
+// ==========================================
+// POI & Spatial Navigation Models
+// ==========================================
+
+@JsonClass(generateAdapter = true)
+data class PoiDto(
+    @Json(name = "id") val id: String,
+    @Json(name = "project_id") val projectId: String,
+    @Json(name = "name") val name: String,
+    @Json(name = "category") val category: String,
+    @Json(name = "x") val x: Double,
+    @Json(name = "y") val y: Double,
+    @Json(name = "z") val z: Double,
+    @Json(name = "color") val color: String? = null,
+    @Json(name = "description") val description: String? = null,
+    @Json(name = "created_at") val createdAt: String? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class CreatePoiDto(
+    @Json(name = "name") val name: String,
+    @Json(name = "category") val category: String = "Custom",
+    @Json(name = "x") val x: Double,
+    @Json(name = "y") val y: Double,
+    @Json(name = "z") val z: Double,
+    @Json(name = "color") val color: String? = null,
+    @Json(name = "description") val description: String? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class JobDto(
+    @Json(name = "id") val id: String,
+    @Json(name = "capture_id") val captureId: String? = null,
+    @Json(name = "floor_id") val floorId: String? = null,
+    @Json(name = "status") val status: String,
+    @Json(name = "progress_percent") val progressPercent: Double = 0.0,
+    @Json(name = "stage") val stage: String? = null,
+    @Json(name = "error_message") val errorMessage: String? = null,
+    @Json(name = "created_at") val createdAt: String? = null
+)
+

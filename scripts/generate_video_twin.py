@@ -54,6 +54,8 @@ import json
 import time
 import shutil
 import logging
+import copy
+from dataclasses import dataclass, asdict
 from typing import List, Dict, Any, Optional, Tuple
 
 import cv2
@@ -118,6 +120,211 @@ class RecoveryController:
         }
         self.history.append(entry)
         logger.warning(f"  [RECOVERY] {stage}: {recovery_action} (Attempt {retry_count}, Result: {result})")
+
+
+@dataclass
+class MeshHyperparameters:
+    linear_fit: bool = True
+    scale: float = 1.10
+    poisson_depth: int = 8
+    normal_radius: float = 0.12
+    normal_max_nn: int = 50
+    taubin_iterations: int = 12
+    solid_floor_seal: bool = True
+    floor_seal_y_max: float = 0.050
+    consensus_distance_thresh: float = 0.15
+
+
+class CloudAISupervisor:
+    """
+    Cloud AI Supervisor: Closed-Loop Self-Correction Engine.
+    Autonomous spatial quality inspector comparing candidate 3D reconstruction meshes
+    against measured point cloud consensus and architectural planes. Diagnoses defects
+    (crumpled wall faceting, floor cutouts/holes, floating boundary bubbles) and commands
+    worker hyperparameter updates until quality score >= 0.98.
+    """
+    def __init__(self, target_quality_score: float = 0.98):
+        self.target_quality_score = target_quality_score
+
+    def evaluate_mesh(
+        self,
+        mesh: o3d.geometry.TriangleMesh,
+        pcd: o3d.geometry.PointCloud,
+        planes_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Evaluate candidate mesh against physical point cloud measurements and architectural planes.
+        Returns detailed diagnostics, detected defects, and overall quality score.
+        """
+        from scipy.spatial import cKDTree
+
+        verts = np.asarray(mesh.vertices)
+        tris = np.asarray(mesh.triangles)
+        pcd_pts = np.asarray(pcd.points)
+
+        if len(verts) == 0 or len(tris) == 0 or len(pcd_pts) == 0:
+            return {
+                "quality_score": 0.0,
+                "approved": False,
+                "defects": ["EMPTY_GEOMETRY"],
+                "wall_normal_jitter": 1.0,
+                "wall_normal_std": 1.0,
+                "floor_coverage_ratio": 0.0,
+                "boundary_bubble_ratio": 1.0,
+                "vertex_count": len(verts),
+                "triangle_count": len(tris)
+            }
+
+        mesh.compute_triangle_normals()
+        tri_normals = np.asarray(mesh.triangle_normals)
+        tri_centroids = (verts[tris[:, 0]] + verts[tris[:, 1]] + verts[tris[:, 2]]) / 3.0
+
+        defects = []
+
+        # -------------------------------------------------------------
+        # 1. Wall Normal Jitter Diagnosis (Crumpled Tin-Foil Detection)
+        # -------------------------------------------------------------
+        n_left = np.array(planes_data.get("left_wall_plane", [1.0, 0.0, 0.0, 0.0])[:3], dtype=np.float64)
+        d_left = float(planes_data.get("left_wall_plane", [1.0, 0.0, 0.0, 0.0])[3])
+        n_back = np.array(planes_data.get("back_wall_plane", [0.0, 0.0, 1.0, 0.0])[:3], dtype=np.float64)
+        d_back = float(planes_data.get("back_wall_plane", [0.0, 0.0, 1.0, 0.0])[3])
+
+        n_left_norm = np.linalg.norm(n_left)
+        if n_left_norm > 1e-6:
+            n_left /= n_left_norm
+        n_back_norm = np.linalg.norm(n_back)
+        if n_back_norm > 1e-6:
+            n_back /= n_back_norm
+
+        dist_left = np.abs(np.dot(tri_centroids, n_left) + d_left)
+        dist_back = np.abs(np.dot(tri_centroids, n_back) + d_back)
+
+        # Isolate body of planar walls (exclude corners and floor threshold)
+        left_mask = (dist_left < 0.045) & (tri_centroids[:, 1] > 0.15) & (dist_back > 0.15)
+        back_mask = (dist_back < 0.045) & (tri_centroids[:, 1] > 0.15) & (dist_left > 0.15)
+
+        wall_angles = []
+        if np.sum(left_mask) > 10:
+            dots_l = np.clip(np.abs(np.sum(tri_normals[left_mask] * n_left, axis=1)), 0.0, 1.0)
+            wall_angles.append(np.arccos(dots_l))
+        if np.sum(back_mask) > 10:
+            dots_b = np.clip(np.abs(np.sum(tri_normals[back_mask] * n_back, axis=1)), 0.0, 1.0)
+            wall_angles.append(np.arccos(dots_b))
+
+        if wall_angles:
+            all_angles = np.concatenate(wall_angles)
+            wall_normal_jitter = float(np.mean(all_angles))
+            wall_normal_std = float(np.std(all_angles))
+        else:
+            wall_normal_jitter = 0.0
+            wall_normal_std = 0.0
+
+        if wall_normal_jitter > 0.09 or wall_normal_std > 0.09:
+            defects.append("CRUMPLED_WALL_FACETING")
+
+        # -------------------------------------------------------------
+        # 2. Floor Completeness & Hole Detection
+        # -------------------------------------------------------------
+        from scipy.spatial import ConvexHull
+
+        floor_pcd_mask = pcd_pts[:, 1] < 0.08
+        if np.sum(floor_pcd_mask) > 30:
+            fx = pcd_pts[floor_pcd_mask, 0]
+            fz = pcd_pts[floor_pcd_mask, 2]
+            try:
+                hull_2d = ConvexHull(np.column_stack([fx, fz]))
+                expected_floor_area = max(1e-4, float(hull_2d.volume))
+            except Exception:
+                expected_floor_area = max(1e-4, float((fx.max() - fx.min()) * (fz.max() - fz.min())))
+
+            # Triangles on the floor surface
+            floor_tri_mask = (tri_centroids[:, 1] >= -0.02) & (tri_centroids[:, 1] <= 0.06) & (np.abs(tri_normals[:, 1]) > 0.65)
+            if np.sum(floor_tri_mask) > 0:
+                f_tris = tris[floor_tri_mask]
+                v0 = verts[f_tris[:, 0]]
+                v1 = verts[f_tris[:, 1]]
+                v2 = verts[f_tris[:, 2]]
+                # 2D cross-product area in X-Z plane
+                tri_areas = 0.5 * np.abs(
+                    (v1[:, 0] - v0[:, 0]) * (v2[:, 2] - v0[:, 2]) -
+                    (v2[:, 0] - v0[:, 0]) * (v1[:, 2] - v0[:, 2])
+                )
+                actual_floor_area = float(np.sum(tri_areas))
+                floor_coverage_ratio = float(np.clip(actual_floor_area / expected_floor_area, 0.0, 1.0))
+            else:
+                floor_coverage_ratio = 0.0
+        else:
+            floor_coverage_ratio = 1.0
+
+        if floor_coverage_ratio < 0.95:
+            defects.append("FLOOR_HOLE_DEFECT")
+
+        # -------------------------------------------------------------
+        # 3. Floating Boundary Bubble Detection
+        # -------------------------------------------------------------
+        spatial_tree = cKDTree(pcd_pts)
+        non_floor_tri_mask = (tri_centroids[:, 1] > 0.06)
+        if np.sum(non_floor_tri_mask) > 10:
+            dists, _ = spatial_tree.query(tri_centroids[non_floor_tri_mask], k=1, workers=1)
+            bubble_count = np.sum(dists > 0.16)
+            boundary_bubble_ratio = float(bubble_count / len(dists))
+        else:
+            boundary_bubble_ratio = 0.0
+
+        if boundary_bubble_ratio > 0.03:
+            defects.append("FLOATING_BUBBLE_DEFECT")
+
+        # -------------------------------------------------------------
+        # 4. Composite Quality Score Calculation
+        # -------------------------------------------------------------
+        jitter_penalty = min(0.35, max(0.0, wall_normal_jitter - 0.03) * 3.5)
+        hole_penalty = max(0.0, 0.98 - floor_coverage_ratio) * 1.5
+        bubble_penalty = min(0.20, max(0.0, boundary_bubble_ratio - 0.01) * 5.0)
+
+        quality_score = float(np.clip(1.0 - (jitter_penalty + hole_penalty + bubble_penalty), 0.0, 1.0))
+        approved = bool(quality_score >= self.target_quality_score and len(defects) == 0)
+
+        return {
+            "quality_score": round(quality_score, 4),
+            "approved": approved,
+            "defects": defects,
+            "wall_normal_jitter": round(wall_normal_jitter, 4),
+            "wall_normal_std": round(wall_normal_std, 4),
+            "floor_coverage_ratio": round(floor_coverage_ratio, 4),
+            "boundary_bubble_ratio": round(boundary_bubble_ratio, 4),
+            "vertex_count": int(len(verts)),
+            "triangle_count": int(len(tris))
+        }
+
+    def command_parameter_corrections(
+        self,
+        diagnostics: Dict[str, Any],
+        current_params: MeshHyperparameters
+    ) -> MeshHyperparameters:
+        """
+        Dynamically adjusts reconstruction hyperparameters based on diagnosed defects.
+        """
+        new_params = copy.deepcopy(current_params)
+        defects = diagnostics.get("defects", [])
+
+        if "CRUMPLED_WALL_FACETING" in defects or diagnostics.get("wall_normal_jitter", 0.0) > 0.09:
+            # Increase Taubin smoothing and normal estimation radius to eliminate crumpling
+            new_params.taubin_iterations = min(24, new_params.taubin_iterations + 6)
+            new_params.normal_radius = round(min(0.18, new_params.normal_radius + 0.03), 3)
+            new_params.normal_max_nn = min(80, new_params.normal_max_nn + 15)
+
+        if "FLOOR_HOLE_DEFECT" in defects or diagnostics.get("floor_coverage_ratio", 1.0) < 0.95:
+            # Expand floor seal elevation and proximity threshold
+            new_params.solid_floor_seal = True
+            new_params.floor_seal_y_max = round(min(0.080, new_params.floor_seal_y_max + 0.015), 3)
+            new_params.consensus_distance_thresh = round(min(0.22, new_params.consensus_distance_thresh + 0.04), 3)
+
+        if "FLOATING_BUBBLE_DEFECT" in defects or diagnostics.get("boundary_bubble_ratio", 0.0) > 0.03:
+            # Tighten scale and consensus distance threshold to strip non-consensus bubbles
+            new_params.scale = round(max(1.02, new_params.scale - 0.03), 3)
+            new_params.consensus_distance_thresh = round(max(0.10, new_params.consensus_distance_thresh - 0.02), 3)
+
+        return new_params
 
 
 class VastuDigitalTwinPipeline:
@@ -357,8 +564,8 @@ class VastuDigitalTwinPipeline:
         # -------------------------------------------------------------
         # STAGE 14: ADAPTIVE MESH RECONSTRUCTION
         # -------------------------------------------------------------
-        logger.info("\n[STAGE 14] Adaptive Screened Poisson Meshing (Solid Corners & Zero Holes)...")
-        mesh_clean, mesh_dec = self._stage_14_adaptive_mesh(pcd_clean, planes_data, clean_upright)
+        logger.info("\n[STAGE 14] Supervised Adaptive Screened Poisson Meshing (Closed-Loop Quality Gate)...")
+        mesh_clean, mesh_dec = self._stage_14_supervised_adaptive_mesh(pcd_clean, planes_data, clean_upright)
         o3d.io.write_triangle_mesh(os.path.join(self.output_dir, "14_mesh", "mesh.ply"), mesh_clean)
         o3d.io.write_triangle_mesh(os.path.join(self.output_dir, "mesh.ply"), mesh_clean)
 
@@ -404,8 +611,10 @@ class VastuDigitalTwinPipeline:
         # -------------------------------------------------------------
         # STAGE 20: TWO WEBGL RENDERING MODES (Mode A: Unlit / Mode B: Photographic)
         # -------------------------------------------------------------
-        logger.info("\n[STAGE 20] Generating Dual-Mode Interactive WebGL Viewer (index.html)...")
-        cam_positions = [list(np.round((-p["R"].T @ p["t"]).flatten(), 3)) for p in poses]
+        cam_positions_raw = np.array([(-p["R"].T @ p["t"]).flatten() for p in poses])
+        cam_positions_upright = (R_upright @ cam_positions_raw.T).T
+        cam_positions_upright[:, 1] -= y_floor
+        cam_positions = np.round(cam_positions_upright, 3).tolist()
         self._stage_20_webgl_viewer(cam_positions, pcd_metrics, mesh_val)
 
         # -------------------------------------------------------------
@@ -481,7 +690,8 @@ class VastuDigitalTwinPipeline:
                 "texture_atlas": os.path.join(self.output_dir, "texture_atlas.png"),
                 "ply_mesh": os.path.join(self.output_dir, "mesh.ply"),
                 "point_cloud": os.path.join(self.output_dir, "dense_pointcloud.ply"),
-                "webgl_viewer": os.path.join(self.output_dir, "index.html")
+                "webgl_viewer": os.path.join(self.output_dir, "index.html"),
+                "supervisor_diagnostics": os.path.join(self.output_dir, "supervisor_diagnostics.json")
             }
         }
         self._save_json("digital_twin_summary.json", summary)
@@ -972,7 +1182,7 @@ class VastuDigitalTwinPipeline:
 
             is_opening_edge = (g_mag > (0.15 * filtered_depth)) & (rgb_edges_dilated > 0)
             opening_mask = is_opening_edge.astype(np.uint8) * 255
-            valid_conf = (g_mag < (0.11 * filtered_depth)) & (filtered_depth > 0.85) & (filtered_depth < 3.85)
+            valid_conf = (g_mag < (0.28 * filtered_depth)) & (filtered_depth > 0.35) & (filtered_depth < 4.80)
 
             calibrated_depths.append(filtered_depth)
             confidence_maps.append(valid_conf)
@@ -1149,14 +1359,14 @@ class VastuDigitalTwinPipeline:
                 consistent = np.abs(z_c[idx_valid] - obs_z) < 0.12
                 support_counts[idx_valid[consistent]] += 1
 
-        consensus_mask = support_counts >= 2
+        consensus_mask = (support_counts >= 2) | ((support_counts >= 1) & (pts_vox[:, 2] < 2.5))
         reg_pts = pts_vox[consensus_mask]
         reg_cols = cols_vox[consensus_mask]
 
         pcd_reg = o3d.geometry.PointCloud()
         pcd_reg.points = o3d.utility.Vector3dVector(reg_pts)
         pcd_reg.colors = o3d.utility.Vector3dVector(reg_cols)
-        pcd_clean, _ = pcd_reg.remove_statistical_outlier(nb_neighbors=25, std_ratio=1.4)
+        pcd_clean, _ = pcd_reg.remove_statistical_outlier(nb_neighbors=20, std_ratio=2.2)
         clean_pts = np.asarray(pcd_clean.points)
         clean_cols = np.asarray(pcd_clean.colors)
 
@@ -1215,16 +1425,33 @@ class VastuDigitalTwinPipeline:
                 pcd_arch.normals = o3d.utility.Vector3dVector(-mesh_normals)
                 mesh_normals = np.asarray(pcd_arch.normals)
 
-        floor_pcd = pcd_arch.select_by_index(np.where(floor_pts_mask)[0])
-        floor_plane, _ = floor_pcd.segment_plane(distance_threshold=0.035, ransac_n=3, num_iterations=1000)
+        try:
+            floor_pcd = pcd_arch.select_by_index(np.where(floor_pts_mask)[0])
+            floor_plane, _ = floor_pcd.segment_plane(distance_threshold=0.035, ransac_n=3, num_iterations=1000)
+        except Exception:
+            floor_plane = [0.0, 1.0, 0.0, 0.0]
 
-        left_wall_mask = (mesh_normals[:, 0] < -0.40) & (clean_upright[:, 1] > 0.20) & structural_mask
-        left_wall_pcd = pcd_arch.select_by_index(np.where(left_wall_mask)[0])
-        left_plane, _ = left_wall_pcd.segment_plane(distance_threshold=0.040, ransac_n=3, num_iterations=1000)
+        x_thresh = float(np.percentile(clean_upright[:, 0], 50.0))
+        left_wall_mask = (mesh_normals[:, 0] < -0.30) & (clean_upright[:, 1] > 0.20) & (clean_upright[:, 0] <= x_thresh) & structural_mask
+        if np.sum(left_wall_mask) < 30:
+            left_wall_mask = (clean_upright[:, 1] > 0.20) & (clean_upright[:, 0] <= x_thresh) & structural_mask
 
-        back_wall_mask = (mesh_normals[:, 2] < -0.40) & (clean_upright[:, 1] > 0.20) & (clean_upright[:, 2] > 1.8) & structural_mask
-        back_wall_pcd = pcd_arch.select_by_index(np.where(back_wall_mask)[0])
-        back_plane, _ = back_wall_pcd.segment_plane(distance_threshold=0.040, ransac_n=3, num_iterations=1000)
+        try:
+            left_wall_pcd = pcd_arch.select_by_index(np.where(left_wall_mask)[0])
+            left_plane, _ = left_wall_pcd.segment_plane(distance_threshold=0.040, ransac_n=3, num_iterations=1000)
+        except Exception:
+            left_plane = [1.0, 0.0, 0.0, -float(clean_upright[:, 0].min())]
+
+        z_thresh = float(np.percentile(clean_upright[:, 2], 40.0))
+        back_wall_mask = (mesh_normals[:, 2] < -0.30) & (clean_upright[:, 1] > 0.20) & (clean_upright[:, 2] >= z_thresh) & structural_mask
+        if np.sum(back_wall_mask) < 30:
+            back_wall_mask = (clean_upright[:, 1] > 0.20) & (clean_upright[:, 2] >= z_thresh) & structural_mask
+
+        try:
+            back_wall_pcd = pcd_arch.select_by_index(np.where(back_wall_mask)[0])
+            back_plane, _ = back_wall_pcd.segment_plane(distance_threshold=0.040, ransac_n=3, num_iterations=1000)
+        except Exception:
+            back_plane = [0.0, 0.0, 1.0, -float(clean_upright[:, 2].max())]
 
         def normalize_plane(eq):
             eq_arr = np.array(eq, dtype=np.float64)
@@ -1301,6 +1528,16 @@ class VastuDigitalTwinPipeline:
                 pts_arr[ci] -= db * n_back_ortho
                 norms_arr[ci] = n_back_ortho
 
+        # Floor points normal alignment: ensure floor has strict upward +Y normal
+        floor_inliers = (pts_arr[:, 1] < 0.08) & structural_mask
+        norms_arr[floor_inliers] = np.array([0.0, 1.0, 0.0])
+
+        # Ensure point cloud normals consistently point towards the interior / camera space
+        c_room = np.mean(clean_upright, axis=0)
+        vec_to_center = c_room - pts_arr
+        if np.mean(np.sum(norms_arr * vec_to_center, axis=1)) < 0:
+            norms_arr = -norms_arr
+
         pcd_arch.points = o3d.utility.Vector3dVector(pts_arr)
         pcd_arch.normals = o3d.utility.Vector3dVector(norms_arr)
 
@@ -1342,79 +1579,101 @@ class VastuDigitalTwinPipeline:
             "orientation_consistent": True
         }
 
-    def _stage_14_adaptive_mesh(
-        self, pcd: o3d.geometry.PointCloud, planes_data: Dict[str, Any], clean_upright: np.ndarray
+    def _generate_mesh_candidate(
+        self,
+        pcd: o3d.geometry.PointCloud,
+        planes_data: Dict[str, Any],
+        clean_upright: np.ndarray,
+        params: MeshHyperparameters
     ) -> Tuple[o3d.geometry.TriangleMesh, o3d.geometry.TriangleMesh]:
         """
-        STAGE 14: Plane-Truncated SDF Reconstruction & Architectural OBB Clipping.
-        Enforces sharp 90° dihedral room corners and eliminates outer floating boundary bubbles.
+        Generate candidate reconstructed mesh using specific hyperparameter trial settings.
         """
+        from scipy.spatial import cKDTree
+
+        pcd_cand = o3d.geometry.PointCloud(pcd)
+        pcd_pts = np.asarray(pcd_cand.points)
+        pcd_cand.estimate_normals(
+            search_param=o3d.geometry.KDTreeSearchParamHybrid(
+                radius=params.normal_radius, max_nn=params.normal_max_nn
+            )
+        )
+        pcd_cand.orient_normals_consistent_tangent_plane(params.normal_max_nn)
+        pcd_norms = np.asarray(pcd_cand.normals)
+
+        c_room = np.mean(pcd_pts, axis=0)
+        vec_to_center = c_room - pcd_pts
+        if np.mean(np.sum(pcd_norms * vec_to_center, axis=1)) < 0:
+            pcd_cand.normals = o3d.utility.Vector3dVector(-pcd_norms)
+
         mesh_raw, densities = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(
-            pcd, depth=7, scale=1.05, linear_fit=False
+            pcd_cand,
+            depth=params.poisson_depth,
+            scale=params.scale,
+            linear_fit=params.linear_fit,
+            n_threads=1
         )
 
         densities = np.asarray(densities)
-        dens_thresh = np.percentile(densities, 7)
+        dens_thresh = np.percentile(densities, 2.0)
         mesh_clean = mesh_raw.select_by_index(np.where(densities > dens_thresh)[0])
 
-        # -------------------------------------------------------------
-        # 1. Architectural Oriented Bounding Box (OBB) & Plane Truncation Mask
-        # Eliminates floating boundary bubbles and phantom outer shells
-        # -------------------------------------------------------------
         p_verts = np.asarray(mesh_clean.vertices)
         p_tris = np.asarray(mesh_clean.triangles)
 
-        # Define architectural room boundaries with small physical tolerances
-        y_ceil_max = float(np.percentile(clean_upright[:, 1], 99.5)) + 0.08
-        x_min = float(clean_upright[:, 0].min()) - 0.08
-        x_max = float(clean_upright[:, 0].max()) + 0.08
-        z_min = float(clean_upright[:, 2].min()) - 0.08
-        z_max = float(clean_upright[:, 2].max()) + 0.08
+        # -------------------------------------------------------------
+        # 1. Architectural Envelope & Solid Surface Consensus Filtering
+        # -------------------------------------------------------------
+        y_ceil_max = float(np.percentile(clean_upright[:, 1], 99.8)) + 0.10
+        x_min = float(clean_upright[:, 0].min()) - 0.10
+        x_max = float(clean_upright[:, 0].max()) + 0.10
+        z_min = float(clean_upright[:, 2].min()) - 0.10
+        z_max = float(clean_upright[:, 2].max()) + 0.10
 
+        centroids = (p_verts[p_tris[:, 0]] + p_verts[p_tris[:, 1]] + p_verts[p_tris[:, 2]]) / 3.0
+
+        valid_floor = (centroids[:, 1] >= -0.015) & (centroids[:, 1] <= y_ceil_max)
+        valid_x = (centroids[:, 0] >= x_min) & (centroids[:, 0] <= x_max)
+        valid_z = (centroids[:, 2] >= z_min) & (centroids[:, 2] <= z_max)
+        valid_envelope = valid_floor & valid_x & valid_z
+
+        spatial_tree = cKDTree(pcd_pts)
+        dists_to_pcd, _ = spatial_tree.query(centroids, k=1, workers=1)
+
+        if params.solid_floor_seal:
+            is_floor_tri = (centroids[:, 1] >= -0.015) & (centroids[:, 1] <= params.floor_seal_y_max)
+            valid_proximity = (dists_to_pcd <= params.consensus_distance_thresh) | is_floor_tri
+        else:
+            valid_proximity = (dists_to_pcd <= params.consensus_distance_thresh)
+
+        is_ceiling_bubble = (centroids[:, 1] > y_ceil_max - 0.20) & (dists_to_pcd > 0.12)
+        valid_proximity = valid_proximity & (~is_ceiling_bubble)
+
+        valid_tris_mask = valid_envelope & valid_proximity
+        mesh_clean.remove_triangles_by_mask(~valid_tris_mask)
+        mesh_clean.remove_unreferenced_vertices()
+
+        # Retain connected clusters >= 150 tris or >= 0.5%
+        clusters, cluster_counts, _ = mesh_clean.cluster_connected_triangles()
+        clusters = np.asarray(clusters)
+        cluster_counts = np.asarray(cluster_counts)
+        if len(cluster_counts) > 0:
+            min_cluster_tris = max(150, int(0.005 * len(clusters)))
+            keep_clusters = np.where(cluster_counts >= min_cluster_tris)[0]
+            if len(keep_clusters) > 0:
+                mesh_clean.remove_triangles_by_mask(~np.isin(clusters, keep_clusters))
+                mesh_clean.remove_unreferenced_vertices()
+
+        # -------------------------------------------------------------
+        # 2. Sharp 90° Dihedral Corner Enforcement
+        # -------------------------------------------------------------
+        c_origin = np.array(planes_data["corner_origin"])
+        c_dir = np.array(planes_data["corner_direction"])
         n_left = np.array(planes_data["left_wall_plane"][:3])
         d_left = planes_data["left_wall_plane"][3]
         n_back = np.array(planes_data["back_wall_plane"][:3])
         d_back = planes_data["back_wall_plane"][3]
 
-        c_room = np.mean(clean_upright, axis=0)
-        if np.dot(c_room, n_left) + d_left < 0:
-            n_left, d_left = -n_left, -d_left
-        if np.dot(c_room, n_back) + d_back < 0:
-            n_back, d_back = -n_back, -d_back
-
-        # Evaluate triangle centroids
-        centroids = (p_verts[p_tris[:, 0]] + p_verts[p_tris[:, 1]] + p_verts[p_tris[:, 2]]) / 3.0
-
-        # Boundary rules:
-        # Floor truncation: no vertices below floor Y=0.00m (tol -0.015m)
-        valid_floor = (centroids[:, 1] >= -0.015) & (centroids[:, 1] <= y_ceil_max)
-        # Lateral frustum bounds: no geometry far beyond measured room point cloud
-        valid_x = (centroids[:, 0] >= x_min) & (centroids[:, 0] <= x_max)
-        valid_z = (centroids[:, 2] >= z_min) & (centroids[:, 2] <= z_max)
-        # Outer wall phantom clipping: geometry behind exterior of left wall and back wall
-        dist_l = np.dot(centroids, n_left) + d_left
-        dist_b = np.dot(centroids, n_back) + d_back
-        valid_walls = (dist_l >= -0.06) & (dist_b >= -0.06)
-
-        valid_tris_mask = valid_floor & valid_x & valid_z & valid_walls
-        mesh_clean.remove_triangles_by_mask(~valid_tris_mask)
-        mesh_clean.remove_unreferenced_vertices()
-
-        # Retain only the primary interior room cluster (discard disconnected outer bubble remnants)
-        clusters, cluster_counts, _ = mesh_clean.cluster_connected_triangles()
-        clusters = np.asarray(clusters)
-        cluster_counts = np.asarray(cluster_counts)
-        if len(cluster_counts) > 0:
-            largest_cluster = np.argmax(cluster_counts)
-            mesh_clean.remove_triangles_by_mask(clusters != largest_cluster)
-            mesh_clean.remove_unreferenced_vertices()
-
-        # -------------------------------------------------------------
-        # 2. Sharp 90° Dihedral Corner Enforcement (Plane-Truncated SDF / CSG Snapping)
-        # Projects rounded Poisson fillets onto the exact dihedral intersection line
-        # -------------------------------------------------------------
-        c_origin = np.array(planes_data["corner_origin"])
-        c_dir = np.array(planes_data["corner_direction"])
         m_verts = np.asarray(mesh_clean.vertices).copy()
 
         delta_m = m_verts - c_origin
@@ -1425,53 +1684,124 @@ class VastuDigitalTwinPipeline:
         s_b = np.dot(m_verts, n_back) + d_back
 
         # Floor flattening: snap near-floor and sub-floor vertices strictly to Y=0.00m
-        near_floor = (m_verts[:, 1] < 0.025)
+        near_floor = (m_verts[:, 1] < 0.035)
         m_verts[near_floor, 1] = 0.00
         m_verts[m_verts[:, 1] < 0.00, 1] = 0.00
 
-        # Corner transition zone: vertices rounding the dihedral 90° angle
-        corner_zone = (rad_dist < 0.22) & (m_verts[:, 1] > 0.05) & (np.abs(s_l) < 0.15) & (np.abs(s_b) < 0.15)
+        # Corner transition zone
+        corner_zone = (rad_dist < 0.20) & (m_verts[:, 1] > 0.05) & (np.abs(s_l) < 0.12) & (np.abs(s_b) < 0.12)
         for vi in np.where(corner_zone)[0]:
             d_line = rad_dist[vi]
             if d_line < 0.040:
-                # Direct intersection snapping: exact corner edge
                 m_verts[vi] = c_origin + proj_axis[vi] * c_dir
             elif abs(s_l[vi]) < abs(s_b[vi]):
-                # Snap to left wall
                 m_verts[vi] -= s_l[vi] * n_left
             else:
-                # Snap to back wall
                 m_verts[vi] -= s_b[vi] * n_back
 
-        # Planar wall snapping: snap wall body vertices directly onto RANSAC planes
-        wall_l_body = (np.abs(s_l) < 0.040) & (m_verts[:, 1] > 0.10) & (~corner_zone)
+        # Planar wall snapping
+        wall_l_body = (np.abs(s_l) < 0.035) & (m_verts[:, 1] > 0.10) & (~corner_zone)
         m_verts[wall_l_body] -= np.outer(s_l[wall_l_body], n_left)
 
-        wall_b_body = (np.abs(s_b) < 0.040) & (m_verts[:, 1] > 0.10) & (~corner_zone)
+        wall_b_body = (np.abs(s_b) < 0.035) & (m_verts[:, 1] > 0.10) & (~corner_zone)
         m_verts[wall_b_body] -= np.outer(s_b[wall_b_body], n_back)
 
+        mesh_clean.vertices = o3d.utility.Vector3dVector(m_verts)
+
+        # -------------------------------------------------------------
+        # 3. Volume-Preserving Taubin Smoothing
+        # -------------------------------------------------------------
+        mesh_clean = mesh_clean.filter_smooth_taubin(
+            number_of_iterations=params.taubin_iterations, lambda_filter=0.5, mu=-0.53
+        )
+        m_verts = np.asarray(mesh_clean.vertices).copy()
+        m_verts[m_verts[:, 1] < 0.025, 1] = 0.00
+        m_verts[m_verts[:, 1] < 0.00, 1] = 0.00
         mesh_clean.vertices = o3d.utility.Vector3dVector(m_verts)
         mesh_clean.compute_vertex_normals()
         mesh_clean.compute_triangle_normals()
 
-        # Interpolate vertex colors from clean point cloud
-        kdtree = o3d.geometry.KDTreeFlann(pcd)
-        m_cols = np.zeros_like(m_verts)
-        pcd_cols_arr = np.asarray(pcd.colors)
-        for vi in range(len(m_verts)):
-            _, idx_nn, _ = kdtree.search_knn_vector_3d(m_verts[vi], 3)
-            m_cols[vi] = np.mean(pcd_cols_arr[idx_nn], axis=0)
-        mesh_clean.vertex_colors = o3d.utility.Vector3dVector(m_cols)
+        # Vectorized vertex colors
+        pcd_cols_arr = np.asarray(pcd_cand.colors)
+        if len(pcd_cols_arr) == len(pcd_pts):
+            _, idx_nn = spatial_tree.query(m_verts, k=3, workers=1)
+            m_cols = np.mean(pcd_cols_arr[idx_nn], axis=1)
+            mesh_clean.vertex_colors = o3d.utility.Vector3dVector(m_cols)
 
-        # Simplified mesh for UV chart parameterization
-        mesh_dec = mesh_clean.simplify_quadric_decimation(25000)
+        # Decimated UV Mesh
+        mesh_dec = mesh_clean.simplify_quadric_decimation(35000)
         mesh_dec.remove_unreferenced_vertices()
         mesh_dec.compute_vertex_normals()
         mesh_dec.compute_triangle_normals()
 
-        logger.info(f"  Screened Poisson + Sharp Corner Snapping: {len(mesh_clean.vertices):,} vertices, {len(mesh_clean.triangles):,} triangles.")
-        logger.info(f"  Decimated UV Mesh: {len(mesh_dec.vertices):,} vertices, {len(mesh_dec.triangles):,} triangles.")
         return mesh_clean, mesh_dec
+
+    def _stage_14_supervised_adaptive_mesh(
+        self, pcd: o3d.geometry.PointCloud, planes_data: Dict[str, Any], clean_upright: np.ndarray
+    ) -> Tuple[o3d.geometry.TriangleMesh, o3d.geometry.TriangleMesh]:
+        """
+        STAGE 14: Cloud AI Supervised Adaptive Mesh Reconstruction.
+        Iteratively reconstructs and evaluates mesh candidates using the CloudAISupervisor.
+        If defects (crumpled wall faceting, floor cutouts, boundary bubbles) are diagnosed,
+        commands hyperparameter corrections and re-evaluates until approved (quality >= 0.98)
+        or max trials reached.
+        """
+        supervisor = CloudAISupervisor(target_quality_score=0.98)
+        current_params = MeshHyperparameters()
+        trials_history = []
+        best_candidate = None
+        best_decimated = None
+        best_score = -1.0
+
+        max_trials = 3
+        for trial_idx in range(1, max_trials + 1):
+            logger.info(f"  [STAGE 14 / AI SUPERVISOR] Trial {trial_idx}/{max_trials} starting with parameters: {asdict(current_params)}")
+            mesh_cand, mesh_dec = self._generate_mesh_candidate(pcd, planes_data, clean_upright, current_params)
+            diagnostics = supervisor.evaluate_mesh(mesh_cand, pcd, planes_data)
+            diagnostics["trial"] = trial_idx
+            diagnostics["parameters"] = asdict(current_params)
+            trials_history.append(diagnostics)
+
+            score = diagnostics["quality_score"]
+            logger.info(
+                f"  [STAGE 14 / AI SUPERVISOR] Trial {trial_idx} Report: "
+                f"Score={score:.4f}, Approved={diagnostics['approved']}, "
+                f"Defects={diagnostics['defects']}, Wall Jitter={diagnostics['wall_normal_jitter']:.4f}, "
+                f"Floor Coverage={diagnostics['floor_coverage_ratio']:.4f}"
+            )
+
+            if score > best_score:
+                best_score = score
+                best_candidate = mesh_cand
+                best_decimated = mesh_dec
+
+            if diagnostics["approved"]:
+                logger.info(f"  [STAGE 14 / AI SUPERVISOR] Candidate approved on trial {trial_idx} with score {score:.4f} >= 0.98!")
+                break
+
+            if trial_idx < max_trials:
+                current_params = supervisor.command_parameter_corrections(diagnostics, current_params)
+                logger.info(f"  [STAGE 14 / AI SUPERVISOR] Ordered corrections for Trial {trial_idx + 1}: {asdict(current_params)}")
+
+        supervisor_report = {
+            "status": "APPROVED" if trials_history[-1]["approved"] else "BEST_EFFORT",
+            "total_trials": len(trials_history),
+            "final_quality_score": best_score,
+            "trials": trials_history,
+            "final_parameters": trials_history[-1]["parameters"]
+        }
+        self._save_json("14_mesh/supervisor_diagnostics.json", supervisor_report)
+        self._save_json("supervisor_diagnostics.json", supervisor_report)
+
+        logger.info(f"  Final Supervised Mesh: {len(best_candidate.vertices):,} vertices, {len(best_candidate.triangles):,} triangles.")
+        logger.info(f"  Final Decimated UV Mesh: {len(best_decimated.vertices):,} vertices, {len(best_decimated.triangles):,} triangles.")
+        return best_candidate, best_decimated
+
+    def _stage_14_adaptive_mesh(
+        self, pcd: o3d.geometry.PointCloud, planes_data: Dict[str, Any], clean_upright: np.ndarray
+    ) -> Tuple[o3d.geometry.TriangleMesh, o3d.geometry.TriangleMesh]:
+        """Backward compatibility alias for _stage_14_supervised_adaptive_mesh."""
+        return self._stage_14_supervised_adaptive_mesh(pcd, planes_data, clean_upright)
 
     def _stage_15_mesh_validation(
         self, mesh: o3d.geometry.TriangleMesh, planes_data: Dict[str, Any]
@@ -1480,7 +1810,11 @@ class VastuDigitalTwinPipeline:
         tris = np.asarray(mesh.triangles)
 
         non_manifold_e = len(mesh.get_non_manifold_edges(allow_boundary_edges=True))
-        degenerate_t = len(mesh.get_self_intersecting_triangles())
+        if len(tris) > 35000:
+            m_sample = mesh.simplify_quadric_decimation(35000)
+            degenerate_t = len(m_sample.get_self_intersecting_triangles())
+        else:
+            degenerate_t = len(mesh.get_self_intersecting_triangles())
 
         bbox_min = verts.min(axis=0).tolist()
         bbox_max = verts.max(axis=0).tolist()
@@ -1983,6 +2317,7 @@ class VastuDigitalTwinPipeline:
                 meshObject = obj;
                 meshObject.traverse((child) => {{
                     if (child.isMesh) {{
+                        child.material.side = THREE.DoubleSide;
                         origMaterials.set(child, child.material);
                         const unlit = new THREE.MeshBasicMaterial({{
                             map: child.material.map,
@@ -2018,7 +2353,7 @@ class VastuDigitalTwinPipeline:
 
             for (let i = 0; i < camCoords.length; i++) {{
                 const p = camCoords[i];
-                const pt = new THREE.Vector3(-p[0], -p[1] + 1.2, p[2]);
+                const pt = new THREE.Vector3(p[0], p[1], p[2]);
                 points.push(pt);
 
                 const node = new THREE.Mesh(sphereGeom, sphereMat);

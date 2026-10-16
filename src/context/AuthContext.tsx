@@ -13,7 +13,8 @@ interface AuthContextType {
   hasPendingJoin: boolean;
   setSession: (data: {
     user: User;
-    tokens: { access_token: string; refresh_token: string };
+    tokens?: { access_token: string; refresh_token: string };
+    token?: string;
     activeOrg?: Organization;
     memberships?: OrganizationMember[];
     activeRole?: string;
@@ -130,15 +131,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const setSession = (data: {
     user: User;
-    tokens: { access_token: string; refresh_token: string };
+    tokens?: { access_token: string; refresh_token: string };
+    token?: string;
     activeOrg?: Organization;
     memberships?: OrganizationMember[];
     activeRole?: string;
   }) => {
-    localStorage.setItem('vastu_access_token', data.tokens.access_token);
-    localStorage.setItem('vastu_refresh_token', data.tokens.refresh_token);
-    localStorage.setItem('vastu_user', JSON.stringify(data.user));
-    setUser(data.user);
+    const accessToken = data.tokens?.access_token || data.token || '';
+    const refreshToken = data.tokens?.refresh_token || '';
+
+    if (accessToken) {
+      localStorage.setItem('vastu_access_token', accessToken);
+    }
+    if (refreshToken) {
+      localStorage.setItem('vastu_refresh_token', refreshToken);
+    }
+    if (data.user) {
+      localStorage.setItem('vastu_user', JSON.stringify(data.user));
+      setUser(data.user);
+    }
 
     if (data.activeOrg) {
       localStorage.setItem('vastu_active_org', JSON.stringify(data.activeOrg));

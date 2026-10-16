@@ -2,11 +2,11 @@
   {
     "stage": "STAGE_01b",
     "failure_reason": "insufficient_translation_baseline",
-    "detected_metric": 0.03,
+    "detected_metric": 0.0303,
     "threshold": 0.1,
     "recovery_action": "flag_metric_uncertainty_and_apply_planar_prior",
     "retry_count": 1,
     "result": "ADAPTED",
-    "timestamp": "2026-09-06 15:25:14"
+    "timestamp": "2026-09-22 00:26:48"
   }
 ]

@@ -253,7 +253,6 @@ export const OrganizationSignupPage: React.FC = () => {
     setIsSubmittingRegistration(true);
     setIsLoading(true);
     setError(null);
-    const startTime = Date.now();
     try {
       const payload = {
         applicant_name: applicantName,
@@ -285,12 +284,6 @@ export const OrganizationSignupPage: React.FC = () => {
       };
 
       const res = await api.completeOrganizationSignup(payload);
-
-      // Ensure minimum duration for smooth loader visual experience
-      const elapsed = Date.now() - startTime;
-      if (elapsed < 2500) {
-        await new Promise((resolve) => setTimeout(resolve, 2500 - elapsed));
-      }
 
       // Save tokens in session
       setSession({

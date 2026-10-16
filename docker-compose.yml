@@ -18,7 +18,7 @@ services:
       retries: 5
 
   vastu-migrate:
-    image: migrate/migrate
+    image: migrate/migrate:v4.17.0
     container_name: vastu_migrate
     networks:
       - default
@@ -61,7 +61,7 @@ services:
       retries: 5
 
   vastu-minio-init:
-    image: minio/mc:latest
+    image: minio/minio:latest
     container_name: vastu_minio_init
     depends_on:
       vastu-minio:
@@ -85,8 +85,8 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql://vastu_user:vastu_secure_password_2026@vastu-postgres:5432/vastu_db?sslmode=disable}
-      - PORT=${BACKEND_PORT:-8080}
+      - DATABASE_URL=postgresql://vastu_user:vastu_secure_password_2026@vastu-postgres:5432/vastu_db?sslmode=disable
+      - PORT=8080
       - SMTP_HOST=${SMTP_HOST:-smtp.hostinger.com}
       - SMTP_PORT=${SMTP_PORT:-465}
       - SMTP_USER=${SMTP_USER}
@@ -181,6 +181,19 @@ services:
         condition: service_started
       vastu-minio:
         condition: service_started
+
+  vastu-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: vastu_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8080/api/v1
+    depends_on:
+      - vastu-backend
 
 volumes:
   vastu_pg_data:

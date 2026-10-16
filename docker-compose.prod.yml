@@ -1,0 +1,258 @@
+services:
+  # ----------------------------------------------------------------------------
+  # 1. DATABASE: PostgreSQL 16 + PostGIS 3.4
+  # ----------------------------------------------------------------------------
+  vastu-postgres:
+    image: postgis/postgis:16-3.4
+    container_name: vastu_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-vastu_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Database password required}
+      POSTGRES_DB: ${POSTGRES_DB:-vastu_db}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - vastu_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vastu_user} -d ${POSTGRES_DB:-vastu_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vastu_internal
+
+  # ----------------------------------------------------------------------------
+  # 2. MIGRATIONS: Auto-run on startup
+  # ----------------------------------------------------------------------------
+  vastu-migrate:
+    image: migrate/migrate:v4.17.0
+    container_name: vastu_migrate
+    volumes:
+      - ./database/migrations:/migrations
+    command:
+      - -path=/migrations
+      - -database=postgres://${POSTGRES_USER:-vastu_user}:${POSTGRES_PASSWORD}@vastu-postgres:5432/${POSTGRES_DB:-vastu_db}?sslmode=disable
+      - up
+    depends_on:
+      vastu-postgres:
+        condition: service_healthy
+    networks:
+      - vastu_internal
+
+  # ----------------------------------------------------------------------------
+  # 3. CACHE & PUB/SUB: Redis 7
+  # ----------------------------------------------------------------------------
+  vastu-redis:
+    image: redis:7-alpine
+    container_name: vastu_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:?Redis password required}
+    volumes:
+      - vastu_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vastu_internal
+
+  # ----------------------------------------------------------------------------
+  # 4. OBJECT STORAGE: Self-Hosted MinIO (S3 Compatible)
+  # ----------------------------------------------------------------------------
+  vastu-minio:
+    image: minio/minio:latest
+    container_name: vastu_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-vastu_minio_admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MinIO password required}
+    volumes:
+      - vastu_minio_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vastu_internal
+
+  # ----------------------------------------------------------------------------
+  # 5. OBJECT STORAGE INIT: Bucket Auto-Provisioning
+  # ----------------------------------------------------------------------------
+  vastu-minio-init:
+    image: minio/minio:latest
+    container_name: vastu_minio_init
+    depends_on:
+      vastu-minio:
+        condition: service_healthy
+    volumes:
+      - ./infrastructure/minio_init/setup.sh:/setup.sh:ro
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-vastu_minio_admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_HOST: vastu-minio:9000
+    entrypoint: ["/bin/sh", "/setup.sh"]
+    networks:
+      - vastu_internal
+
+  # ----------------------------------------------------------------------------
+  # 6. BACKEND: Go Spatial Control Plane
+  # ----------------------------------------------------------------------------
+  vastu-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vastu_backend
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-vastu_user}:${POSTGRES_PASSWORD}@vastu-postgres:5432/${POSTGRES_DB:-vastu_db}?sslmode=disable
+      - PORT=8080
+      - ENVIRONMENT=production
+      - NEXT_PUBLIC_APP_URL=${APP_URL:-http://localhost}
+      - JWT_SECRET=${JWT_SECRET:?JWT secret required}
+      - JWT_ACCESS_EXPIRY_MINUTES=${JWT_ACCESS_EXPIRY_MINUTES:-15}
+      - JWT_REFRESH_EXPIRY_DAYS=${JWT_REFRESH_EXPIRY_DAYS:-7}
+      - SMTP_HOST=${SMTP_HOST:-smtp.hostinger.com}
+      - SMTP_PORT=${SMTP_PORT:-465}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_FROM_NAME=${SMTP_FROM_NAME:-VĀSTU Spatial Platform}
+      - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - APPLE_CLIENT_ID=${APPLE_CLIENT_ID}
+      - UPLOAD_DIR=/app/uploads
+      - S3_ENDPOINT=http://vastu-minio:9000
+      - S3_REGION=us-east-1
+      - S3_BUCKET_ARTIFACTS=vastu-artifacts
+      - S3_BUCKET_UPLOADS=vastu-raw-captures
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER:-vastu_minio_admin}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
+    volumes:
+      - vastu_uploads_data:/app/uploads
+    depends_on:
+      vastu-postgres:
+        condition: service_healthy
+      vastu-redis:
+        condition: service_healthy
+      vastu-minio:
+        condition: service_healthy
+    networks:
+      - vastu_internal
+
+  # ----------------------------------------------------------------------------
+  # 7. PYTHON API: FastAPI Spatial Computing & Photogrammetry Gateway
+  # ----------------------------------------------------------------------------
+  vastu-api:
+    image: vastu-api:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: vastu_api
+    restart: unless-stopped
+    environment:
+      - PORT=8000
+      - JWT_SECRET=${JWT_SECRET}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-vastu_user}:${POSTGRES_PASSWORD}@vastu-postgres:5432/${POSTGRES_DB:-vastu_db}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@vastu-redis:6379/0
+      - S3_ENDPOINT_URL=http://vastu-minio:9000
+      - S3_BUCKET=vastu-artifacts
+      - UPLOAD_DIR=/app/uploads
+      - PYTHONPATH=/app
+    volumes:
+      - vastu_uploads_data:/app/uploads
+    depends_on:
+      vastu-postgres:
+        condition: service_healthy
+      vastu-redis:
+        condition: service_healthy
+      vastu-minio:
+        condition: service_healthy
+    networks:
+      - vastu_internal
+
+  # ----------------------------------------------------------------------------
+  # 8. WORKER: Distributed 9-Stage Reconstruction Pipeline
+  # ----------------------------------------------------------------------------
+  vastu-worker:
+    build:
+      context: ./backend/workers
+      dockerfile: Dockerfile
+    container_name: vastu_worker
+    restart: unless-stopped
+    environment:
+      - PYTHONPATH=/app:/app/backend/workers
+      - S3_ENDPOINT_URL=http://vastu-minio:9000
+      - AWS_ACCESS_KEY_ID=${MINIO_ROOT_USER:-vastu_minio_admin}
+      - AWS_SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
+      - S3_BUCKET=vastu-artifacts
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@vastu-redis:6379/0
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-vastu_user}:${POSTGRES_PASSWORD}@vastu-postgres:5432/${POSTGRES_DB:-vastu_db}
+    volumes:
+      - vastu_uploads_data:/app/uploads
+    depends_on:
+      vastu-postgres:
+        condition: service_healthy
+      vastu-redis:
+        condition: service_healthy
+      vastu-minio:
+        condition: service_healthy
+    networks:
+      - vastu_internal
+
+  # ----------------------------------------------------------------------------
+  # 9. FRONTEND: React 18 + Three.js WebGL Spatial Viewer
+  # ----------------------------------------------------------------------------
+  vastu-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        - VITE_API_BASE_URL=/api/v1
+    container_name: vastu_frontend
+    restart: unless-stopped
+    networks:
+      - vastu_internal
+
+  # ----------------------------------------------------------------------------
+  # 10. GATEWAY: Unified Production Nginx Reverse Proxy (Ports 80 & 443)
+  # ----------------------------------------------------------------------------
+  vastu-gateway:
+    image: nginx:alpine
+    container_name: vastu_gateway
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ${NGINX_CONF_PATH:-./infrastructure/nginx/gateway.conf}:/etc/nginx/conf.d/default.conf:ro
+      - certbot_etc:/etc/letsencrypt
+      - certbot_var:/var/www/certbot
+    depends_on:
+      - vastu-frontend
+      - vastu-backend
+      - vastu-api
+      - vastu-minio
+    networks:
+      - vastu_internal
+
+volumes:
+  vastu_pg_data:
+    name: vastu_production_pg_data
+  vastu_redis_data:
+    name: vastu_production_redis_data
+  vastu_minio_data:
+    name: vastu_production_minio_data
+  vastu_uploads_data:
+    name: vastu_production_uploads_data
+  certbot_etc:
+    name: vastu_certbot_etc
+  certbot_var:
+    name: vastu_certbot_var
+
+networks:
+  vastu_internal:
+    name: vastu_production_network
+    driver: bridge
