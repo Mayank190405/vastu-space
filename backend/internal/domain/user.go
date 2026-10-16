@@ -10,7 +10,7 @@ type AuthProvider string
 
 const (
 	AuthProviderLocal  AuthProvider = "local"
-	AuthProviderEmail  AuthProvider = "email"
+	AuthProviderEmail  AuthProvider = "local" // Map to database 'local' auth_provider_enum
 	AuthProviderGoogle AuthProvider = "google"
 	AuthProviderApple  AuthProvider = "apple"
 )
