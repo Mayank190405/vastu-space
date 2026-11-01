@@ -12,21 +12,27 @@
 
 The VĀSTU spatial computing platform has been deployed to production cloud infrastructure and is accessible 24/7 without software installation:
 
-* **Primary Production Web Application & Project Portal:**  
-  👉 **`https://vastu.krads.co.in/`**  
-  *(Serves the dedicated project overview, mathematical architecture, interactive SOP simulator, and direct studio access).*
+* **Primary Free-Roaming 3D Digital Twin Viewer:**  
+  👉 **`https://vastu.krads.co.in/output`**  
+  *(Embedded WebGL roaming viewer pre-loaded with the reconstructed bedroom digital twin, real-time FPS counter, HUD, and fullscreen roaming).*
 
-* **Direct 3D Spatial Roaming Studio (Free-Roaming View):**  
+* **Direct Standalone WebGL Viewer (Zero-Overhead):**  
+  👉 **`https://vastu.krads.co.in/output/index.html`**  
+  *(Instant Three.js canvas with textured mesh, wireframe toggle, point cloud splats, and WASD free-walk).*
+
+* **Interactive 3D Spatial Studio (Floor Plans & Analytics):**  
   👉 **`https://vastu.krads.co.in/viewer`**  
-  *(Launches the full interactive 3D WebGL viewer pre-loaded with metric digital twin models, collision boundaries, and measurement tools).*
+  *(Metric measurements, architectural cross-sections, compass orientation, and lighting simulation).*
 
-* **Live Mobile WebAR Navigation Mode:**  
-  👉 **`https://vastu.krads.co.in/ar`**  
-  *(Overlays live 3D wayfinding arrows onto smartphone camera feeds).*
+* **Official Project Overview Portal:**  
+  👉 **`https://vastu.krads.co.in/`**  
+  *(Dedicated academic & industrial project presentation, SOP simulator, and live 3D showcases).*
 
-* **2D / 3D CAD Floor Plan Studio:**  
-  👉 **`https://vastu.krads.co.in/cad`**  
-  *(Interactive vector floor plans with RANSAC Manhattan wall extraction and DXF/SVG export).*
+* **Download Reconstructed 3D Assets (For Blender / MeshLab verification):**  
+  - Complete 3D Model (GLB): **`https://vastu.krads.co.in/output/model.glb`**  
+  - Photographic Mesh (OBJ): **`https://vastu.krads.co.in/output/textured_mesh.obj`**  
+  - Dense Point Cloud (PLY): **`https://vastu.krads.co.in/output/dense_pointcloud.ply`**  
+  - Photographic Texture Atlas: **`https://vastu.krads.co.in/output/texture_atlas.jpg`**
 
 ---
 

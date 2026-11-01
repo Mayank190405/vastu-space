@@ -101,3 +101,4 @@ export const LiveDigitalTwinOutputPage: React.FC = () => {
     </div>
   );
 };
+

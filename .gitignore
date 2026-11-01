@@ -47,6 +47,7 @@ uploads/
 backup/
 scratch/
 digital_twin_output_img4963/
+digital_twin_local_build/
 .*_backup/
 .phase9_backup/
 .working_tree_current_backup/
