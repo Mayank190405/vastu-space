@@ -114,10 +114,11 @@ export const HeroSection: React.FC = () => {
           {/* Primary Action Buttons */}
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              to="/login"
-              className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-[#C5A059] via-[#E8C982] to-[#B08940] text-black font-semibold text-sm hover:brightness-110 shadow-xl shadow-[#C5A059]/25 transition-all flex items-center justify-center space-x-2 group"
+              to="/output"
+              className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-[#C5A059] via-[#E8C982] to-[#B08940] text-black font-bold text-sm hover:brightness-110 shadow-xl shadow-[#C5A059]/30 transition-all flex items-center justify-center space-x-2 group"
             >
-              <span>Launch Cloud Console</span>
+              <Sparkles className="w-4 h-4 text-black" />
+              <span>Roam Live 3D Output</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
 
@@ -126,7 +127,7 @@ export const HeroSection: React.FC = () => {
               className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#1A1714] border border-[#C5A059]/50 text-[#FAF7F0] font-semibold text-sm hover:bg-[#26221D] hover:border-[#C5A059] transition-all flex items-center justify-center space-x-2"
             >
               <Box className="w-4 h-4 text-[#C5A059]" />
-              <span>Explore 3D Twin Viewer</span>
+              <span>Explore 3D Studio</span>
             </Link>
 
             <a

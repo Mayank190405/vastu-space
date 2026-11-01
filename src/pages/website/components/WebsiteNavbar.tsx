@@ -134,6 +134,14 @@ export const WebsiteNavbar: React.FC<WebsiteNavbarProps> = ({ activeSection }) =
           {/* Right Action CTA Buttons */}
           <div className="hidden md:flex items-center space-x-3">
             <Link
+              to="/output"
+              className="px-3.5 py-1.5 rounded-xl border border-amber-500/50 bg-amber-500/10 text-amber-300 text-xs font-semibold hover:bg-amber-500/20 hover:border-amber-400 transition-all flex items-center space-x-2 shadow-sm"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Live 3D Output</span>
+            </Link>
+
+            <Link
               to="/viewer"
               className="px-3.5 py-1.5 rounded-xl border border-[#C5A059]/40 bg-[#1A1714] text-[#E8C982] text-xs font-semibold hover:bg-[#26221D] hover:border-[#C5A059] transition-all flex items-center space-x-1.5 shadow-sm"
             >
@@ -189,11 +197,19 @@ export const WebsiteNavbar: React.FC<WebsiteNavbarProps> = ({ activeSection }) =
         {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-[#0E0C0A] border-b border-[#C5A059]/30 px-6 py-6 space-y-4 shadow-2xl animate-in fade-in slide-in-from-top-2">
-            <div className="grid grid-cols-2 gap-2 pb-4 border-b border-[#C5A059]/20">
+            <div className="grid grid-cols-3 gap-2 pb-4 border-b border-[#C5A059]/20">
+              <Link
+                to="/output"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/40 text-amber-300 text-xs font-semibold flex flex-col items-center justify-center text-center space-y-1"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Live 3D</span>
+              </Link>
               <Link
                 to="/viewer"
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-3 rounded-xl bg-[#1A1714] border border-[#C5A059]/30 text-[#E8C982] text-xs font-semibold flex items-center space-x-2"
+                className="p-2.5 rounded-xl bg-[#1A1714] border border-[#C5A059]/30 text-[#E8C982] text-xs font-semibold flex flex-col items-center justify-center text-center space-y-1"
               >
                 <Box className="w-4 h-4 text-[#C5A059]" />
                 <span>3D Studio</span>
@@ -201,7 +217,7 @@ export const WebsiteNavbar: React.FC<WebsiteNavbarProps> = ({ activeSection }) =
               <Link
                 to="/ar"
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-3 rounded-xl bg-[#1A1714] border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center space-x-2"
+                className="p-2.5 rounded-xl bg-[#1A1714] border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex flex-col items-center justify-center text-center space-y-1"
               >
                 <Compass className="w-4 h-4 text-emerald-400" />
                 <span>Mobile AR</span>
