@@ -64,6 +64,7 @@ services:
     image: alpine/minio:latest-release
     container_name: vastu_minio
     restart: unless-stopped
+    user: root
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-vastu_minio_admin}
