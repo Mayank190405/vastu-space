@@ -97,6 +97,9 @@ export const App: React.FC = () => {
 
           {/* Dedicated Project Website & Architecture Portal */}
           <Route path="/website" element={<ProjectWebsitePage />} />
+          <Route path="/website/platform" element={<ProjectWebsitePage />} />
+          <Route path="/website/approach" element={<ProjectWebsitePage />} />
+          <Route path="/website/guide" element={<ProjectWebsitePage />} />
           <Route path="/overview" element={<ProjectWebsitePage />} />
           <Route path="/about" element={<ProjectWebsitePage />} />
           <Route path="/guide" element={<ProjectWebsitePage />} />
