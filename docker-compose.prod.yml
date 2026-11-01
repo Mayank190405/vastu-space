@@ -122,7 +122,7 @@ services:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-vastu_user}:${POSTGRES_PASSWORD}@vastu-postgres:5432/${POSTGRES_DB:-vastu_db}?sslmode=disable
       - PORT=8080
       - ENVIRONMENT=production
-      - NEXT_PUBLIC_APP_URL=${APP_URL:-http://localhost}
+      - NEXT_PUBLIC_APP_URL=${APP_URL:-https://vastu.krads.co.in}
       - JWT_SECRET=${JWT_SECRET:?JWT secret required}
       - JWT_ACCESS_EXPIRY_MINUTES=${JWT_ACCESS_EXPIRY_MINUTES:-15}
       - JWT_REFRESH_EXPIRY_DAYS=${JWT_REFRESH_EXPIRY_DAYS:-7}
