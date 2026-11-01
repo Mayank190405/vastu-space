@@ -174,6 +174,7 @@ type CaptureRepository interface {
 }
 
 type UploadRepository interface {
+	CompleteSession(ctx context.Context, sessionID uuid.UUID, storagePath string, uploadedChunks int) error
 	CreateSession(ctx context.Context, session *domain.UploadSession) error
 	GetSessionByID(ctx context.Context, id uuid.UUID) (*domain.UploadSession, error)
 	SaveChunk(ctx context.Context, chunk *domain.UploadChunk) error

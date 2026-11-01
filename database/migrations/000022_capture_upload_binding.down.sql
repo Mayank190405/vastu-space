@@ -1,0 +1,1 @@
+ALTER TABLE capture_sessions DROP COLUMN IF EXISTS viewer_url, DROP COLUMN IF EXISTS upload_verified_at, DROP COLUMN IF EXISTS raw_object_key, DROP COLUMN IF EXISTS video_url, DROP COLUMN IF EXISTS job_id, DROP COLUMN IF EXISTS upload_id, DROP COLUMN IF EXISTS capture_id;

@@ -386,6 +386,12 @@ export interface CreateAssetInput {
 export type SessionState = 'CREATED' | 'AUTHORIZED' | 'RECORDING' | 'UPLOADING' | 'COMPLETED' | 'EXPIRED' | 'REVOKED';
 
 export interface CaptureSessionRecord {
+ capture_id?: string;
+ upload_id?: string;
+ job_id?: string;
+ video_url?: string;
+ upload_verified_at?: string;
+ viewer_url?: string;
   id: string;
   session_code: string; // e.g. #S-1042
   project_id: string;

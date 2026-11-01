@@ -14,7 +14,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-
 // ==========================================
 // 1. Capture Repository
 // ==========================================
@@ -1260,11 +1259,11 @@ func (r *POIRepo) POIsWithinRadius(
 	var results []*domain.SearchResultItem
 	for rows.Next() {
 		var (
-			id         uuid.UUID
-			title      string
-			category   string
+			id               uuid.UUID
+			title            string
+			category         string
 			posX, posY, posZ float64
-			distM      float64
+			distM            float64
 		)
 		if err := rows.Scan(&id, &title, &category, &posX, &posY, &posZ, &distM); err != nil {
 			return nil, err
@@ -1284,3 +1283,43 @@ func (r *POIRepo) POIsWithinRadius(
 	return results, rows.Err()
 }
 
+// CompleteSession persists the promoted path together with completion for restart-safe retries.
+func (r *UploadRepo) CompleteSession(ctx context.Context, id uuid.UUID, storagePath string, chunks int) error {
+	_, err := r.pool.Exec(ctx, `UPDATE upload_sessions SET target_storage_path = $2, status = 'completed', uploaded_chunks = $3, updated_at = NOW() WHERE id = $1`, id, storagePath, chunks)
+	return err
+}
+
+// RecordSessionStage stores only events observed while executing real worker code.
+func (r *JobRepo) RecordSessionStage(ctx context.Context, sessionID string, jobID uuid.UUID, name, status string, details *string) error {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+	progress := 0
+	if status == "COMPLETED" {
+		progress = 100
+	}
+	_, err = tx.Exec(ctx, `INSERT INTO pipeline_stages(session_id,job_id,stage_name,stage_order,status,progress_percentage,responsible_worker,started_at,completed_at,error_details,updated_at)
+ VALUES($1,$2,$3,100,$4,$5,'vastu-worker',NOW(),CASE WHEN $4='COMPLETED' THEN NOW() END,$6,NOW())
+ ON CONFLICT(session_id,stage_name) DO UPDATE SET job_id=$2,status=$4,progress_percentage=$5,error_details=$6,completed_at=CASE WHEN $4='COMPLETED' THEN NOW() ELSE NULL END,updated_at=NOW()`, sessionID, jobID, name, status, progress, details)
+	if err != nil {
+		return err
+	}
+	payload, _ := json.Marshal(map[string]interface{}{"job_id": jobID, "error": details})
+	_, err = tx.Exec(ctx, `INSERT INTO pipeline_events(session_id,stage_name,event_type,payload) VALUES($1,$2,$3,$4)`, sessionID, name, "STAGE_"+status, payload)
+	if err != nil {
+		return err
+	}
+	return tx.Commit(ctx)
+}
+func (r *JobRepo) PublishSessionViewer(ctx context.Context, sessionID string, jobID uuid.UUID, viewerURL string) error {
+	if err := r.RecordSessionStage(ctx, sessionID, jobID, "VIEWER_PUBLISHING", "COMPLETED", nil); err != nil {
+		return err
+	}
+	if err := r.RecordSessionStage(ctx, sessionID, jobID, "COMPLETED", "COMPLETED", nil); err != nil {
+		return err
+	}
+	_, err := r.pool.Exec(ctx, `UPDATE capture_sessions SET status='COMPLETED',viewer_url=$2,completed_at=NOW(),updated_at=NOW() WHERE id=$1 AND upload_verified_at IS NOT NULL`, sessionID, viewerURL)
+	return err
+}

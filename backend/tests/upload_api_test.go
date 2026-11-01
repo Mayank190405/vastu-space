@@ -273,3 +273,8 @@ func TestUploadAPI(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, rr.Code)
 	})
 }
+
+func (m *mockUploadRepo) CompleteSession(ctx context.Context, id uuid.UUID, storagePath string, chunks int) error {
+	m.sessions[id].TargetStoragePath = storagePath
+	return m.UpdateSessionStatus(ctx, id, domain.UploadStatusCompleted, chunks)
+}

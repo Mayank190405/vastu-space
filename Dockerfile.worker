@@ -36,6 +36,9 @@ COPY --from=go-builder /app/vastu-worker /app/vastu-worker
 # Copy worker modules, scripts, and assets
 COPY backend/workers /app/backend/workers
 COPY scripts /app/scripts
+COPY core /app/core
+COPY ml /app/ml
+COPY navigation /app/navigation
 
 # Pre-create scratch and upload directories
 RUN mkdir -p /app/uploads/scratch

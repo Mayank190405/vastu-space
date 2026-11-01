@@ -1,5 +1,7 @@
 import Foundation
 import Combine
+import UIKit
+import CryptoKit
 
 public enum SessionAuthError: LocalizedError, Equatable {
     case invalidQRFormat(String)
@@ -112,34 +114,11 @@ public final class SessionAPIClient: ObservableObject, SessionAPIClientProtocol 
             )
         }
         
-        // B. Pairing Code or Raw Session ID (e.g., V-CAP-..., CAP-..., or manual entry)
-        if !trimmed.contains("://") && !trimmed.hasPrefix("{") {
-            let cleanId = trimmed
-                .replacingOccurrences(of: "V-CAP-", with: "")
-                .replacingOccurrences(of: "v-cap-", with: "")
-                .replacingOccurrences(of: "V-", with: "")
-                .replacingOccurrences(of: "v-", with: "")
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            
-            let effectiveId = cleanId.isEmpty ? "CAP-01-LIVE" : cleanId
-            let sessionId = effectiveId.lowercased().hasPrefix("sess_") ? effectiveId : "sess_\(effectiveId)"
-            let randomSuffix = UInt32.random(in: 100000...999999)
-            
-            return ParsedQRChallenge(
-                sessionId: sessionId,
-                challengeToken: "chal_\(sessionId)_\(randomSuffix)",
-                nonce: "nonce_\(sessionId)_\(randomSuffix)",
-                endpoint: defaultBaseURL,
-                projectId: "proj_\(sessionId.prefix(8))",
-                projectName: "VĀSTU Residence",
-                roomId: "room_\(sessionId.suffix(6))",
-                roomName: "Living Space",
-                operatorName: "Mobile Surveyor",
-                expiresAt: Date().addingTimeInterval(7200),
-                offlineVerifiableGrant: "grant_\(sessionId)"
-            )
+        // A display code is not a redeemable challenge.
+        guard trimmed.contains("://") else {
+            throw SessionAuthError.invalidQRFormat("Scan the full server-issued QR code.")
         }
-        
+
         // C. URL / Deep-Link Format (vastu://, vastuspatial://, or https://)
         guard let url = URL(string: trimmed) else {
             throw SessionAuthError.invalidQRFormat("Payload is not a valid URI: \(trimmed)")
@@ -234,8 +213,8 @@ public final class SessionAPIClient: ObservableObject, SessionAPIClientProtocol 
             "challenge_token": challenge.challengeToken,
             "nonce": challenge.nonce,
             "device_id": deviceUUID,
-            "device_model": "iPhone",
-            "device_os": "iOS 17+",
+            "device_model": UIDevice.current.model,
+            "device_os": "\(UIDevice.current.systemName) \(UIDevice.current.systemVersion)",
             "client_timestamp": ISO8601DateFormatter().string(from: Date())
         ]
         
@@ -248,15 +227,19 @@ public final class SessionAPIClient: ObservableObject, SessionAPIClientProtocol 
             }
             
             if httpResponse.statusCode == 200 || httpResponse.statusCode == 201 {
-                if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let grantToken = (json["grant_token"] as? String) ?? (json["data"] as? [String: Any])?["grant_token"] as? String {
-                    
+                if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                    let record = json["data"] as? [String: Any] ?? json
+                    guard let grantToken = record["grant_token"] as? String, !grantToken.isEmpty,
+                          let sessionID = record["session_id"] as? String, sessionID == challenge.sessionId,
+                          let projectID = record["project_id"] as? String, UUID(uuidString: projectID) != nil else {
+                        throw SessionAuthError.serverRejected("Invalid redemption contract")
+                    }
                     return CaptureSession(
-                        id: challenge.sessionId,
-                        projectId: challenge.projectId,
-                        projectName: challenge.projectName,
-                        roomId: challenge.roomId,
-                        roomName: challenge.roomName,
+                        id: sessionID,
+                        projectId: projectID,
+                        projectName: record["project_name"] as? String ?? challenge.projectName,
+                        roomId: record["room_id"] as? String ?? "",
+                        roomName: record["room_name"] as? String ?? challenge.roomName,
                         operatorName: challenge.operatorName,
                         createdAt: Date(),
                         expiresAt: challenge.expiresAt,
@@ -270,72 +253,19 @@ public final class SessionAPIClient: ObservableObject, SessionAPIClientProtocol 
                 throw SessionAuthError.replayDetected("Challenge token already redeemed on server")
             }
             
-            // Fallback for client-created sessions or offline field captures
-            let fallbackGrant = challenge.offlineVerifiableGrant ?? "grant_\(challenge.sessionId)_\(UUID().uuidString.prefix(6))"
-            return CaptureSession(
-                id: challenge.sessionId,
-                projectId: challenge.projectId,
-                projectName: challenge.projectName,
-                roomId: challenge.roomId,
-                roomName: challenge.roomName,
-                operatorName: challenge.operatorName,
-                createdAt: Date(),
-                expiresAt: challenge.expiresAt,
-                state: .authorized,
-                grantToken: fallbackGrant,
-                uploadURL: "\(challenge.endpoint)/api/v1/captures/upload",
-                maxDurationSeconds: 600
-            )
+            throw SessionAuthError.serverRejected("Redemption rejected (HTTP \(httpResponse.statusCode)); scan a server-issued QR code.")
         } catch let authErr as SessionAuthError {
             throw authErr
         } catch {
-            // Network fallback: if offline but valid grant provided in challenge
-            if let offlineGrant = challenge.offlineVerifiableGrant, !offlineGrant.isEmpty {
-                return CaptureSession(
-                    id: challenge.sessionId,
-                    projectId: challenge.projectId,
-                    projectName: challenge.projectName,
-                    roomId: challenge.roomId,
-                    roomName: challenge.roomName,
-                    operatorName: challenge.operatorName,
-                    createdAt: Date(),
-                    expiresAt: challenge.expiresAt,
-                    state: .authorized,
-                    grantToken: offlineGrant,
-                    uploadURL: "\(challenge.endpoint)/api/v1/captures/upload",
-                    maxDurationSeconds: 600
-                )
-            }
-            
-            // Check if local connection error or unreachable host
-            let nsError = error as NSError
-            if nsError.domain == NSURLErrorDomain {
-                // If offline and within valid TTL, issue locally scoped grant
-                let fallbackGrant = "local_grant_\(challenge.sessionId)_\(UUID().uuidString.prefix(8))"
-                return CaptureSession(
-                    id: challenge.sessionId,
-                    projectId: challenge.projectId,
-                    projectName: challenge.projectName,
-                    roomId: challenge.roomId,
-                    roomName: challenge.roomName,
-                    operatorName: challenge.operatorName,
-                    createdAt: Date(),
-                    expiresAt: challenge.expiresAt,
-                    state: .authorized,
-                    grantToken: fallbackGrant,
-                    uploadURL: "\(challenge.endpoint)/api/v1/captures/upload",
-                    maxDurationSeconds: 600
-                )
-            }
             throw SessionAuthError.networkUnavailable(error.localizedDescription)
         }
-        
-        throw SessionAuthError.serverRejected("Redemption failed")
     }
-    
+
     // MARK: - 3. Finalize Session with Backend
     public func finalizeSession(sessionId: String, capturePackageDir: URL) async throws -> Bool {
-        let token = SecureSessionStore.shared.retrieveGrant(sessionId: sessionId)?.grantToken ?? "local_grant"
+        guard let token = SecureSessionStore.shared.retrieveGrant(sessionId: sessionId)?.grantToken else {
+            throw SessionAuthError.missingCredentials
+        }
         return try await finalizeSession(sessionId: sessionId, grantToken: token, endpoint: defaultBaseURL)
     }
     
@@ -380,14 +310,17 @@ public final class SessionAPIClient: ObservableObject, SessionAPIClientProtocol 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        guard let grantSessionID = sessionId as String?,
+              let token = SecureSessionStore.shared.retrieveGrant(sessionId: grantSessionID)?.grantToken else { return false }
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.timeoutInterval = 4.0
         
         let body: [String: Any] = [
             "device_uuid": deviceUUID,
-            "device_model": "iPhone",
-            "device_os": "iOS 17+",
+            "device_model": UIDevice.current.model,
+            "device_os": "\(UIDevice.current.systemName) \(UIDevice.current.systemVersion)",
             "app_version": "1.0.0",
-            "session_id": sessionId as Any,
+            "session_id": grantSessionID,
             "battery_level": battery,
             "arkit_tracking_status": trackingState,
             "local_ai_status": localAIReady ? "READY" : "INITIALIZING",
@@ -425,6 +358,9 @@ public final class SessionAPIClient: ObservableObject, SessionAPIClientProtocol 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        guard let grantSessionID = sessionId as String?,
+              let token = SecureSessionStore.shared.retrieveGrant(sessionId: grantSessionID)?.grantToken else { return false }
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.timeoutInterval = 4.0
         
         var body: [String: Any] = [
@@ -446,5 +382,77 @@ public final class SessionAPIClient: ObservableObject, SessionAPIClientProtocol 
             // Telemetry reporting drops fail gracefully
         }
         return false
+    }
+}
+
+
+extension SessionAPIClient {
+    public func uploadVideo(session: CaptureSession, packageURL: URL, progress: @escaping (Double, String) -> Void) async throws -> String {
+        let token = session.grantToken
+        guard !token.isEmpty else { throw SessionAuthError.missingCredentials }
+        let video = packageURL.appendingPathComponent("capture.mp4")
+        let size = (try FileManager.default.attributesOfItem(atPath: video.path)[.size] as? NSNumber)?.int64Value ?? 0
+        guard size > 0 else { throw SessionAuthError.serverRejected("VIDEO_MISSING: Recorded video is empty") }
+        let hashReader = try FileHandle(forReadingFrom: video)
+        defer { try? hashReader.close() }
+        var digest = SHA256()
+        while let data = try hashReader.read(upToCount: 1 << 20), !data.isEmpty { digest.update(data: data) }
+        let checksum = digest.finalize().map { String(format: "%02x", $0) }.joined()
+        var endpoint = defaultBaseURL
+        if let upload = session.uploadURL, let parts = URLComponents(string: upload), let scheme = parts.scheme, let host = parts.host {
+            endpoint = "\(scheme)://\(host)" + (parts.port.map { ":\($0)" } ?? "")
+        }
+        let base = "\(endpoint)/api/v1/capture-sessions/\(session.id)"
+        func call(_ suffix: String, method: String, body: Data? = nil, chunkHash: String? = nil) async throws -> [String: Any] {
+            guard let url = URL(string: base + suffix) else { throw SessionAuthError.invalidQRFormat("Invalid upload endpoint") }
+            var request = URLRequest(url: url)
+            request.httpMethod = method
+            request.timeoutInterval = 600
+            request.httpBody = body
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            request.setValue(chunkHash == nil ? "application/json" : "application/octet-stream", forHTTPHeaderField: "Content-Type")
+            if let hash = chunkHash { request.setValue(hash, forHTTPHeaderField: "X-Chunk-SHA256") }
+            let (data, response) = try await urlSession.data(for: request)
+            guard let http = response as? HTTPURLResponse else { throw SessionAuthError.networkUnavailable("Invalid response") }
+            let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] ?? [:]
+            guard (200...299).contains(http.statusCode) else {
+                throw NSError(domain: "CaptureUpload", code: http.statusCode, userInfo: [NSLocalizedDescriptionKey: json["error"] as? String ?? "Upload failed (HTTP \(http.statusCode))"])
+            }
+            return json["data"] as? [String: Any] ?? json
+        }
+        progress(0, "Initializing verified video upload...")
+        let payload = try JSONSerialization.data(withJSONObject: ["file_name": "capture.mp4", "total_size_bytes": size, "sha256_checksum": checksum])
+        let upload = try await call("/upload", method: "POST", body: payload)
+        guard let chunkSize = (upload["chunk_size_bytes"] as? NSNumber)?.intValue, chunkSize > 0,
+              let total = (upload["total_chunks"] as? NSNumber)?.intValue, total > 0 else { throw SessionAuthError.serverRejected("Invalid upload contract") }
+        let state = try await call("/upload", method: "GET")
+        let missing = (state["missing_chunks"] as? [Int]) ?? (state["status"] as? String == "completed" ? [] : Array(0..<total))
+        let file = try FileHandle(forReadingFrom: video)
+        defer { try? file.close() }
+        var completed = total - missing.count
+        for index in missing {
+            try Task.checkCancellation()
+            try file.seek(toOffset: UInt64(index * chunkSize))
+            guard let data = try file.read(upToCount: chunkSize), !data.isEmpty else { throw SessionAuthError.serverRejected("VIDEO_READ_FAILED") }
+            let hash = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
+            for attempt in 0..<3 {
+                do {
+                    _ = try await call("/upload/chunks/\(index)", method: "PUT", body: data, chunkHash: hash)
+                    break
+                } catch {
+                    let code = (error as NSError).code
+                    if attempt == 2 || (400..<500).contains(code) && code != 408 && code != 429 { throw error }
+                    try await Task.sleep(nanoseconds: UInt64(attempt + 1) * 1_000_000_000)
+                }
+            }
+            completed += 1
+            progress(Double(completed) / Double(total) * 0.95, "Uploaded \(completed) of \(total) video chunks")
+        }
+        progress(0.95, "Verifying video bytes in object storage and submitting processing...")
+        let result = try await call("/finalize", method: "POST", body: Data("{}".utf8))
+        guard let job = result["job_id"] as? String, UUID(uuidString: job) != nil,
+              result["upload_verified_at"] as? String != nil else { throw SessionAuthError.serverRejected("UPLOAD_NOT_VERIFIED: Missing storage confirmation or job ID") }
+        progress(1, "Video verified in storage. Processing submitted.")
+        return job
     }
 }

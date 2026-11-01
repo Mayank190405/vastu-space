@@ -93,6 +93,7 @@ services:
   # 5. OBJECT STORAGE INIT: Bucket Auto-Provisioning
   # ----------------------------------------------------------------------------
   vastu-minio-init:
+    user: root
     image: alpine/minio:latest-release
     container_name: vastu_minio_init
     depends_on:

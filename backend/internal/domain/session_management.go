@@ -51,17 +51,43 @@ var StandardPipelineStages = []string{
 	"CAPTURE_VALIDATION",
 	"UPLOADING",
 	"UPLOAD_VERIFIED",
-	"POSE_REFINEMENT",
-	"DEPTH_ESTIMATION",
-	"GEOMETRY_RECONSTRUCTION",
-	"GAUSSIAN_SPLATTING",
-	"SPZ_EXPORT",
-	"NAVMESH_GENERATION",
+	"RECONSTRUCTION_00",
+	"RECONSTRUCTION_01",
+	"RECONSTRUCTION_02",
+	"RECONSTRUCTION_03",
+	"RECONSTRUCTION_04",
+	"RECONSTRUCTION_05",
+	"RECONSTRUCTION_06",
+	"RECONSTRUCTION_07",
+	"RECONSTRUCTION_08",
+	"RECONSTRUCTION_09",
+	"RECONSTRUCTION_10",
+	"RECONSTRUCTION_11",
+	"RECONSTRUCTION_12",
+	"RECONSTRUCTION_13",
+	"RECONSTRUCTION_14",
+	"RECONSTRUCTION_15",
+	"RECONSTRUCTION_16",
+	"RECONSTRUCTION_17",
+	"RECONSTRUCTION_18",
+	"RECONSTRUCTION_19",
+	"RECONSTRUCTION_20",
+	"RECONSTRUCTION_21",
+	"RECONSTRUCTION_22",
+	"RECONSTRUCTION_23",
+	"RECONSTRUCTION_24",
 	"VIEWER_PUBLISHING",
 	"COMPLETED",
 }
 
 type CaptureSession struct {
+	CaptureID         *uuid.UUID             `json:"capture_id,omitempty"`
+	UploadID          *uuid.UUID             `json:"upload_id,omitempty"`
+	JobID             *uuid.UUID             `json:"job_id,omitempty"`
+	VideoURL          *string                `json:"video_url,omitempty"`
+	RawObjectKey      *string                `json:"raw_object_key,omitempty"`
+	UploadVerifiedAt  *time.Time             `json:"upload_verified_at,omitempty"`
+	ViewerURL         *string                `json:"viewer_url,omitempty"`
 	ID                string                 `json:"id"`
 	SessionCode       string                 `json:"session_code"` // e.g. #S-1042
 	ProjectID         uuid.UUID              `json:"project_id"`
@@ -185,26 +211,26 @@ type PipelineEvent struct {
 }
 
 type RoomWithHierarchy struct {
-	ID                     uuid.UUID              `json:"id"`
-	LevelID                uuid.UUID              `json:"level_id"`
-	LevelNumber            int                    `json:"level_number"`
-	LevelName              string                 `json:"level_name"`
-	ProjectID              uuid.UUID              `json:"project_id"`
-	ProjectName            string                 `json:"project_name"`
-	Name                   string                 `json:"name"`
-	SectionType            string                 `json:"section_type"`
-	AreaSqm                float64                `json:"area_sqm"`
-	CaptureStatus          string                 `json:"capture_status"` // 'UNCAPTURED', 'CAPTURING', 'CAPTURED', 'PROCESSING', 'RECONSTRUCTED'
+	ID                      uuid.UUID              `json:"id"`
+	LevelID                 uuid.UUID              `json:"level_id"`
+	LevelNumber             int                    `json:"level_number"`
+	LevelName               string                 `json:"level_name"`
+	ProjectID               uuid.UUID              `json:"project_id"`
+	ProjectName             string                 `json:"project_name"`
+	Name                    string                 `json:"name"`
+	SectionType             string                 `json:"section_type"`
+	AreaSqm                 float64                `json:"area_sqm"`
+	CaptureStatus           string                 `json:"capture_status"` // 'UNCAPTURED', 'CAPTURING', 'CAPTURED', 'PROCESSING', 'RECONSTRUCTED'
 	ProvisionalFloorplanURL *string                `json:"provisional_floorplan_url,omitempty"`
-	DimensionsValidated    map[string]interface{} `json:"dimensions_validated,omitempty"`
-	CoveragePercentage     float64                `json:"coverage_percentage"`
-	QualityScore           float64                `json:"quality_score"`
-	ActiveSessionID        *string                `json:"active_session_id,omitempty"`
-	ActiveSessionCode      *string                `json:"active_session_code,omitempty"`
-	LastCaptureAt          *time.Time             `json:"last_capture_at,omitempty"`
-	RescanRequested        bool                   `json:"rescan_requested"`
-	Viewer3DURL            *string                `json:"viewer_3d_url,omitempty"`
-	CaptureAttemptsCount   int                    `json:"capture_attempts_count"`
+	DimensionsValidated     map[string]interface{} `json:"dimensions_validated,omitempty"`
+	CoveragePercentage      float64                `json:"coverage_percentage"`
+	QualityScore            float64                `json:"quality_score"`
+	ActiveSessionID         *string                `json:"active_session_id,omitempty"`
+	ActiveSessionCode       *string                `json:"active_session_code,omitempty"`
+	LastCaptureAt           *time.Time             `json:"last_capture_at,omitempty"`
+	RescanRequested         bool                   `json:"rescan_requested"`
+	Viewer3DURL             *string                `json:"viewer_3d_url,omitempty"`
+	CaptureAttemptsCount    int                    `json:"capture_attempts_count"`
 }
 
 type CreateRoomInput struct {
@@ -212,4 +238,3 @@ type CreateRoomInput struct {
 	SectionType string  `json:"section_type"` // 'room', 'hall', 'corridor', etc.
 	AreaSqm     float64 `json:"area_sqm"`
 }
-

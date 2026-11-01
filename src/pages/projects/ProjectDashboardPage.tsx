@@ -44,6 +44,14 @@ export const ProjectDashboardPage: React.FC = () => {
   const [pairingSession, setPairingSession] = useState<any | null>(null);
   const [customSessions, setCustomSessions] = useState<any[]>([]);
 
+  useEffect(() => {
+    if (!projectId) return;
+    api.listQRSessions(projectId).then(records => setCustomSessions((records || []).map(record => ({
+      ...record, floor_name: record.room_name, operator_name: record.operator_name || 'Unassigned',
+      phase_label: record.status, zones_count: 0, completed_zones: 0,
+    })))).catch(err => setError(err.message));
+  }, [projectId]);
+
   // Drawing modal for a selected floor
   const [editingFloorPlan, setEditingFloorPlan] = useState<ProjectFloor | null>(null);
 
@@ -63,12 +71,14 @@ export const ProjectDashboardPage: React.FC = () => {
   const [assigningMember, setAssigningMember] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  const handleCopyViewingLink = () => {
+  const handleCopyViewingLink = async () => {
     if (!project) return;
-    const url = `${window.location.origin}/view/${project.id}`;
-    navigator.clipboard.writeText(url);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2500);
+    try {
+      const result = await api.getProjectViewingLink(project.id);
+      await navigator.clipboard.writeText(new URL(result.viewing_url, window.location.origin).href);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2500);
+    } catch (err: any) { alert(err.message || 'Viewer not ready'); }
   };
 
   // Fetch full project data
@@ -683,20 +693,7 @@ export const ProjectDashboardPage: React.FC = () => {
 
           {/* Sessions List */}
           <div className="space-y-3">
-            {[
-              ...customSessions,
-              {
-                id: `CAP-01-RECON`,
-                floor_name: project.floors?.[0]?.name || 'Ground Floor',
-                operator_name: 'Project Admin (Self)',
-                operator_type: 'SELF',
-                phase: 'PHASE_3_ACTIVE',
-                phase_label: 'Area-to-Area Capture Ready',
-                created_at: new Date().toLocaleDateString(),
-                zones_count: 4,
-                completed_zones: 1
-              }
-            ].map((s) => (
+            {customSessions.map((s) => (
               <div
                 key={s.id}
                 className="p-5 bg-[#FAF7F2] border border-[#D1C2A5] rounded-2xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4"
@@ -974,9 +971,14 @@ export const ProjectDashboardPage: React.FC = () => {
         <CaptureSessionModal
           project={project}
           onClose={() => setShowCaptureModal(false)}
-          onLaunchSession={(data) => {
-            const randomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
-            const newId = `CAP-${randomCode}-SOP`;
+          onLaunchSession={async (data) => {
+            try {
+            const record = await api.createQRSession({
+              project_id: project.id,
+              room_name: project.floors?.find((f) => f.id === data.floorId)?.name || 'Ground Floor',
+              operator_name: data.operatorName,
+            });
+            const newId = record.id;
             const newSession = {
               id: newId,
               floor_name: project.floors?.find((f) => f.id === data.floorId)?.name || 'Ground Floor',
@@ -991,6 +993,7 @@ export const ProjectDashboardPage: React.FC = () => {
             setCustomSessions([newSession, ...customSessions]);
             setShowCaptureModal(false);
             setPairingSession(newSession);
+            } catch (err: any) { alert(err.message || "Failed to create capture session"); }
           }}
         />
       )}

@@ -77,7 +77,7 @@ public struct UploadCompletionView: View {
                             Text("Reconstruction Pipeline:")
                                 .foregroundColor(VastuColors.brandTextMuted)
                             Spacer()
-                            Text("Active (Asynq)")
+                            Text("Submitted")
                                 .foregroundColor(VastuColors.brandSuccess)
                                 .fontWeight(.semibold)
                         }
@@ -94,7 +94,7 @@ public struct UploadCompletionView: View {
                             Text("Session State:")
                                 .foregroundColor(VastuColors.brandTextMuted)
                             Spacer()
-                            Text("FINALIZED")
+                            Text("UPLOAD VERIFIED")
                                 .font(.system(size: 12, weight: .bold, design: .monospaced))
                                 .foregroundColor(VastuColors.brandSuccess)
                         }
@@ -117,7 +117,7 @@ public struct UploadCompletionView: View {
                         .padding(.bottom, 24)
                 } else if isFailed {
                     Button("Retry Upload") {
-                        simulateUpload()
+                        uploadCapture()
                     }
                     .buttonStyle(VastuPrimaryButtonStyle())
                     .padding(.horizontal, 20)
@@ -126,50 +126,31 @@ public struct UploadCompletionView: View {
             }
             .background(VastuColors.brandParchment.ignoresSafeArea())
             .onAppear {
-                simulateUpload()
+                uploadCapture()
             }
         }
     }
     
-    private func simulateUpload() {
+    private func uploadCapture() {
         isFailed = false
         isComplete = false
         progress = 0.0
         uploadStatusText = "Verifying cryptographic checksums.sha256..."
         
         Task {
-            try? await Task.sleep(nanoseconds: 600_000_000)
-            await MainActor.run {
-                self.progress = 0.25
-                self.uploadStatusText = "Initiating resumable chunk session..."
-            }
-            
-            try? await Task.sleep(nanoseconds: 700_000_000)
-            await MainActor.run {
-                self.progress = 0.65
-                self.uploadStatusText = "Transmitting keyframes & tracking logs..."
-            }
-            
-            try? await Task.sleep(nanoseconds: 800_000_000)
-            await MainActor.run {
-                self.progress = 0.95
-                self.uploadStatusText = "Finalizing session handshake..."
-            }
-            
-            // Server finalization call
-            _ = try? await SessionAPIClient.shared.finalizeSession(
-                sessionId: session.id,
-                capturePackageDir: packageURL
-            )
-            
-            try? await Task.sleep(nanoseconds: 400_000_000)
-            await MainActor.run {
-                self.progress = 1.0
-                self.isComplete = true
-                self.serverJobId = "job_\(UUID().uuidString.prefix(8))"
-                self.uploadStatusText = "Capture package securely ingested. 3D digital twin queued for reconstruction."
+            do {
+                let jobID = try await SessionAPIClient.shared.uploadVideo(session: session, packageURL: packageURL) { value, message in
+                    DispatchQueue.main.async { self.progress = value; self.uploadStatusText = message }
+                }
+                await MainActor.run {
+                    self.serverJobId = jobID
+                    self.progress = 1
+                    self.isComplete = true
+                    self.uploadStatusText = "Video verified in storage. Processing submitted. Monitor the dashboard for results."
+                }
+            } catch {
+                await MainActor.run { self.isFailed = true; self.uploadStatusText = error.localizedDescription }
             }
         }
     }
 }
-

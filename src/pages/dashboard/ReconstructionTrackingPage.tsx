@@ -1,127 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { CheckCircle2, Loader2, Circle, AlertCircle, RefreshCw, Smartphone, ChevronRight, Layers, ArrowLeft } from 'lucide-react';
-import { api, getApiBaseUrl } from '../../services/api';
-import { PipelineStageRecord, CaptureSessionRecord } from '../../types';
-import { RoomQualityPanel, RoomQualityMetrics } from './components/quality/RoomQualityPanel';
-import { ReconstructionComparison } from './components/quality/ReconstructionComparison';
-import { PublishingApproval } from './components/quality/PublishingApproval';
-import { RescanRecommendation } from './components/quality/RescanRecommendation';
+import { api } from '../../services/api';
+import { PipelineStageRecord, CaptureSessionRecord, ConnectedDevice } from '../../types';
 
 export const ReconstructionTrackingPage: React.FC = () => {
-  const { jobId, sessionId: paramSessionId } = useParams<{ jobId?: string; sessionId?: string }>();
-  const activeSessionId = paramSessionId || jobId || 'sess_demo_1042';
-
+  const { sessionId } = useParams<{ sessionId?: string }>();
+  const activeSessionId = sessionId || '';
   const [session, setSession] = useState<CaptureSessionRecord | null>(null);
   const [stages, setStages] = useState<PipelineStageRecord[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [device, setDevice] = useState<ConnectedDevice | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastHeartbeatSec, setLastHeartbeatSec] = useState<number>(8);
-  const [isLiveConnected, setIsLiveConnected] = useState<boolean>(false);
+  const [isLiveConnected, setIsLiveConnected] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
 
-  // Fetch initial stage tracking and session data
-  const fetchData = async () => {
-    try {
-      setError(null);
-      let sessionData: CaptureSessionRecord | null = null;
-      try {
-        sessionData = await api.getQRSession(activeSessionId);
-        setSession(sessionData);
-      } catch {
-        // Fallback demo state if session ID is mock
-        setSession({
-          id: activeSessionId,
-          session_code: '#S-1042',
-          project_id: 'proj_demo',
-          project_name: 'Project',
-          floor_name: 'Floor 1',
-          room_name: 'Living Room',
-          challenge_token: 'chal_demo',
-          nonce: 'nonce_demo',
-          status: 'RECORDING',
-          qr_payload: 'vastu://capture-session',
-          expires_at: new Date(Date.now() + 3600000).toISOString(),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
-      }
-
-      const stageList = await api.getPipelineStages(activeSessionId).catch(() => []);
-      if (stageList && stageList.length > 0) {
-        setStages(stageList);
-      } else {
-        // Default pipeline initialized from real sequence
-        const defaultSequence: PipelineStageRecord[] = [
-          { id: '1', session_id: activeSessionId, stage_name: 'QR session authorized', stage_order: 1, status: 'COMPLETED', progress_percentage: 100, responsible_worker: 'Auth Gateway', retry_count: 0, updated_at: new Date().toISOString() },
-          { id: '2', session_id: activeSessionId, stage_name: 'Room capture', stage_order: 2, status: 'COMPLETED', progress_percentage: 100, responsible_worker: 'iPhone 15 (Mobile)', retry_count: 0, updated_at: new Date().toISOString() },
-          { id: '3', session_id: activeSessionId, stage_name: 'Upload verification', stage_order: 3, status: 'COMPLETED', progress_percentage: 100, responsible_worker: 'Storage Worker', retry_count: 0, updated_at: new Date().toISOString() },
-          { id: '4', session_id: activeSessionId, stage_name: 'Pose refinement', stage_order: 4, status: 'COMPLETED', progress_percentage: 100, responsible_worker: 'SfM Worker 01', retry_count: 0, updated_at: new Date().toISOString() },
-          { id: '5', session_id: activeSessionId, stage_name: 'Depth estimation', stage_order: 5, status: 'RUNNING', progress_percentage: 45, responsible_worker: 'DepthAI Worker', retry_count: 0, updated_at: new Date().toISOString() },
-          { id: '6', session_id: activeSessionId, stage_name: 'Geometry reconstruction', stage_order: 6, status: 'PENDING', progress_percentage: 0, responsible_worker: 'TSDF Mesher', retry_count: 0, updated_at: new Date().toISOString() },
-          { id: '7', session_id: activeSessionId, stage_name: 'Gaussian splatting', stage_order: 7, status: 'PENDING', progress_percentage: 0, responsible_worker: 'Splat Engine', retry_count: 0, updated_at: new Date().toISOString() },
-          { id: '8', session_id: activeSessionId, stage_name: 'Viewer publishing', stage_order: 8, status: 'PENDING', progress_percentage: 0, responsible_worker: 'Cloud Publisher', retry_count: 0, updated_at: new Date().toISOString() },
-        ];
-        setStages(defaultSequence);
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to load pipeline stages');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // Authenticated polling avoids EventSource's inability to send the bearer header.
   useEffect(() => {
-    fetchData();
-
-    // Setup real-time Server-Sent Events (SSE) with automatic polling fallback
-    const baseUrl = getApiBaseUrl();
-    const eventSource = new EventSource(`${baseUrl}/capture-sessions/${activeSessionId}/events`);
-
-    eventSource.onopen = () => {
-      setIsLiveConnected(true);
-    };
-
-    eventSource.addEventListener('stage_update', (e: MessageEvent) => {
+    let active = true;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const poll = async () => {
       try {
-        const updatedRecord: PipelineStageRecord = JSON.parse(e.data);
-        setStages((prev) => {
-          const index = prev.findIndex((s) => s.stage_name === updatedRecord.stage_name);
-          if (index >= 0) {
-            const next = [...prev];
-            next[index] = updatedRecord;
-            return next;
-          }
-          return [...prev, updatedRecord];
-        });
-      } catch (err) {
-        console.error('Failed to parse SSE stage update:', err);
-      }
-    });
-
-    eventSource.onerror = () => {
-      setIsLiveConnected(false);
+        if (!activeSessionId.startsWith('sess_')) throw new Error('A capture-session ID is required. Open monitoring from the session list.');
+        const record = await api.getQRSession(activeSessionId);
+        const stageList = await api.getPipelineStages(activeSessionId);
+        const devices = await api.listDevices();
+        if (!active) return;
+        setSession(record);
+        setStages(stageList || []);
+        setDevice((devices || []).find(d => d.current_session_id === record.id && d.device_uuid === record.device_id) || null);
+        setError(null);
+        setIsLiveConnected(true);
+        if (!['COMPLETED', 'REVOKED', 'EXPIRED'].includes(record.status) &&
+            !stageList?.some(s => s.status === 'FAILED' || (s.stage_name === 'COMPLETED' && s.status === 'COMPLETED'))) {
+          timer = setTimeout(poll, 3000);
+        }
+      } catch (err: any) {
+        if (active) { setError(err.message || 'Unable to load pipeline'); setIsLiveConnected(false); }
+      } finally { if (active) setIsLoading(false); }
     };
-
-    // Polling fallback every 3 seconds
-    const interval = setInterval(() => {
-      api.getPipelineStages(activeSessionId)
-        .then((data) => {
-          if (data && data.length > 0) setStages(data);
-        })
-        .catch(() => {});
-    }, 3000);
-
-    // Heartbeat ticker
-    const hbInterval = setInterval(() => {
-      setLastHeartbeatSec((prev) => (prev < 60 ? prev + 1 : 1));
-    }, 1000);
-
-    return () => {
-      eventSource.close();
-      clearInterval(interval);
-      clearInterval(hbInterval);
-    };
-  }, [activeSessionId]);
+    setIsLoading(true);
+    setSession(null);
+    setStages([]);
+    poll();
+    return () => { active = false; if (timer) clearTimeout(timer); };
+  }, [activeSessionId, retryKey]);
+  const fetchData = () => setRetryKey(key => key + 1);
+  const lastHeartbeatSec = device ? Math.max(0, Math.floor((Date.now() - Date.parse(device.last_heartbeat_at)) / 1000)) : null;
 
   const renderStageIcon = (status: string) => {
     switch (status.toUpperCase()) {
@@ -170,7 +95,7 @@ export const ReconstructionTrackingPage: React.FC = () => {
           </Link>
           <div className="flex items-center gap-2 text-xs">
             <span className={`w-2 h-2 rounded-full ${isLiveConnected ? 'bg-emerald-500' : 'bg-amber-400'}`} />
-            <span className="text-gray-500">{isLiveConnected ? 'Live SSE Stream' : 'Auto-Sync Active'}</span>
+            <span className="text-gray-500">{isLiveConnected ? 'Backend status loaded' : 'Status unavailable'}</span>
           </div>
         </div>
 
@@ -186,7 +111,7 @@ export const ReconstructionTrackingPage: React.FC = () => {
               </p>
             </div>
             <span className="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-600 border border-blue-100/50">
-              Processing
+              {session?.status || 'Unavailable'}
             </span>
           </div>
 
@@ -195,23 +120,35 @@ export const ReconstructionTrackingPage: React.FC = () => {
             <div>
               <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Connected device</p>
               <h3 className="text-lg font-bold text-gray-900">
-                {session?.device_id ? `iPhone (${session.device_id.slice(0, 8)})` : 'iPhone 15'}
+                {device ? `${device.device_model} · ${device.device_os} · ${device.status}` : 'No verified device presence'}
               </h3>
               <p className="flex items-center text-xs font-medium text-emerald-600 mt-1">
                 <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-500" />
-                Last heartbeat: {lastHeartbeatSec}s ago
+                {lastHeartbeatSec === null ? 'Heartbeat unavailable' : `Last heartbeat: ${lastHeartbeatSec}s ago`}
               </p>
             </div>
 
             <div>
               <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Capture status</p>
-              <h3 className="text-lg font-bold text-gray-900">Uploaded</h3>
+              <h3 className="text-lg font-bold text-gray-900">{stages.some(s => s.stage_name === 'UPLOAD_VERIFIED' && s.status === 'COMPLETED') ? 'Upload verified' : 'Upload not verified'}</h3>
               <p className="text-xs text-gray-500 mt-1">
                 Session {session?.session_code || '#S-1042'}
               </p>
             </div>
           </div>
 
+          {session?.video_url && session.upload_verified_at && (
+            <div className="space-y-2"><h2 className="font-bold">Verified uploaded video</h2>
+              <video controls preload="metadata" src={session.video_url} className="w-full max-h-96 rounded-xl" />
+              <p className="text-xs text-gray-500">Storage verified · Capture {session.capture_id} · Processing job {session.job_id || 'Pending submission'}</p>
+            </div>
+          )}
+          {session?.viewer_url && session.status === 'COMPLETED' && (
+            <a className="inline-block rounded-xl bg-emerald-700 px-5 py-3 text-white" href={session.viewer_url} target="_blank" rel="noreferrer">Open completed 3D viewer</a>
+          )}
+          {stages.some(s => s.status === 'FAILED') && <button className="rounded-lg border px-4 py-2" onClick={async () => {
+            try { await api.retryCaptureProcessing(activeSessionId); fetchData(); } catch (err: any) { setError(err.message); }
+          }}>Retry failed processing</button>}
           {/* Reconstruction Pipeline Stage List */}
           <div className="pt-4 border-t border-gray-100 space-y-6">
             <h2 className="text-base font-bold text-gray-900">Reconstruction pipeline</h2>
@@ -263,49 +200,12 @@ export const ReconstructionTrackingPage: React.FC = () => {
 
           {/* Footer note matching mockup requirement */}
           <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
-            <span>Illustrative dashboard only — these are sample states, not live project data.</span>
+            <span>Status reflects persisted backend events.</span>
             <span className="font-mono text-[11px] text-gray-400">SESSION: {activeSessionId}</span>
           </div>
 
         </div>
 
-        {/* Phase 9 Production Quality & Governance Gates */}
-        <div className="space-y-6 pt-4">
-          <RoomQualityPanel
-            roomName={session?.room_name || 'Living Room'}
-            metrics={{
-              compositeScore: 96.4,
-              verdict: 'PASSED',
-              canPublish: true,
-              wallFitRmseCm: 1.2,
-              cornerOrthoDevDeg: 0.5,
-              dimensionErrorCm: 1.8,
-              structuralCoveragePct: 96.2,
-              psnrDb: 31.2,
-              isCollisionWatertight: true,
-              isScaleConsistent: true
-            }}
-          />
-
-          <ReconstructionComparison
-            roomName={session?.room_name || 'Living Room'}
-          />
-
-          <PublishingApproval
-            roomName={session?.room_name || 'Living Room'}
-            canPublish={true}
-            verdict="PASSED"
-            onApprovePublish={() => {}}
-            onBlockPublish={() => {}}
-          />
-
-          <RescanRecommendation
-            roomName={session?.room_name || 'Living Room'}
-            verdict="PASSED"
-            issues={[]}
-            onRequestRescan={() => {}}
-          />
-        </div>
 
       </div>
     </div>

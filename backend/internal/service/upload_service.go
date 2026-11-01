@@ -76,6 +76,11 @@ func (s *UploadService) InitSession(ctx context.Context, userID uuid.UUID, input
 		totalChunks = int((input.TotalSizeBytes + chunkSize - 1) / chunkSize)
 	}
 
+	expectedChunks := int((input.TotalSizeBytes + chunkSize - 1) / chunkSize)
+	if totalChunks != expectedChunks {
+		return nil, errors.New("total_chunks does not match file size and chunk size")
+	}
+
 	sessionID := uuid.New()
 	safeFileName := fmt.Sprintf("%s_%s", sessionID.String()[:8], filepath.Base(input.FileName))
 	// Initial target is in the Quarantine staging folder
@@ -100,6 +105,9 @@ func (s *UploadService) InitSession(ctx context.Context, userID uuid.UUID, input
 		ExpiresAt:         time.Now().UTC().Add(24 * time.Hour),
 	}
 
+	if userID == uuid.Nil {
+		session.UserID = nil
+	}
 	if err := s.uploadRepo.CreateSession(ctx, session); err != nil {
 		return nil, err
 	}
@@ -119,6 +127,14 @@ func (s *UploadService) SaveChunk(ctx context.Context, sessionID uuid.UUID, chun
 
 	if chunkIndex < 0 || chunkIndex >= session.TotalChunks {
 		return nil, fmt.Errorf("chunk index %d out of bounds (total %d)", chunkIndex, session.TotalChunks)
+	}
+
+	if time.Now().After(session.ExpiresAt) {
+		return nil, errors.New("upload session expired")
+	}
+	expectedSize := session.ChunkSizeBytes
+	if chunkIndex == session.TotalChunks-1 {
+		expectedSize = session.TotalSizeBytes - int64(chunkIndex)*session.ChunkSizeBytes
 	}
 
 	// Idempotent duplicate check: if chunk already uploaded, return without re-writing
@@ -143,11 +159,15 @@ func (s *UploadService) SaveChunk(ctx context.Context, sessionID uuid.UUID, chun
 	hasher := sha256.New()
 	multiWriter := io.MultiWriter(file, hasher)
 
-	written, err := io.Copy(multiWriter, reader)
+	written, err := io.Copy(multiWriter, io.LimitReader(reader, expectedSize+1))
 	if err != nil {
 		return nil, err
 	}
 
+	if written != expectedSize {
+		_ = os.Remove(chunkPath)
+		return nil, fmt.Errorf("chunk size mismatch: expected %d bytes, got %d", expectedSize, written)
+	}
 	hashStr := hex.EncodeToString(hasher.Sum(nil))
 
 	// Verify chunk checksum if provided by client (X-Chunk-SHA256)
@@ -223,6 +243,16 @@ func (s *UploadService) CompleteUpload(ctx context.Context, sessionID uuid.UUID,
 		return "", err
 	}
 
+	if session.Status == domain.UploadStatusCompleted {
+		if stat, err := os.Stat(session.TargetStoragePath); err != nil || stat.Size() != session.TotalSizeBytes {
+			return "", errors.New("verified upload file missing or truncated")
+		}
+		return "/uploads/clean/" + filepath.Base(session.TargetStoragePath), nil
+	}
+	if session.Status == domain.UploadStatusAborted || time.Now().After(session.ExpiresAt) {
+		return "", errors.New("upload session is not active")
+	}
+
 	chunks, err := s.uploadRepo.ListChunksBySession(ctx, sessionID)
 	if err != nil {
 		return "", err
@@ -259,11 +289,6 @@ func (s *UploadService) CompleteUpload(ctx context.Context, sessionID uuid.UUID,
 	}
 	destFile.Close()
 
-	// Clean up temporary chunk pieces
-	go func() {
-		_ = os.RemoveAll(chunkDir)
-	}()
-
 	// Step 2: Run Multi-Stage Security Validation (Quarantine -> Clean)
 	expectedHash := finalChecksum
 	if expectedHash == "" && session.SHA256Checksum != nil {
@@ -282,9 +307,17 @@ func (s *UploadService) CompleteUpload(ctx context.Context, sessionID uuid.UUID,
 		return "", fmt.Errorf("upload security validation rejected: %s", valResult.ErrorMessage)
 	}
 
+	stat, err := os.Stat(promotedCleanPath)
+	if err != nil || stat.Size() != session.TotalSizeBytes {
+		return "", errors.New("assembled upload size does not match declared size")
+	}
+
 	// Step 3: Successfully Approved & Promoted
 	session.TargetStoragePath = promotedCleanPath
-	_ = s.uploadRepo.UpdateSessionStatus(ctx, sessionID, domain.UploadStatusCompleted, len(chunks))
+	if err := s.uploadRepo.CompleteSession(ctx, sessionID, promotedCleanPath, len(chunks)); err != nil {
+		return "", err
+	}
+	_ = os.RemoveAll(chunkDir)
 
 	fileURL := "/uploads/clean/" + filepath.Base(promotedCleanPath)
 

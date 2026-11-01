@@ -334,7 +334,7 @@ export const App: React.FC = () => {
             }
           />
           <Route
-            path="/dashboard/reconstruction/:jobId"
+            path="/dashboard/reconstruction/:sessionId"
             element={
               <ProtectedRoute>
                 <ReconstructionTrackingPage />

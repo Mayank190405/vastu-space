@@ -28,9 +28,9 @@ import (
 
 // StageHandlers holds all dependencies required by task handlers.
 type StageHandlers struct {
-	jobRepo  repository.JobRepository
-	eventBus *events.EventBus
-	client   *AsynqClient
+	jobRepo     repository.JobRepository
+	eventBus    *events.EventBus
+	client      *AsynqClient
 	workersPath string // absolute path to backend/workers directory
 }
 
@@ -42,9 +42,9 @@ func NewStageHandlers(
 	workersPath string,
 ) *StageHandlers {
 	return &StageHandlers{
-		jobRepo:  jobRepo,
-		eventBus: eventBus,
-		client:   client,
+		jobRepo:     jobRepo,
+		eventBus:    eventBus,
+		client:      client,
 		workersPath: workersPath,
 	}
 }
@@ -57,6 +57,9 @@ func (h *StageHandlers) HandlePreprocessVideo(ctx context.Context, t *asynq.Task
 		return err
 	}
 
+	if p.SessionID != "" {
+		return h.runSessionReconstruction(ctx, p)
+	}
 	if err := h.transition(ctx, p.JobID, domain.JobStagePreprocessing, 5); err != nil {
 		return err
 	}

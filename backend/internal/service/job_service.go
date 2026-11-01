@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"vastu/backend/internal/domain"
@@ -45,8 +47,46 @@ func (s *JobService) SetAsynqClient(client *queue.AsynqClient) {
 }
 
 func (s *JobService) CreateJob(ctx context.Context, input domain.CreateJobInput) (*domain.ProcessingJob, error) {
+	return s.createJob(ctx, input, "", false)
+}
+func (s *JobService) CreateSessionJob(ctx context.Context, sessionID string, input domain.CreateJobInput) (*domain.ProcessingJob, error) {
+	return s.createJob(ctx, input, sessionID, false)
+}
+func (s *JobService) CreateRetrySessionJob(ctx context.Context, sessionID string, input domain.CreateJobInput) (*domain.ProcessingJob, error) {
+	return s.createJob(ctx, input, sessionID, true)
+}
+func (s *JobService) createJob(ctx context.Context, input domain.CreateJobInput, sessionID string, retry bool) (*domain.ProcessingJob, error) {
 	if input.ProjectID == uuid.Nil {
 		return nil, errors.New("project_id is required")
+	}
+
+	// Never submit a worker task without a persisted, verified capture input.
+	if s.asynqClient != nil {
+		if input.CaptureID == nil || s.captureRepo == nil {
+			return nil, errors.New("VERIFIED_CAPTURE_REQUIRED")
+		}
+		capture, err := s.captureRepo.GetByID(ctx, *input.CaptureID)
+		if err != nil || capture == nil {
+			return nil, errors.New("CAPTURE_NOT_FOUND")
+		}
+		if capture.ProjectID != input.ProjectID {
+			return nil, errors.New("CAPTURE_PROJECT_MISMATCH")
+		}
+		if capture.VideoURL == nil || capture.Status != domain.CaptureStatusUploaded {
+			return nil, errors.New("UPLOAD_NOT_VERIFIED")
+		}
+		prefix := "/uploads/clean/"
+		if !strings.HasPrefix(*capture.VideoURL, prefix) {
+			return nil, errors.New("VERIFIED_VIDEO_PATH_REQUIRED")
+		}
+		name := strings.TrimPrefix(*capture.VideoURL, prefix)
+		if name == "" || filepath.Base(name) != name {
+			return nil, errors.New("INVALID_VIDEO_PATH")
+		}
+		info, err := os.Stat(filepath.Join(s.uploadDir, "clean", name))
+		if err != nil || !info.Mode().IsRegular() || info.Size() == 0 {
+			return nil, errors.New("VERIFIED_VIDEO_MISSING")
+		}
 	}
 
 	priority := 5
@@ -54,9 +94,18 @@ func (s *JobService) CreateJob(ctx context.Context, input domain.CreateJobInput)
 		priority = *input.Priority
 	}
 
+	jobID := uuid.New()
+	var existing *domain.ProcessingJob
+	if sessionID != "" && !retry {
+		jobID = uuid.NewSHA1(uuid.NameSpaceURL, []byte("vastu:job:"+sessionID))
+		existing, _ = s.jobRepo.GetByID(ctx, jobID)
+		if existing != nil && existing.Stage != domain.JobStageQueued {
+			return existing, nil
+		}
+	}
 	now := time.Now().UTC()
 	job := &domain.ProcessingJob{
-		ID:                 uuid.New(),
+		ID:                 jobID,
 		ProjectID:          input.ProjectID,
 		CaptureID:          input.CaptureID,
 		Stage:              domain.JobStageQueued,
@@ -68,10 +117,12 @@ func (s *JobService) CreateJob(ctx context.Context, input domain.CreateJobInput)
 		UpdatedAt:          now,
 	}
 
-	if err := s.jobRepo.Create(ctx, job); err != nil {
-		return nil, err
-	}
+	if existing == nil {
+		if err := s.jobRepo.Create(ctx, job); err != nil {
+			return nil, err
+		}
 
+	}
 	// Add initial log
 	_ = s.jobRepo.AddLog(ctx, &domain.JobLog{
 		JobID:    job.ID,
@@ -89,7 +140,7 @@ func (s *JobService) CreateJob(ctx context.Context, input domain.CreateJobInput)
 		if input.CaptureID != nil && s.captureRepo != nil {
 			if cap, err := s.captureRepo.GetByID(ctx, *input.CaptureID); err == nil && cap != nil {
 				if cap.VideoURL != nil {
-					videoURL = *cap.VideoURL
+					videoURL = filepath.Join(s.uploadDir, "clean", filepath.Base(*cap.VideoURL))
 				}
 				if cap.IMUURL != nil {
 					imuURL = *cap.IMUURL
@@ -104,6 +155,7 @@ func (s *JobService) CreateJob(ctx context.Context, input domain.CreateJobInput)
 		_ = os.MkdirAll(workDir, 0755)
 
 		payload := &queue.ReconstructionPayload{
+			SessionID: sessionID,
 			JobID:     job.ID,
 			ProjectID: job.ProjectID,
 			CaptureID: job.CaptureID,

@@ -716,6 +716,10 @@ class ApiService {
     return this.request<ConnectedDevice[]>('/devices');
   }
 
+  async retryCaptureProcessing(sessionId: string): Promise<CaptureSessionRecord> {
+    return this.request<CaptureSessionRecord>(`/capture-sessions/${sessionId}/retry-processing`, {method: 'POST'});
+  }
+
   async getPipelineStages(sessionId: string): Promise<PipelineStageRecord[]> {
     return this.request<PipelineStageRecord[]>(`/capture-sessions/${sessionId}/pipeline`);
   }

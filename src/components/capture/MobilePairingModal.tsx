@@ -16,7 +16,7 @@ import {
   ArrowRight,
   RefreshCw
 } from 'lucide-react';
-import { Project } from '../../types';
+import { Project, CaptureSessionRecord } from '../../types';
 
 interface MobilePairingModalProps {
   project: Project;
@@ -39,8 +39,9 @@ export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
   onLaunchWebStudio,
   onSessionRegenerated
 }) => {
-  const [currentSessionId, setCurrentSessionId] = useState<string>(sessionId || 'CAP-01-LIVE');
-  const [sessionNonce, setSessionNonce] = useState<string>(() => `n_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`);
+  const [currentSessionId, setCurrentSessionId] = useState<string>(sessionId);
+  const [serverSession, setServerSession] = useState<CaptureSessionRecord | null>(null);
+  const [pairingError, setPairingError] = useState<string | null>(null);
   const [isRegenerating, setIsRegenerating] = useState<boolean>(false);
   const [regeneratedNotice, setRegeneratedNotice] = useState<boolean>(false);
 
@@ -51,38 +52,38 @@ export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [surveyorStatus, setSurveyorStatus] = useState<'WAITING' | 'CONNECTED' | 'RECORDING'>('WAITING');
 
-  const liveBase = 'https://vastu.krads.co.in';
-  const mobileWebUrl = `${liveBase}/capture/${currentSessionId}`;
-  const qrPayload = `${liveBase}/capture/${currentSessionId}?endpoint=${encodeURIComponent(liveBase)}&challenge=chal_${currentSessionId}_${sessionNonce}&nonce=${sessionNonce}&session_id=${currentSessionId}&project_id=${project.id}&project_name=${encodeURIComponent(project.name)}&room_name=${encodeURIComponent(floorName)}&operator=${encodeURIComponent(operatorName)}&grant=grant_${currentSessionId}`;
-  const iosDeepLink = `vastuspatial://capture/${currentSessionId}?endpoint=${encodeURIComponent(liveBase)}&session_id=${currentSessionId}&project_id=${project.id}&grant=grant_${currentSessionId}&nonce=${sessionNonce}`;
+  const qrPayload = serverSession?.qr_payload || '';
+  const mobileWebUrl = qrPayload;
+  const iosDeepLink = qrPayload;
+
+  useEffect(() => {
+    let active = true;
+    setServerSession(null);
+    api.getQRSession(currentSessionId).then(record => {
+      if (active) { setServerSession(record); setPairingError(null); }
+    }).catch(err => { if (active) setPairingError(err.message); });
+    return () => { active = false; };
+  }, [currentSessionId]);
 
   const handleTruncateAndRegenerate = async () => {
     setIsRegenerating(true);
     try {
-      if (currentSessionId) {
-        await api.revokeQRSession(currentSessionId).catch(() => {});
-      }
-    } catch {
-      // Best-effort revocation
-    }
-
-    const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
-    const newSessionId = `CAP-${randomSuffix}-SOP`;
-    const newNonce = `n_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-
-    setCurrentSessionId(newSessionId);
-    setSessionNonce(newNonce);
-    setSurveyorStatus('WAITING');
-    setIsRegenerating(false);
-    setRegeneratedNotice(true);
-    setTimeout(() => setRegeneratedNotice(false), 3500);
-
-    if (onSessionRegenerated) {
-      onSessionRegenerated(newSessionId);
-    }
+      await api.revokeQRSession(currentSessionId);
+      setServerSession(null);
+      setQrDataUrl('');
+      const record = await api.createQRSession({project_id: project.id, room_name: floorName, operator_name: operatorName});
+      setCurrentSessionId(record.id);
+      setServerSession(record);
+      setSurveyorStatus('WAITING');
+      setRegeneratedNotice(true);
+      onSessionRegenerated?.(record.id);
+    } catch (err: any) {
+      setPairingError(err.message || 'Unable to create session');
+    } finally { setIsRegenerating(false); }
   };
 
   useEffect(() => {
+    if (!qrPayload) { setQrDataUrl(''); return; }
     QRCode.toDataURL(qrPayload, {
       width: 256,
       margin: 2,
@@ -95,7 +96,7 @@ export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
       .then(url => setQrDataUrl(url))
       .catch(err => {
         console.error('Failed to generate local QR code, using web fallback', err);
-        setQrDataUrl(`https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(qrPayload)}`);
+        setPairingError('Unable to render QR code. Retry pairing.');
       });
   }, [qrPayload]);
 
@@ -110,8 +111,9 @@ export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
         if (s && (s.status === 'AUTHORIZED' || s.status === 'ACTIVE' || s.status === 'RECORDING')) {
           setSurveyorStatus(s.status === 'RECORDING' ? 'RECORDING' : 'CONNECTED');
         }
-      } catch (err) {
-        // Fallback for client-only / offline sessions
+      } catch (err: any) {
+        if (isMounted) { setSurveyorStatus('WAITING'); setPairingError(err.message); }
+        clearInterval(interval);
       }
     }, 2500);
 
@@ -190,6 +192,7 @@ export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
 
         {/* Modal Body */}
         <div className="p-6 space-y-6">
+          {pairingError && <p role="alert" className="text-red-700 text-sm">{pairingError}</p>}
           {/* Surveyor & Floor Confirmation */}
           <div className="p-4 bg-white rounded-2xl border border-[#EAE2D3] flex items-center justify-between text-xs">
             <div>
@@ -236,7 +239,7 @@ export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
                     Open the <strong>VĀSTU Spatial App</strong> on your iPhone or Android phone.
                   </li>
                   <li>
-                    Scan this QR code or enter Pairing Code <strong className="font-mono text-[#8F6834] bg-[#FAF3E0] px-1 py-0.5 rounded">{effectiveSessionCode}</strong>.
+                    Scan this server-issued QR code. Session <strong className="font-mono text-[#8F6834] bg-[#FAF3E0] px-1 py-0.5 rounded">{effectiveSessionCode}</strong>.
                   </li>
                   <li>
                     Follow the app prompt to <strong>show the whole place</strong> (360° scan).
