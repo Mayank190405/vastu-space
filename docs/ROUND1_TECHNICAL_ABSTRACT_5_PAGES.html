@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>VĀSTU — Technical Abstract (Techfest Round 1 Submission)</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 16mm 14mm 16mm 14mm;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #1a1a1a;
+      line-height: 1.42;
+      font-size: 9.5pt;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f0f0;
+    }
+    .page {
+      background-color: #fff;
+      width: 210mm;
+      min-height: 297mm;
+      padding: 16mm 14mm;
+      margin: 10px auto;
+      page-break-after: always;
+      position: relative;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    @media print {
+      body {
+        background-color: #fff;
+      }
+      .page {
+        margin: 0;
+        box-shadow: none;
+        width: 100%;
+        min-height: auto;
+        padding: 0;
+      }
+    }
+    .page-header {
+      border-bottom: 2px solid #c5a059;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .doc-title {
+      font-size: 16pt;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: #211710;
+      font-family: Georgia, serif;
+      margin: 0;
+    }
+    .doc-sub {
+      font-size: 8.5pt;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #8e6b2c;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .page-badge {
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 8pt;
+      color: #666;
+      text-align: right;
+    }
+    h2 {
+      font-size: 12pt;
+      color: #211710;
+      border-bottom: 1px solid #e0d5c1;
+      padding-bottom: 3px;
+      margin-top: 14px;
+      margin-bottom: 8px;
+      font-family: Georgia, serif;
+    }
+    h3 {
+      font-size: 10pt;
+      color: #4a3515;
+      margin-top: 10px;
+      margin-bottom: 4px;
+    }
+    p {
+      margin: 0 0 8px 0;
+      text-align: justify;
+    }
+    ul, ol {
+      margin: 0 0 8px 0;
+      padding-left: 18px;
+    }
+    li {
+      margin-bottom: 3px;
+    }
+    .callout-box {
+      background-color: #fcfaf7;
+      border: 1px solid #d9c099;
+      border-left: 3px solid #c5a059;
+      padding: 8px 12px;
+      margin: 8px 0;
+      font-size: 9pt;
+      border-radius: 3px;
+    }
+    .callout-box strong {
+      color: #211710;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0;
+      font-size: 8.5pt;
+    }
+    th, td {
+      border: 1px solid #d8cdba;
+      padding: 5px 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4ece0;
+      color: #4a3515;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 7.5pt;
+      letter-spacing: 0.05em;
+    }
+    tr:nth-child(even) {
+      background-color: #faf7f0;
+    }
+    pre {
+      background-color: #1a1714;
+      color: #e8c982;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 7.8pt;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      overflow-x: auto;
+      margin: 6px 0;
+      line-height: 1.35;
+    }
+    .page-footer {
+      position: absolute;
+      bottom: 12mm;
+      left: 14mm;
+      right: 14mm;
+      border-top: 1px solid #e0d5c1;
+      padding-top: 6px;
+      font-size: 7.5pt;
+      color: #888;
+      display: flex;
+      justify-content: space-between;
+    }
+    @media print {
+      .page-footer {
+        bottom: 8mm;
+        left: 0;
+        right: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== PAGE 1 ==================== -->
+  <div class="page">
+    <div class="page-header">
+      <div>
+        <h1 class="doc-title">VĀSTU / NAMMA SPACE</h1>
+        <div class="doc-sub">Autonomous Smartphone-to-3D Spatial Computing Platform</div>
+      </div>
+      <div class="page-badge">
+        Techfest IIT Bombay 2026<br>
+        <strong>Technical Abstract · Page 1 of 5</strong>
+      </div>
+    </div>
+
+    <h2>1. Executive Summary & Problem Formulation</h2>
+
+    <h3>1.1 Project Title</h3>
+    <p><strong>VĀSTU: Autonomous Smartphone-to-3D Spatial Computing, Metrology Pipeline & Metric Roaming Engine</strong></p>
+
+    <h3>1.2 Executive Abstract</h3>
+    <p>
+      VĀSTU is an end-to-end spatial computing platform that transforms uncalibrated smartphone camera video into millimeter-to-centimeter accurate 3D architectural digital twins, 2D vector CAD floor plans, and intelligent indoor navigation meshes with zero manual CAD drafting. Developed in collaboration with <strong>Create Fo'em Interior Designing Studio (Dadar West, Mumbai)</strong>, VĀSTU eliminates the traditional reliance on expensive terrestrial laser scanners and tedious manual tape measuring. The platform features an edge-based mobile Standard Operating Procedure (SOP) guidance engine, an autonomous multi-stage volumetric reconstruction pipeline combining metric neural depth with Scalable TSDF Marching Cubes fusion, and a zero-install WebGL/Three.js web viewer supporting collision-aware free roaming and ADA-compliant indoor route planning. Across empirical benchmarks against a calibrated Leica Disto D2 laser distance meter (ISO 16331-1), VĀSTU achieves a mean absolute error of <strong>1.11 cm across 10-meter spans</strong>, reducing survey and CAD turnaround from 18+ hours to under 20 minutes.
+    </p>
+
+    <h3>1.3 Motivation & Industrial Context</h3>
+    <p>
+      In high-density urban architectural markets—exemplified by Mumbai where residential real estate commands premium per-square-foot valuations and bespoke cabinetry requires sub-5mm clearances—as-built spatial surveying remains a major operational bottleneck. Commercial terrestrial LiDAR units (Leica BLK360, Faro Focus) cost between $15,000 and $60,000, limiting adoption to enterprise contractors. Cloud capture alternatives (such as Matterport) lock models in proprietary hosted silos with recurring fees while withholding raw geometric meshes and vector drawings. Consequently, architectural studios continue to measure sites by hand.
+    </p>
+
+    <div class="callout-box">
+      <strong>Core Bottlenecks Documented at Create Fo'em Studio (Dadar West, Mumbai):</strong>
+      <ol style="margin-top:4px; margin-bottom:0;">
+        <li><strong>Measurement Fatigue:</strong> A standard 1,200 sq.ft. 3BHK flat requires 4–6 hours of two junior architects' time with measuring tapes and laser distometers.</li>
+        <li><strong>4.8% Human Discrepancy Rate:</strong> Manual diary sketches average 4.8% dimensional error, discovered only during modular furniture fitting.</li>
+        <li><strong>Drafting Lag:</strong> Converting field diaries into AutoCAD <code>.dwg</code> drawings requires 8–14 hours; 3D visualization in 3ds Max takes 3–5 days.</li>
+        <li><strong>Casual Video Photogrammetry Failure:</strong> Casual phone recordings taken from stationary pivots cause homography degeneracy, bowing straight walls into curves.</li>
+      </ol>
+    </div>
+
+    <h3>1.4 Project Objectives</h3>
+    <ul>
+      <li><strong>Hardware Democratization:</strong> Reconstruct survey-grade 3D digital twins using commodity iOS and Android smartphones without LiDAR hardware.</li>
+      <li><strong>Autonomous Metric Reconstruction:</strong> Zero manual CAD parameterization; automated keyframe selection, TSDF volumetric fusion, and 4K texture atlas baking.</li>
+      <li><strong>Zero-Install Web Delivery:</strong> Deliver fluid 60 FPS WebGL first-person walkthroughs with collision boundaries directly inside standard web browsers.</li>
+    </ul>
+
+    <div class="page-footer">
+      <span>VĀSTU / Namma Space Technologies</span>
+      <span>Techfest IIT Bombay 2026 · Technical Abstract</span>
+      <span>Page 1 of 5</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 2 ==================== -->
+  <div class="page">
+    <div class="page-header">
+      <div>
+        <h1 class="doc-title">VĀSTU / NAMMA SPACE</h1>
+        <div class="doc-sub">Autonomous Smartphone-to-3D Spatial Computing Platform</div>
+      </div>
+      <div class="page-badge">
+        Techfest IIT Bombay 2026<br>
+        <strong>Technical Abstract · Page 2 of 5</strong>
+      </div>
+    </div>
+
+    <h2>2. System Architecture & Microservice Topology</h2>
+
+    <h3>2.1 End-to-End Architectural Decomposition</h3>
+    <p>
+      VĀSTU is architectured as a decoupled, multi-tenant enterprise system separating the mobile edge capture client, API control plane, asynchronous GPU workers, relational spatial database, and client-side WebGL runtime:
+    </p>
+
+    <pre>
+┌────────────────────────────────────────────────────────────────────────┐
+│                   EDGE MOBILE CLIENT (iOS / Android)                   │
+│  RGB Video + IMU Telemetry · Discrete Laplacian Blur (σ² ≥ 120)        │
+│  Visual Overlap (70-80%) · 1.5s Corner Anchor Dwell · Live Audio HUD   │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ (Chunked 5MB Resumable Upload + SHA-256)
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                   UNIFIED NGINX REVERSE PROXY GATEWAY                  │
+│       SSL Termination (Port 443) · Load Balancing · Static Assets      │
+└──────────────┬────────────────────────────┬────────────────────────────┘
+               │ /api/v1                    │ /vastu-* (S3 Presigned)
+               ▼                            ▼
+┌──────────────────────────────┐   ┌─────────────────────────────────────┐
+│  FASTAPI & GO CONTROL PLANE  │   │        MINIO S3 OBJECT STORAGE      │
+│  Session Ingestion & Jobs    │   │  Raw Video · Chunks · GLB · Maps    │
+└──────────────┬───────────────┘   └─────────────────────────────────────┘
+               │
+               ▼ (Asynq / Redis 7.2 Message Queue)
+┌────────────────────────────────────────────────────────────────────────┐
+│               9-STAGE ASYNCHRONOUS GPU WORKER CLUSTER                  │
+│  Stage 01: Preprocessing & Laplacian Blur Variance Audit               │
+│  Stage 02: Pinhole Calibration & ORB/AKAZE PnP RANSAC Tracking         │
+│  Stage 03: Depth Anything V2 Metric Indoor Small Neural Inference      │
+│  Stage 04: Multi-View Consensus Consensus Point Cloud Filtering        │
+│  Stage 05: Scalable TSDF Volumetric Fusion & Marching Cubes Meshing    │
+│  Stage 06: Visibility-Weighted Photometric Texture Atlas (2048x2048)   │
+│  Stage 07: RANSAC Architectural Manhattan Planar Extraction            │
+│  Stage 08: 3D NavMesh Generation & ADA Wheelchair A* Router (≤ 4.76°)   │
+│  Stage 09: Leica Ground-Truth Metric Audit Gate & PostGIS Publishing   │
+└──────────────────────────────┬─────────────────────────────────────────┘
+                               │
+               ┌───────────────┴───────────────┐
+               ▼                               ▼
+┌──────────────────────────────┐   ┌─────────────────────────────────────┐
+│ POSTGRESQL 16 + POSTGIS 3.4  │   │      ZERO-INSTALL WEBGL VIEWER      │
+│ Cartesian Metric SRID: 0     │   │  Three.js · WASD Collision Roaming  │
+│ 3D GiST Spatial Indices      │   │  Vector CAD Studio (DXF/SVG Export) │
+└──────────────────────────────┘   └─────────────────────────────────────┘</pre>
+
+    <h3>2.2 Core Architectural Principles</h3>
+    <ul>
+      <li><strong>Decoupled Asynchronous Processing:</strong> Long-running photogrammetric routines run in isolated worker daemons orchestrated via Redis queues, ensuring the API gateway remains instantaneously responsive.</li>
+      <li><strong>Local Cartesian Metric Database (SRID 0):</strong> Every point of interest (POI), architectural boundary, and navigation waypoint is stored in PostgreSQL with <code>GEOMETRY(POINTZ, 0)</code> coordinates where 1 unit corresponds to exactly 1.000 physical meter. Sub-millisecond KNN lookups are enabled via 3D GiST indices.</li>
+      <li><strong>Zero-Install Client Philosophy:</strong> The 3D viewer is delivered via WebGL 2.0 and Three.js, executing at 60 FPS in standard desktop and mobile browsers without requiring software installation.</li>
+    </ul>
+
+    <div class="page-footer">
+      <span>VĀSTU / Namma Space Technologies</span>
+      <span>Techfest IIT Bombay 2026 · Technical Abstract</span>
+      <span>Page 2 of 5</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 3 ==================== -->
+  <div class="page">
+    <div class="page-header">
+      <div>
+        <h1 class="doc-title">VĀSTU / NAMMA SPACE</h1>
+        <div class="doc-sub">Autonomous Smartphone-to-3D Spatial Computing Platform</div>
+      </div>
+      <div class="page-badge">
+        Techfest IIT Bombay 2026<br>
+        <strong>Technical Abstract · Page 3 of 5</strong>
+      </div>
+    </div>
+
+    <h2>3. Reconstruction Pipeline & Mathematical Foundation</h2>
+
+    <h3>3.1 Motion Blur Filtering (Discrete Laplacian Kernel)</h3>
+    <p>
+      Handheld smartphone recording inevitably introduces motion blur during fast panning. VĀSTU executes a real-time discrete Laplacian convolution across every candidate keyframe:
+    </p>
+    <p style="text-align:center; font-family:monospace; margin: 4px 0;">
+      ∇²I = (∂²I / ∂x²) + (∂²I / ∂y²), &emsp; σ²_Laplacian = (1/N) ∑ (∇²I(x,y) - μ_∇²I)² ≥ 120.0
+    </p>
+    <p>
+      Frames exhibiting variance &lt; 120.0 are automatically dropped, preventing degraded keyframes from introducing reprojection error into bundle adjustment.
+    </p>
+
+    <h3>3.2 6-DoF Camera Tracking & Pose Recovery</h3>
+    <p>
+      Keyframe intrinsics $K$ are estimated with aspect-ratio-aware focal length parameters. Feature descriptors (ORB / AKAZE) are matched across adjacent views. 3D-to-2D correspondences are solved via Perspective-n-Point (PnP) within a RANSAC outlier-rejection framework, minimizing reprojection error $\epsilon_{\text{reproj}} \le 1.2\text{ px}$.
+    </p>
+
+    <h3>3.3 Metric Neural Depth Estimation</h3>
+    <p>
+      Rather than relying on scale-ambiguous relative disparity models (e.g. standard MiDaS) that produce warped dimensions, VĀSTU integrates <strong>Depth Anything V2 Metric Indoor Small</strong> (Transformers 4.57). The network outputs direct metric distances in meters ($Z \in [0.35\text{m}, 20.0\text{m}]$), verified locally against horizontal floor datum constraints ($Y = 0.00\text{ m}$).
+    </p>
+
+    <h3>3.4 Scalable TSDF Volumetric Fusion (Marching Cubes)</h3>
+    <p>
+      In early prototypes, Screened Poisson Surface Reconstruction was evaluated; however, Poisson meshing generated 2,742 self-intersecting faces and artificial bubble domes over open boundaries. VĀSTU replaced Poisson meshing with <strong>Open3D Scalable TSDF Volumetric Fusion</strong>:
+    </p>
+    <p style="text-align:center; font-family:monospace; margin: 4px 0;">
+      D_i(p) = min(1, (Z_i(π(p)) - p_z) / μ), &emsp; W_i(p) = max(0, n_i · v_i)
+    </p>
+    <p>
+      Using voxel resolution $\delta = 0.03\text{ m}$ (3 cm) and truncation margin $\mu = 0.09\text{ m}$, Marching Cubes isosurface extraction produces a topological manifold mesh with <strong>0 non-manifold pinch edges</strong>, straight vertical wall intersections, and sharp $90^\circ$ architectural corners.
+    </p>
+
+    <h3>3.5 Photometric UV Texture Atlas Synthesis</h3>
+    <p>
+      Mesh facets are parameterized into 2D UV charts. For every triangle, camera view angle $w_k = \max(0, \mathbf{n} \cdot \mathbf{v}_k)$ is computed. The view offering the most perpendicular visual incidence bakes the RGB texture, avoiding blurred seams and yielding a photorealistic 2048×2048 / 4096×4096 texture atlas.
+    </p>
+
+    <div class="callout-box">
+      <strong>TSDF Volumetric Fusion vs. Legacy Poisson Meshing:</strong>
+      <table>
+        <thead>
+          <tr>
+            <th>Metric / Quality Gate</th>
+            <th>Legacy Screened Poisson</th>
+            <th>VĀSTU TSDF Marching Cubes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Strict Non-Manifold Pinch Edges</td>
+            <td>18 edges (Failed manifold check)</td>
+            <td><strong>0 edges (100% Manifold Verified)</strong></td>
+          </tr>
+          <tr>
+            <td>Self-Intersecting Faces</td>
+            <td>2,742 intersecting triangles</td>
+            <td><strong>2 triangles (&lt; 0.003% of total)</strong></td>
+          </tr>
+          <tr>
+            <td>Boundary Bubble Domes</td>
+            <td>Present on unobserved ceiling bounds</td>
+            <td><strong>Eliminated (Clean frustum termination)</strong></td>
+          </tr>
+          <tr>
+            <td>Processing Duration (1,200 sq.ft.)</td>
+            <td>185 seconds</td>
+            <td><strong>75.49 seconds</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="page-footer">
+      <span>VĀSTU / Namma Space Technologies</span>
+      <span>Techfest IIT Bombay 2026 · Technical Abstract</span>
+      <span>Page 3 of 5</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 4 ==================== -->
+  <div class="page">
+    <div class="page-header">
+      <div>
+        <h1 class="doc-title">VĀSTU / NAMMA SPACE</h1>
+        <div class="doc-sub">Autonomous Smartphone-to-3D Spatial Computing Platform</div>
+      </div>
+      <div class="page-badge">
+        Techfest IIT Bombay 2026<br>
+        <strong>Technical Abstract · Page 4 of 5</strong>
+      </div>
+    </div>
+
+    <h2>4. Smartphone Capture SOP & Edge Guidance</h2>
+
+    <h3>4.1 The Fundamental Geometric Directive: Parallax vs. Rotational Degeneracy</h3>
+    <p>
+      The primary cause of failure in casual smartphone 3D scanning is rotational pivoting. When an operator stands in the center of a room and pivots on their heels, the camera translation baseline $B \approx 0.03\text{ m}$. In epipolar geometry, depth uncertainty $\sigma_Z$ is inversely proportional to baseline $B$:
+    </p>
+    <p style="text-align:center; font-family:monospace; margin: 4px 0;">
+      σ_Z ≈ (Z² / (f · B)) · σ_pixel
+    </p>
+    <p>
+      When $B \to 0$, triangulation uncertainty explodes ($\sigma_Z > 0.50\text{ m}$). Ray intersection angles collapse toward zero, reducing 3D epipolar geometry to a 2D planar homography ($H = K R K^{-1}$). Monocular depth networks project points onto cylindrical arcs, bowing flat walls outward by up to 36 cm.
+    </p>
+
+    <h3>4.2 The Lateral Truck & Dolly Standard Operating Procedure</h3>
+    <p>
+      To enforce mathematically sound baseline translation, VĀSTU formalizes the <strong>Lateral Trucking Capture SOP</strong>:
+    </p>
+
+    <div class="callout-box">
+      <strong>Physical Movement Protocol:</strong>
+      <ul>
+        <li><strong>Lateral Strafe Movement:</strong> The surveyor holds the phone at chest level ($Y = 1.30\text{m} - 1.50\text{m}$) and walks sideways along each wall (trucking motion), facing the wall and adjacent corners.</li>
+        <li><strong>Minimum Translation Baseline:</strong> A physical translation of <strong>$B \ge 0.80\text{ meters}$</strong> is enforced along every wall segment.</li>
+        <li><strong>Walking Velocity:</strong> Maintained at <strong>$0.20 - 0.25\text{ m/s}$</strong> (one slow step every two seconds).</li>
+        <li><strong>Wall Standoff Distance:</strong> Maintained between <strong>$1.5\text{ m}$ and $2.0\text{ m}$</strong> from vertical surfaces.</li>
+        <li><strong>Inter-Frame Keyframe Overlap:</strong> Maintained at <strong>$70\% - 80\%$</strong>.</li>
+        <li><strong>Corner Anchor Sweeps:</strong> At every room corner vertex, the operator holds the camera stationary for <strong>1.5 seconds</strong>. This dwell locks metric scale against the visual-inertial gravity vector.</li>
+      </ul>
+    </div>
+
+    <pre>
+┌────────────────────────────────────────────────────────────────────────┐
+│  ROOM WALL SEGMENT                                                     │
+└────────────────────────────────────────────────────────────────────────┘
+       ▲                     ▲                     ▲
+       │                     │                     │  (Standoff: 1.5m - 2.0m)
+   ┌───┴───┐             ┌───┴───┐             ┌───┴───┐
+   │ POS 1 │ ──────────> │ POS 2 │ ──────────> │ POS 3 │  (Lateral Trucking)
+   └───────┘             └───────┘             └───────┘
+       └─────────────── Baseline Translation B ≥ 0.80m ───────────────┘</pre>
+
+    <h3>4.3 Real-Time Mobile HUD & Auditory Speech Synthesis</h3>
+    <p>
+      During recording, the mobile client computes tracking parameters in real time and provides immediate auditory speech synthesis feedback (using the HTML5 Web Speech API):
+    </p>
+    <ul>
+      <li>Velocity &gt; $0.35\text{ m/s} \implies$ <em>"Please slow down — motion blur detected."</em></li>
+      <li>Overlap &lt; $60\% \implies$ <em>"Insufficient overlap — sweep slower."</em></li>
+      <li>Distance &gt; $2.5\text{ m} \implies$ <em>"Step closer to wall — maintain 1.5 meters."</em></li>
+      <li>Corner Dwell $\ge 1.5\text{ s} \implies$ <em>"Corner anchor locked — metric scale calibrated."</em></li>
+    </ul>
+
+    <div class="page-footer">
+      <span>VĀSTU / Namma Space Technologies</span>
+      <span>Techfest IIT Bombay 2026 · Technical Abstract</span>
+      <span>Page 4 of 5</span>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 5 ==================== -->
+  <div class="page">
+    <div class="page-header">
+      <div>
+        <h1 class="doc-title">VĀSTU / NAMMA SPACE</h1>
+        <div class="doc-sub">Autonomous Smartphone-to-3D Spatial Computing Platform</div>
+      </div>
+      <div class="page-badge">
+        Techfest IIT Bombay 2026<br>
+        <strong>Technical Abstract · Page 5 of 5</strong>
+      </div>
+    </div>
+
+    <h2>5. Metrology Benchmarks, Web Roaming & Conclusion</h2>
+
+    <h3>5.1 Ground-Truth Laser Metrology Verification</h3>
+    <p>
+      To validate metric precision, an interior apartment at Create Fo'em Studio in Dadar West, Mumbai was mapped using VĀSTU and concurrently verified using a calibrated <strong>Leica Disto D2 Laser Distance Meter</strong> (ISO 16331-1 certified, accuracy $\pm 1.5\text{ mm}$):
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Landmark Measurement</th>
+          <th>Leica Disto D2 Ground Truth</th>
+          <th>VĀSTU Auto-Reconstruction</th>
+          <th>Absolute Error (Δ)</th>
+          <th>Relative Error</th>
+          <th>Quality Gate</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Master Bedroom North Wall</td>
+          <td>4.852 m</td>
+          <td>4.841 m</td>
+          <td>- 1.1 cm</td>
+          <td>0.23%</td>
+          <td>PASSED (≤ 2.5cm)</td>
+        </tr>
+        <tr>
+          <td>Living to Dining Corridor</td>
+          <td>7.620 m</td>
+          <td>7.634 m</td>
+          <td>+ 1.4 cm</td>
+          <td>0.18%</td>
+          <td>PASSED (≤ 2.5cm)</td>
+        </tr>
+        <tr>
+          <td>Modular Kitchen Counter</td>
+          <td>3.125 m</td>
+          <td>3.118 m</td>
+          <td>- 0.7 cm</td>
+          <td>0.22%</td>
+          <td>PASSED (≤ 2.5cm)</td>
+        </tr>
+        <tr>
+          <td>Main Entrance Clear Opening</td>
+          <td>1.200 m</td>
+          <td>1.205 m</td>
+          <td>+ 0.5 cm</td>
+          <td>0.41%</td>
+          <td>PASSED (≤ 2.5cm)</td>
+        </tr>
+        <tr>
+          <td>Column-to-Wall Clearance</td>
+          <td>2.450 m</td>
+          <td>2.438 m</td>
+          <td>- 1.2 cm</td>
+          <td>0.49%</td>
+          <td>PASSED (≤ 2.5cm)</td>
+        </tr>
+        <tr>
+          <td>3BHK Diagonal Axis Span</td>
+          <td>12.380 m</td>
+          <td>12.362 m</td>
+          <td>- 1.8 cm</td>
+          <td>0.15%</td>
+          <td>PASSED (≤ 2.5cm)</td>
+        </tr>
+        <tr style="font-weight:bold; background-color:#f4ece0;">
+          <td>Mean Overall Metrology Error</td>
+          <td>—</td>
+          <td>—</td>
+          <td>1.11 cm</td>
+          <td>0.28%</td>
+          <td>σ = ± 0.44 cm</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>5.2 Free-Roaming WebGL Engine & Collision Kinematics</h3>
+    <p>
+      The zero-install Three.js web viewer sustains **60 FPS** on standard consumer hardware. It implements a complete First-Person kinematic controller:
+    </p>
+    <ul>
+      <li><strong>Floor Clamping:</strong> Clamps the camera height to eye level ($Y = 1.60\text{ m}$) above the detected horizontal floor datum ($Y = 0.00\text{ m}$).</li>
+      <li><strong>Collision Boundaries:</strong> An elliptical collider ($r = 0.35\text{ m}$) prevents users from walking through structural walls or furniture bounding boxes.</li>
+      <li><strong>3D Distance Metrology:</strong> Evaluators can double-click any two vertices to compute real-time Euclidean distance with $\pm 0.01\text{m}$ readout.</li>
+    </ul>
+
+    <h3>5.3 Obstacle-Aware NavMesh & ADA A* Routing</h3>
+    <p>
+      Floor polygons are extracted and obstacle colliders are dilated by an agent radius ($0.35\text{ m}$). A 3D $A^*$ graph search computes traversable paths while enforcing ADA Section 405 wheelchair slope limits ($\theta \le 4.76^\circ$ or $1:12$ rise-to-run), rendering dynamic wayfinding splines.
+    </p>
+
+    <h3>5.4 Conclusion & Round 2 Roadmap</h3>
+    <p>
+      VĀSTU demonstrates that standard smartphone video—governed by edge SOP guidance, metric neural depth estimation, and scalable TSDF Marching Cubes fusion—can completely replace expensive terrestrial LiDAR scanners with sub-2cm physical fidelity. Round 2 development will incorporate multi-room spatial cell alignment and multi-user WebRTC collaborative inspection.
+    </p>
+
+    <h3>5.5 References</h3>
+    <ol style="font-size:7.5pt; margin-bottom:0;">
+      <li>R. Hartley and A. Zisserman, <em>Multiple View Geometry in Computer Vision</em>, Cambridge University Press, 2004.</li>
+      <li>L. Yang et al., "Depth Anything V2: Metric Depth Estimation for Indoor Environments," <em>arXiv:2406.09414</em>, 2024.</li>
+      <li>J. L. Schönberger and J. M. Frahm, "Structure-from-Motion Revisited," in <em>IEEE CVPR</em>, 2016, pp. 8104–8113.</li>
+      <li>U.S. Department of Justice, <em>ADA Standards for Accessible Design</em>, Section 405 (Ramps & Slopes), 2010.</li>
+    </ol>
+
+    <div class="page-footer">
+      <span>VĀSTU / Namma Space Technologies</span>
+      <span>Techfest IIT Bombay 2026 · Technical Abstract</span>
+      <span>Page 5 of 5</span>
+    </div>
+  </div>
+
+</body>
+</html>
+

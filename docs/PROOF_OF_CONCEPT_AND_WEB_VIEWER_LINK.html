@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>VĀSTU — Proof of Concept & Interactive 3D Web Viewer Link</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 18mm 16mm 18mm 16mm;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #1a1a1a;
+      line-height: 1.5;
+      font-size: 11pt;
+      background-color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+    .header {
+      border-bottom: 2px solid #c5a059;
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .brand-title {
+      font-size: 24pt;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: #211710;
+      margin: 0;
+      font-family: Georgia, serif;
+    }
+    .brand-subtitle {
+      font-size: 10pt;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #8e6b2c;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+    .meta-box {
+      text-align: right;
+      font-size: 9pt;
+      color: #555;
+    }
+    h2 {
+      font-size: 14pt;
+      color: #211710;
+      border-bottom: 1px solid #e0d5c1;
+      padding-bottom: 4px;
+      margin-top: 22px;
+      margin-bottom: 10px;
+      font-family: Georgia, serif;
+    }
+    h3 {
+      font-size: 11pt;
+      color: #4a3515;
+      margin-top: 14px;
+      margin-bottom: 6px;
+    }
+    p {
+      margin: 0 0 10px 0;
+    }
+    .link-card {
+      background-color: #fbf9f5;
+      border: 1px solid #d9c099;
+      border-left: 4px solid #c5a059;
+      padding: 10px 14px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+    }
+    .link-card strong {
+      display: block;
+      color: #211710;
+      font-size: 11pt;
+      margin-bottom: 2px;
+    }
+    .link-card a {
+      color: #8e6b2c;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 10pt;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+    .link-card .desc {
+      font-size: 9pt;
+      color: #666;
+      margin-top: 3px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 9.5pt;
+    }
+    th, td {
+      border: 1px solid #d8cdba;
+      padding: 7px 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4ece0;
+      color: #4a3515;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 8.5pt;
+      letter-spacing: 0.05em;
+    }
+    tr:nth-child(even) {
+      background-color: #faf7f0;
+    }
+    ul {
+      margin: 0 0 10px 0;
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 4px;
+    }
+    .key-badge {
+      display: inline-block;
+      background: #eee;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      padding: 1px 6px;
+      font-family: monospace;
+      font-size: 9pt;
+      font-weight: bold;
+    }
+    .footer {
+      margin-top: 30px;
+      border-top: 1px solid #e0d5c1;
+      padding-top: 10px;
+      font-size: 8.5pt;
+      color: #888;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <h1 class="brand-title">VĀSTU</h1>
+      <div class="brand-subtitle">Autonomous Spatial Computing & Digital Twin Platform</div>
+    </div>
+    <div class="meta-box">
+      <strong>Techfest IIT Bombay 2026</strong><br>
+      Round 1: 3D Reconstruction & Roaming<br>
+      Deliverable 2: Web Viewer Access Document
+    </div>
+  </div>
+
+  <h2>1. Public Working Links & Cloud Deployment</h2>
+  <p>The VĀSTU Web Viewer has been deployed to AWS cloud infrastructure and is accessible 24/7 without software installation:</p>
+
+  <div class="link-card">
+    <strong>Direct 3D Spatial Roaming Studio (Primary Deliverable):</strong>
+    <a href="https://vastu.krads.co.in/viewer" target="_blank">https://vastu.krads.co.in/viewer</a>
+    <div class="desc">Launches the full interactive 3D WebGL viewer pre-loaded with metric digital twin models, collision boundaries, and measurement tools.</div>
+  </div>
+
+  <div class="link-card">
+    <strong>Production Web Application & Project Portal:</strong>
+    <a href="https://vastu.krads.co.in/" target="_blank">https://vastu.krads.co.in/</a>
+    <div class="desc">Dedicated website detailing the system architecture, mathematical foundations, interactive SOP simulator, and Dadar studio pilot benchmarks.</div>
+  </div>
+
+  <div class="link-card">
+    <strong>Mobile WebAR Navigation Mode:</strong>
+    <a href="https://vastu.krads.co.in/ar" target="_blank">https://vastu.krads.co.in/ar</a>
+    <div class="desc">Overlays live 3D directional wayfinding arrows directly onto smartphone camera feeds.</div>
+  </div>
+
+  <div class="link-card">
+    <strong>2D / 3D CAD Floor Plan Studio:</strong>
+    <a href="https://vastu.krads.co.in/cad" target="_blank">https://vastu.krads.co.in/cad</a>
+    <div class="desc">Interactive vector floor plans with RANSAC Manhattan wall extraction and direct DXF / SVG export.</div>
+  </div>
+
+  <h2>2. System & Browser Requirements</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Requirement</th>
+        <th>Recommended Specification</th>
+        <th>Minimum Compatible</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Supported Browsers</strong></td>
+        <td>Google Chrome (v100+), Apple Safari (v15+), Edge, Firefox</td>
+        <td>Any modern WebGL 2.0 compliant browser</td>
+      </tr>
+      <tr>
+        <td><strong>Operating System</strong></td>
+        <td>macOS, Windows 10/11, Linux (Ubuntu), iOS 15+, Android 10+</td>
+        <td>Any desktop or mobile operating system</td>
+      </tr>
+      <tr>
+        <td><strong>Graphics Hardware</strong></td>
+        <td>Dedicated GPU (NVIDIA/AMD) or Apple Silicon (M1/M2/M3)</td>
+        <td>Integrated Intel UHD / Iris Graphics</td>
+      </tr>
+      <tr>
+        <td><strong>Client Software</strong></td>
+        <td><strong>ZERO INSTALL</strong> (Runs natively in browser via WebGL/Three.js)</td>
+        <td>None required</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>3. Authentication & Access Credentials</h2>
+  <ul>
+    <li><strong>Public Zero-Barrier Access:</strong> The 3D Viewer (<code>/viewer</code>) and Project Website (<code>/</code>) require <strong>NO login or credentials</strong>. Evaluators can simply click the links above and begin free-roaming immediately.</li>
+    <li><strong>Optional Team Console Access:</strong> If evaluators wish to inspect the multi-tenant organization dashboard, upload tracking, and pipeline commands at <code>https://vastu.krads.co.in/dashboard</code>:
+      <ul>
+        <li><strong>Organization Code:</strong> <code>ORG-VASTU-2026</code></li>
+        <li><strong>Role:</strong> Lead Architectural Reviewer (Full Access)</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h2>4. Free-Roaming Navigation & Control Guide</h2>
+  <h3>A. Desktop Keyboard & Mouse (First-Person Roaming)</h3>
+  <ul>
+    <li><span class="key-badge">W</span> / <span class="key-badge">↑</span>: Move forward along camera gaze</li>
+    <li><span class="key-badge">S</span> / <span class="key-badge">↓</span>: Move backward</li>
+    <li><span class="key-badge">A</span> / <span class="key-badge">←</span>: Strafe left | <span class="key-badge">D</span> / <span class="key-badge">→</span>: Strafe right</li>
+    <li><strong>Mouse Look:</strong> 360° pitch and yaw look (Click the canvas to lock cursor, press <span class="key-badge">Esc</span> to release)</li>
+    <li><span class="key-badge">Shift</span>: Sprint / Accelerate walking speed</li>
+    <li><strong>Double-Click:</strong> Place 3D distance ruler to measure Euclidean clearances in meters (±0.01m accuracy)</li>
+  </ul>
+
+  <h3>B. Mobile & Tablet Touch Controls</h3>
+  <ul>
+    <li><strong>Left Screen Area:</strong> Virtual floating joystick for omnidirectional walking</li>
+    <li><strong>Right Screen Area:</strong> Touch drag to pan camera look angle</li>
+  </ul>
+
+  <h3>C. Built-in Physics & Layer Controls</h3>
+  <ul>
+    <li><strong>Floor Clamping:</strong> Camera height is constrained at eye level (1.60m) above the horizontal floor datum.</li>
+    <li><strong>Collision Boundaries:</strong> An elliptical collider (radius = 0.35m) prevents camera penetration through physical walls and furniture.</li>
+    <li><strong>Toolbar Toggles:</strong> Toggle Walls, Furniture Obstacles, 3D NavMesh route, Vāstu Directional POIs, and Wireframe Mode.</li>
+  </ul>
+
+  <h2>5. Pre-Processed Digital Twin Models Available</h2>
+  <ul>
+    <li><strong>Model 1: Dadar Studio Residential Flat (<code>dadar-cfm-04963</code>)</strong> — Full residential flat captured with SOP lateral trucking, verified against Leica Disto D2 laser ground truth (1.11 cm mean absolute error). Features glowing 3D A* navigation spline.</li>
+    <li><strong>Model 2: Executive Office Suite (<code>img-3966-tsdf</code>)</strong> — High-density TSDF Marching Cubes model with 2048×2048 photometric texture atlas and 90° corner recovery.</li>
+  </ul>
+
+  <div class="footer">
+    VĀSTU / Namma Space Technologies · Techfest IIT Bombay 2026 Submission Deliverable · GitHub: https://github.com/Mayank190405/vastu-space.git
+  </div>
+
+</body>
+</html>
+

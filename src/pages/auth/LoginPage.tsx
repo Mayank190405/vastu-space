@@ -97,11 +97,7 @@ export const LoginPage: React.FC = () => {
       const res = await api.sendOTP(email, 'LOGIN');
       setOtpSent(true);
       setOtpCode('');
-      if (res?.debug_otp) {
-        setSuccessMsg(`Verification code sent to ${email} (Dev Code: ${res.debug_otp})`);
-      } else {
-        setSuccessMsg(`Verification code sent to ${email}`);
-      }
+      setSuccessMsg(`Verification code sent to ${email}. Please check your inbox.`);
     } catch (err: any) {
       setError(err.message || 'Failed to send OTP. Please verify email address.');
     } finally {
