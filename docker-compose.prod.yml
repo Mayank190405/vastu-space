@@ -19,7 +19,10 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - vastu_internal
+      vastu_internal:
+        aliases:
+          - vastu-postgres
+          - vastu_postgres
 
   # ----------------------------------------------------------------------------
   # 2. MIGRATIONS: Auto-run on startup
@@ -55,7 +58,10 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - vastu_internal
+      vastu_internal:
+        aliases:
+          - vastu-redis
+          - vastu_redis
 
   # ----------------------------------------------------------------------------
   # 4. OBJECT STORAGE: Self-Hosted MinIO (S3 Compatible)
@@ -78,7 +84,10 @@ services:
       retries: 5
       start_period: 15s
     networks:
-      - vastu_internal
+      vastu_internal:
+        aliases:
+          - vastu-minio
+          - vastu_minio
 
   # ----------------------------------------------------------------------------
   # 5. OBJECT STORAGE INIT: Bucket Auto-Provisioning
@@ -144,7 +153,10 @@ services:
       vastu-minio:
         condition: service_healthy
     networks:
-      - vastu_internal
+      vastu_internal:
+        aliases:
+          - vastu-backend
+          - vastu_backend
 
   # ----------------------------------------------------------------------------
   # 7. PYTHON API: FastAPI Spatial Computing & Photogrammetry Gateway
@@ -175,7 +187,10 @@ services:
       vastu-minio:
         condition: service_healthy
     networks:
-      - vastu_internal
+      vastu_internal:
+        aliases:
+          - vastu-api
+          - vastu_api
 
   # ----------------------------------------------------------------------------
   # 8. WORKER: Distributed 9-Stage Reconstruction Pipeline (Go Daemon + Python)
@@ -208,7 +223,10 @@ services:
       vastu-minio:
         condition: service_healthy
     networks:
-      - vastu_internal
+      vastu_internal:
+        aliases:
+          - vastu-worker
+          - vastu_worker
 
   # ----------------------------------------------------------------------------
   # 9. FRONTEND: React 18 + Three.js WebGL Spatial Viewer
@@ -223,7 +241,10 @@ services:
     container_name: vastu_frontend
     restart: unless-stopped
     networks:
-      - vastu_internal
+      vastu_internal:
+        aliases:
+          - vastu-frontend
+          - vastu_frontend
 
   # ----------------------------------------------------------------------------
   # 10. GATEWAY: Unified Production Nginx Reverse Proxy (Ports 80 & 443)
