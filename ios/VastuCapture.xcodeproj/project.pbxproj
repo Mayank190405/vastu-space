@@ -231,6 +231,8 @@
 				TargetAttributes = {
 					ECF3EAD4A4944A6C8B069580 = {
 						CreatedOnToolsVersion = 15.0;
+						DevelopmentTeam = 5YQ522758X;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -371,6 +373,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = 5YQ522758X;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = VastuCapture/Info.plist;
@@ -394,6 +397,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = 5YQ522758X;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = VastuCapture/Info.plist;
