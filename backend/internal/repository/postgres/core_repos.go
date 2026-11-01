@@ -1290,6 +1290,10 @@ func (r *UploadRepo) CompleteSession(ctx context.Context, id uuid.UUID, storageP
 }
 
 // RecordSessionStage stores only events observed while executing real worker code.
+const recordSessionStageSQL = `INSERT INTO pipeline_stages(session_id,job_id,stage_name,stage_order,status,progress_percentage,responsible_worker,started_at,completed_at,error_details,updated_at)
+ VALUES($1,$2,$3,100,$4::varchar,$5::integer,'vastu-worker',NOW(),CASE WHEN $4::varchar='COMPLETED' THEN NOW() END,$6,NOW())
+ ON CONFLICT(session_id,stage_name) DO UPDATE SET job_id=$2,status=$4::varchar,progress_percentage=$5::integer,error_details=$6,completed_at=CASE WHEN $4::varchar='COMPLETED' THEN NOW() ELSE NULL END,updated_at=NOW()`
+
 func (r *JobRepo) RecordSessionStage(ctx context.Context, sessionID string, jobID uuid.UUID, name, status string, details *string) error {
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
@@ -1300,9 +1304,7 @@ func (r *JobRepo) RecordSessionStage(ctx context.Context, sessionID string, jobI
 	if status == "COMPLETED" {
 		progress = 100
 	}
-	_, err = tx.Exec(ctx, `INSERT INTO pipeline_stages(session_id,job_id,stage_name,stage_order,status,progress_percentage,responsible_worker,started_at,completed_at,error_details,updated_at)
- VALUES($1,$2,$3,100,$4,$5,'vastu-worker',NOW(),CASE WHEN $4='COMPLETED' THEN NOW() END,$6,NOW())
- ON CONFLICT(session_id,stage_name) DO UPDATE SET job_id=$2,status=$4,progress_percentage=$5,error_details=$6,completed_at=CASE WHEN $4='COMPLETED' THEN NOW() ELSE NULL END,updated_at=NOW()`, sessionID, jobID, name, status, progress, details)
+	_, err = tx.Exec(ctx, recordSessionStageSQL, sessionID, jobID, name, status, progress, details)
 	if err != nil {
 		return err
 	}

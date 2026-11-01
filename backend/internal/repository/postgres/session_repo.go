@@ -417,6 +417,22 @@ func (r *SessionRepository) GetPipelineStages(ctx context.Context, sessionID str
 	return stages, rows.Err()
 }
 
+const updatePipelineStageSQL = `
+		UPDATE pipeline_stages
+		SET status = $1::varchar,
+		    progress_percentage = COALESCE($2, progress_percentage),
+		    responsible_worker = COALESCE($3, responsible_worker),
+		    error_details = COALESCE($4, error_details),
+		    started_at = CASE WHEN $5::timestamptz IS NOT NULL AND started_at IS NULL THEN $5 ELSE started_at END,
+		    completed_at = CASE WHEN $6::timestamptz IS NOT NULL THEN $6 ELSE completed_at END,
+		    retry_count = CASE WHEN $1::varchar = 'RETRYING' THEN retry_count + 1 ELSE retry_count END,
+		    updated_at = NOW()
+		WHERE session_id = $7 AND stage_name = $8
+		RETURNING id, session_id, job_id, stage_name, stage_order, status,
+		          progress_percentage, COALESCE(responsible_worker, ''), error_details, retry_count,
+		          started_at, completed_at, updated_at
+	`
+
 func (r *SessionRepository) UpdatePipelineStage(
 	ctx context.Context,
 	sessionID string,
@@ -433,21 +449,7 @@ func (r *SessionRepository) UpdatePipelineStage(
 		setCompleted = &now
 	}
 
-	query := `
-		UPDATE pipeline_stages
-		SET status = $1,
-		    progress_percentage = COALESCE($2, progress_percentage),
-		    responsible_worker = COALESCE($3, responsible_worker),
-		    error_details = COALESCE($4, error_details),
-		    started_at = CASE WHEN $5::timestamptz IS NOT NULL AND started_at IS NULL THEN $5 ELSE started_at END,
-		    completed_at = CASE WHEN $6::timestamptz IS NOT NULL THEN $6 ELSE completed_at END,
-		    retry_count = CASE WHEN $1 = 'RETRYING' THEN retry_count + 1 ELSE retry_count END,
-		    updated_at = NOW()
-		WHERE session_id = $7 AND stage_name = $8
-		RETURNING id, session_id, job_id, stage_name, stage_order, status,
-		          progress_percentage, COALESCE(responsible_worker, ''), error_details, retry_count,
-		          started_at, completed_at, updated_at
-	`
+	query := updatePipelineStageSQL
 	row := r.pool.QueryRow(
 		ctx, query,
 		input.Status, input.ProgressPercentage, input.ResponsibleWorker, input.ErrorDetails,
