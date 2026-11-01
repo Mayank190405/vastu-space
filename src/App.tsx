@@ -92,8 +92,8 @@ export const App: React.FC = () => {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Root Resolver */}
-          <Route path="/" element={<RootResolver />} />
+          {/* Root Landing Page: Dedicated Project Website */}
+          <Route path="/" element={<ProjectWebsitePage />} />
 
           {/* Dedicated Project Website & Architecture Portal */}
           <Route path="/website" element={<ProjectWebsitePage />} />
