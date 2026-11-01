@@ -59,5 +59,6 @@ mesh_orthogonal_views.png
 *.MOV
 *.mp4
 *.MP4
+!test_data/*.mp4
 *.avi
 
