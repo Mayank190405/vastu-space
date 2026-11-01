@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"mime"
 	"os"
 	"os/exec"
@@ -56,6 +57,7 @@ func (h *StageHandlers) runSessionReconstruction(ctx context.Context, p *Reconst
 	scanner.Buffer(make([]byte, 4096), 1<<20)
 	for scanner.Scan() {
 		line := scanner.Text()
+		log.Printf("[CapturePipeline] session=%s job=%s %s", p.SessionID, p.JobID, line)
 		_ = h.jobRepo.AddLog(ctx, &domain.JobLog{JobID: p.JobID, Stage: current, LogLevel: "info", Message: line})
 		if match := pipelineStagePattern.FindStringSubmatch(line); len(match) > 1 {
 			number, _ := strconv.Atoi(match[1])
@@ -75,7 +77,7 @@ func (h *StageHandlers) runSessionReconstruction(ctx context.Context, p *Reconst
 	}
 	reader.Close()
 	if err := <-done; err != nil {
-		message := fmt.Sprintf("RECONSTRUCTION_FAILED: %v; inspect job logs for the failed quality gate", err)
+		message := fmt.Sprintf("RECONSTRUCTION_FAILED: %v; inspect persisted job logs for the underlying error", err)
 		_ = recorder.RecordSessionStage(ctx, p.SessionID, p.JobID, current, "RETRYING", &message)
 		return fmt.Errorf("%s", message)
 	}

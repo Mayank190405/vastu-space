@@ -39,6 +39,9 @@ COPY scripts /app/scripts
 COPY core /app/core
 COPY ml /app/ml
 COPY navigation /app/navigation
+COPY storage /app/storage
+COPY geometry /app/geometry
+COPY shared /app/shared
 
 # Pre-create scratch and upload directories
 RUN mkdir -p /app/uploads/scratch
@@ -46,5 +49,8 @@ RUN mkdir -p /app/uploads/scratch
 ENV WORKERS_PATH=/app/backend/workers
 ENV PYTHONPATH=/app:/app/backend/workers:/app/scripts
 ENV UPLOAD_DIR=/app/uploads
+
+# Fail the image build if the complete production reconstruction entrypoint cannot import.
+RUN python3 -c "from scripts.capture_reconstruct import main; print('Capture reconstruction imports verified')"
 
 ENTRYPOINT ["/app/vastu-worker"]
