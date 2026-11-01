@@ -37,10 +37,13 @@ func (h *StageHandlers) runSessionReconstruction(ctx context.Context, p *Reconst
 	if err := recorder.RecordSessionStage(ctx, p.SessionID, p.JobID, "RECONSTRUCTION_00", "RUNNING", nil); err != nil {
 		return err
 	}
-	output := filepath.Join(p.WorkDir, "result")
-	if err := os.MkdirAll(output, 0755); err != nil {
+	output, attemptName, err := prepareReconstructionAttempt(p.WorkDir)
+	if err != nil {
 		return err
 	}
+	message := "Starting isolated reconstruction attempt: " + attemptName
+	log.Printf("[CapturePipeline] session=%s job=%s %s", p.SessionID, p.JobID, message)
+	_ = h.jobRepo.AddLog(ctx, &domain.JobLog{JobID: p.JobID, Stage: "RECONSTRUCTION_00", LogLevel: "info", Message: message})
 	command := exec.CommandContext(ctx, "python3", "-u", "/app/scripts/capture_reconstruct.py", p.VideoURL, output)
 	reader, writer := io.Pipe()
 	command.Stdout = writer
@@ -114,14 +117,32 @@ func (h *StageHandlers) runSessionReconstruction(ctx context.Context, p *Reconst
 		if kind == "" {
 			kind = "application/octet-stream"
 		}
-		return store.PutVerified(ctx, "vastu-artifacts", p.ProjectID.String()+"/"+p.JobID.String()+"/"+filepath.ToSlash(rel), path, kind)
+		return store.PutVerified(ctx, "vastu-artifacts", p.ProjectID.String()+"/"+p.JobID.String()+"/attempts/"+attemptName+"/"+filepath.ToSlash(rel), path, kind)
 	})
 	if err != nil {
 		return err
 	}
-	viewerURL := "/uploads/scratch/" + p.JobID.String() + "/result/index.html"
+	viewerURL := "/uploads/scratch/" + p.JobID.String() + "/attempts/" + attemptName + "/result/index.html"
 	if err := recorder.PublishSessionViewer(ctx, p.SessionID, p.JobID, viewerURL); err != nil {
 		return err
 	}
 	return h.transition(ctx, p.JobID, domain.JobStageCompleted, 100)
+}
+
+// Each invocation, including Asynq retries, gets a fresh output directory. Failed
+// artifacts remain available for diagnosis and can never be mistaken for new output.
+func prepareReconstructionAttempt(workDir string) (string, string, error) {
+	attempts := filepath.Join(workDir, "attempts")
+	if err := os.MkdirAll(attempts, 0755); err != nil {
+		return "", "", err
+	}
+	directory, err := os.MkdirTemp(attempts, "attempt-")
+	if err != nil {
+		return "", "", err
+	}
+	output := filepath.Join(directory, "result")
+	if err := os.MkdirAll(output, 0755); err != nil {
+		return "", "", err
+	}
+	return output, filepath.Base(directory), nil
 }

@@ -34,3 +34,7 @@ Do not close the P0 based on builds or health checks. A new iPhone recording mus
 ## Validation
 
 Frontend production build, Go server/worker builds, iOS simulator build, and focused session/upload tests passed. The full Go suite has existing auth-test compilation errors. No new iPhone recording or successful production reconstruction has been verified by this patch.
+
+## Metric-depth and retry recovery
+
+The worker build now installs pinned metric-depth dependencies, caches a pinned Depth Anything V2 Metric Indoor Small checkpoint, and runs a real inference check. If model download or validation fails, the image build must fail. Runtime uses the local metric model cache; approximate depth remains disallowed. Each automatic reconstruction attempt writes to a separate `attempts/attempt-*/result` directory, preserving previous failed output. Rebuild and recreate `vastu-worker`, then retry the existing failed processing job from its scan dashboard. No new recording, migration, or iOS build is required for this repair.

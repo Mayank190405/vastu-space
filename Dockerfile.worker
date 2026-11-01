@@ -30,6 +30,10 @@ WORKDIR /app
 COPY backend/workers/requirements.txt .
 RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 
+# Keep metric model dependencies separate so the large reconstruction layer stays cached.
+COPY backend/workers/requirements-depth.txt ./requirements-depth.txt
+RUN pip install --no-cache-dir -r requirements-depth.txt
+
 # Copy Go worker executable from builder stage
 COPY --from=go-builder /app/vastu-worker /app/vastu-worker
 
@@ -49,6 +53,11 @@ RUN mkdir -p /app/uploads/scratch
 ENV WORKERS_PATH=/app/backend/workers
 ENV PYTHONPATH=/app:/app/backend/workers:/app/scripts
 ENV UPLOAD_DIR=/app/uploads
+ENV VASTU_METRIC_DEPTH_MODEL_PATH=/opt/vastu-models/metric-indoor
+
+# Download the pinned metric weights and run real inference before accepting the image.
+RUN HF_HOME=/tmp/vastu-model-download python3 scripts/prepare_metric_depth.py --output "$VASTU_METRIC_DEPTH_MODEL_PATH" \
+    && rm -rf /tmp/vastu-model-download
 
 # Fail the image build if the complete production reconstruction entrypoint cannot import.
 RUN python3 -c "from scripts.capture_reconstruct import main; print('Capture reconstruction imports verified')"

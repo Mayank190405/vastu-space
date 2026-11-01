@@ -1,0 +1,5 @@
+# Metric Depth Anything V2 requires Transformers >= 4.45.
+transformers==4.46.3
+huggingface-hub==0.26.5
+tokenizers==0.20.3
+safetensors==0.4.5

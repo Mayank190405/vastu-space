@@ -1300,6 +1300,13 @@ func (r *JobRepo) RecordSessionStage(ctx context.Context, sessionID string, jobI
 		return err
 	}
 	defer tx.Rollback(ctx)
+	if name == "RECONSTRUCTION_00" && status == "RUNNING" {
+		_, err = tx.Exec(ctx, `UPDATE pipeline_stages SET status='PENDING',progress_percentage=0,error_details=NULL,started_at=NULL,completed_at=NULL,updated_at=NOW()
+        WHERE session_id=$1 AND job_id=$2 AND stage_name LIKE 'RECONSTRUCTION_%'`, sessionID, jobID)
+		if err != nil {
+			return err
+		}
+	}
 	progress := 0
 	if status == "COMPLETED" {
 		progress = 100
