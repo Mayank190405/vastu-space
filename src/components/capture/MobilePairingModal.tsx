@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
+import { api } from '../../services/api';
 import {
   Smartphone,
   QrCode,
@@ -44,10 +45,13 @@ export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [surveyorStatus, setSurveyorStatus] = useState<'WAITING' | 'CONNECTED' | 'RECORDING'>('WAITING');
 
+  // Generate a cryptographically distinct single-use nonce for this modal instance
+  const [sessionNonce] = useState(() => `n_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`);
+
   const liveBase = 'https://vastu.krads.co.in';
   const mobileWebUrl = `${liveBase}/capture/${safeSessionId}`;
-  const qrPayload = `${liveBase}/capture/${safeSessionId}?endpoint=${encodeURIComponent(liveBase)}&challenge=chal_${safeSessionId}&session_id=${safeSessionId}&project_id=${project.id}&project_name=${encodeURIComponent(project.name)}&room_name=${encodeURIComponent(floorName)}&operator=${encodeURIComponent(operatorName)}&grant=grant_${safeSessionId}`;
-  const iosDeepLink = `vastuspatial://capture/${safeSessionId}?endpoint=${encodeURIComponent(liveBase)}&session_id=${safeSessionId}&project_id=${project.id}&grant=grant_${safeSessionId}`;
+  const qrPayload = `${liveBase}/capture/${safeSessionId}?endpoint=${encodeURIComponent(liveBase)}&challenge=chal_${safeSessionId}_${sessionNonce}&nonce=${sessionNonce}&session_id=${safeSessionId}&project_id=${project.id}&project_name=${encodeURIComponent(project.name)}&room_name=${encodeURIComponent(floorName)}&operator=${encodeURIComponent(operatorName)}&grant=grant_${safeSessionId}`;
+  const iosDeepLink = `vastuspatial://capture/${safeSessionId}?endpoint=${encodeURIComponent(liveBase)}&session_id=${safeSessionId}&project_id=${project.id}&grant=grant_${safeSessionId}&nonce=${sessionNonce}`;
 
   useEffect(() => {
     QRCode.toDataURL(qrPayload, {
@@ -65,6 +69,27 @@ export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
         setQrDataUrl(`https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(qrPayload)}`);
       });
   }, [qrPayload]);
+
+  // Real-time telemetry: Poll session status from backend
+  useEffect(() => {
+    let isMounted = true;
+    const interval = setInterval(async () => {
+      try {
+        const session = await api.getQRSession(safeSessionId);
+        if (!isMounted) return;
+        if (session && (session.status === 'AUTHORIZED' || session.status === 'ACTIVE' || session.status === 'RECORDING')) {
+          setSurveyorStatus(session.status === 'RECORDING' ? 'RECORDING' : 'CONNECTED');
+        }
+      } catch (err) {
+        // Fallback for client-only / offline sessions
+      }
+    }, 2500);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [safeSessionId]);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(mobileWebUrl);

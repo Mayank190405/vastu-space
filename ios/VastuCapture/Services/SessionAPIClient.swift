@@ -123,11 +123,12 @@ public final class SessionAPIClient: ObservableObject, SessionAPIClientProtocol 
             
             let effectiveId = cleanId.isEmpty ? "CAP-01-LIVE" : cleanId
             let sessionId = effectiveId.lowercased().hasPrefix("sess_") ? effectiveId : "sess_\(effectiveId)"
+            let randomSuffix = UInt32.random(in: 100000...999999)
             
             return ParsedQRChallenge(
                 sessionId: sessionId,
-                challengeToken: "chal_\(sessionId)",
-                nonce: "nonce_\(sessionId)",
+                challengeToken: "chal_\(sessionId)_\(randomSuffix)",
+                nonce: "nonce_\(sessionId)_\(randomSuffix)",
                 endpoint: defaultBaseURL,
                 projectId: "proj_\(sessionId.prefix(8))",
                 projectName: "VĀSTU Residence",

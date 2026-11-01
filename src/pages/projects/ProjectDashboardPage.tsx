@@ -975,7 +975,8 @@ export const ProjectDashboardPage: React.FC = () => {
           project={project}
           onClose={() => setShowCaptureModal(false)}
           onLaunchSession={(data) => {
-            const newId = `CAP-0${customSessions.length + 2}-SOP`;
+            const randomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
+            const newId = `CAP-${randomCode}-SOP`;
             const newSession = {
               id: newId,
               floor_name: project.floors?.find((f) => f.id === data.floorId)?.name || 'Ground Floor',
