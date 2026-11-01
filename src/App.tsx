@@ -29,9 +29,10 @@ import { SessionDetailPage } from './pages/dashboard/SessionDetailPage';
 import { SessionListPage } from './pages/dashboard/SessionListPage';
 import { DeviceMonitoringPage } from './pages/dashboard/DeviceMonitoringPage';
 import { RoomMappingPage } from './pages/dashboard/RoomMappingPage';
+import { ProjectWebsitePage } from './pages/website/ProjectWebsitePage';
 
 
-// Root gatekeeper: absolutely no marketing home page between opening the app and authentication
+// Root gatekeeper: Shows project website for public visitors, or routes authenticated users directly to console
 const RootResolver: React.FC = () => {
   const { user, isLoading, hasActiveOrg, hasPendingJoin } = useAuth();
 
@@ -44,7 +45,7 @@ const RootResolver: React.FC = () => {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <ProjectWebsitePage />;
   }
 
   if (hasActiveOrg) {
@@ -93,6 +94,13 @@ export const App: React.FC = () => {
         <Routes>
           {/* Root Resolver */}
           <Route path="/" element={<RootResolver />} />
+
+          {/* Dedicated Project Website & Architecture Portal */}
+          <Route path="/website" element={<ProjectWebsitePage />} />
+          <Route path="/overview" element={<ProjectWebsitePage />} />
+          <Route path="/about" element={<ProjectWebsitePage />} />
+          <Route path="/guide" element={<ProjectWebsitePage />} />
+          <Route path="/project" element={<ProjectWebsitePage />} />
 
           {/* Public 3D Spatial Viewer & Demo Routes */}
           <Route path="/viewer" element={<div className="min-h-screen bg-[#E3DACA] p-6"><SpatialViewerPage /></div>} />

@@ -32,7 +32,8 @@ import {
   ExternalLink,
   Square,
   Film,
-  Zap
+  Zap,
+  Globe
 } from 'lucide-react';
 
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -170,6 +171,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
     if (p === '/team' || p.startsWith('/organization/members') || p.startsWith('/organization/requests')) return 'team';
     if (p === '/organization') return 'organization';
     if (p === '/settings') return 'settings';
+    if (p === '/website' || p === '/overview' || p === '/about' || p === '/guide') return 'website';
     return 'dashboard';
   };
 
@@ -199,6 +201,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
     {
       title: 'ENTERPRISE WORKSPACE',
       items: [
+        { key: 'website', label: 'Project Website & Guide', path: '/website', icon: Globe },
         { key: 'team', label: 'Team & Access', path: '/team', icon: UsersRound, badge: pendingCount },
         { key: 'organization', label: 'Workspaces', path: '/organization', icon: Building2 },
         { key: 'settings', label: 'Platform Settings', path: '/settings', icon: Settings },
