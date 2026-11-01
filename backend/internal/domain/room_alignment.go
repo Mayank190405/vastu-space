@@ -47,7 +47,7 @@ type RoomConnectionGraphResponse struct {
 	RoomCount           int                  `json:"room_count"`
 	ConnectionCount     int                  `json:"connection_count"`
 	ConnectedComponents int                  `json:"connected_components"`
-	Rooms               []RoomWithHierarchy  `json:"rooms"`
+	Rooms               []*RoomWithHierarchy `json:"rooms"`
 	Doorways            []RoomConnectionEdge `json:"doorways"`
 }
 
@@ -74,7 +74,7 @@ type UnifiedSceneManifest struct {
 	RoomCount      int                   `json:"room_count"`
 	Floors         []int                 `json:"floors"`
 	Assets         UnifiedSceneAssets    `json:"assets"`
-	Rooms          []RoomWithHierarchy   `json:"rooms"`
+	Rooms          []*RoomWithHierarchy  `json:"rooms"`
 	DefaultSpawn   DefaultSpawnLocation  `json:"default_spawn"`
 }
 
