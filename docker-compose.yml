@@ -42,7 +42,7 @@ services:
       - vastu_redis_data:/data
 
   vastu-minio:
-    image: minio/minio:latest
+    image: quay.io/minio/minio:latest
     container_name: vastu_minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
@@ -61,7 +61,7 @@ services:
       retries: 5
 
   vastu-minio-init:
-    image: minio/minio:latest
+    image: quay.io/minio/minio:latest
     container_name: vastu_minio_init
     depends_on:
       vastu-minio:
