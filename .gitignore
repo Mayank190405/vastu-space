@@ -29,6 +29,7 @@ __pycache__/
 !.env.production.example
 *.pem
 *.key
+infrastructure/ssl/
 android/local.properties
 
 # OS & Editor metadata
