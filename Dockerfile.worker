@@ -60,6 +60,6 @@ RUN HF_HOME=/tmp/vastu-model-download python3 scripts/prepare_metric_depth.py --
     && rm -rf /tmp/vastu-model-download
 
 # Fail the image build if the complete production reconstruction entrypoint cannot import.
-RUN python3 -c "from scripts.capture_reconstruct import main; print('Capture reconstruction imports verified')"
+RUN python3 -c "from scripts.capture_reconstruct import main; import scripts.generate_video_twin as p; import core.dense.tsdf_fusion as t; from core.reconstruction.native_runtime import load_open3d; native = load_open3d(); assert p.o3d is native and t.o3d is native; print('Native Open3D reconstruction imports verified:', native.__version__)"
 
 ENTRYPOINT ["/app/vastu-worker"]

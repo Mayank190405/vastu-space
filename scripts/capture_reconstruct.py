@@ -3,9 +3,11 @@ import json
 import sys
 from pathlib import Path
 from generate_video_twin import VastuDigitalTwinPipeline
+from core.reconstruction.native_runtime import load_open3d
 
 
 def main(video, output):
+    load_open3d()  # Production never accepts diagnostic geometry, even with diagnostic flags.
     root = Path(output)
     VastuDigitalTwinPipeline(video, str(root)).run()
     gate = json.loads((root / 'quality_gate.json').read_text())

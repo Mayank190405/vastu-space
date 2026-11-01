@@ -70,8 +70,8 @@ if WORKERS_DIR not in sys.path:
 
 import cv2
 import numpy as np
-import core.reconstruction.o3d_shim as o3d
-sys.modules["open3d"] = o3d
+from core.reconstruction.native_runtime import load_open3d
+o3d = load_open3d(allow_diagnostic=os.environ.get("VASTU_DIAGNOSTIC_SHIMS") == "1")
 
 try:
     import torch
