@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import QRCode from 'qrcode';
 import {
   Smartphone,
   QrCode,
@@ -35,13 +36,35 @@ export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
   onClose,
   onLaunchWebStudio
 }) => {
-  const effectiveSessionCode = sessionCode || `V-${sessionId.slice(0, 4).toUpperCase()}`;
+  const safeSessionId = sessionId || 'CAP-01-LIVE';
+  const effectiveSessionCode = sessionCode || `V-CAP-${safeSessionId.replace(/[^A-Za-z0-9]/g, '').slice(-6).toUpperCase() || 'LIVE'}`;
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedDeepLink, setCopiedDeepLink] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [surveyorStatus, setSurveyorStatus] = useState<'WAITING' | 'CONNECTED' | 'RECORDING'>('WAITING');
 
-  const mobileWebUrl = `${window.location.origin}/capture/${sessionId}`;
-  const iosDeepLink = `vastuspatial://capture/${sessionId}?projectId=${project.id}`;
+  const liveBase = 'https://vastu.krads.co.in';
+  const mobileWebUrl = `${liveBase}/capture/${safeSessionId}`;
+  const qrPayload = `${liveBase}/capture/${safeSessionId}?endpoint=${encodeURIComponent(liveBase)}&challenge=chal_${safeSessionId}&session_id=${safeSessionId}&project_id=${project.id}&project_name=${encodeURIComponent(project.name)}&room_name=${encodeURIComponent(floorName)}&operator=${encodeURIComponent(operatorName)}&grant=grant_${safeSessionId}`;
+  const iosDeepLink = `vastuspatial://capture/${safeSessionId}?endpoint=${encodeURIComponent(liveBase)}&session_id=${safeSessionId}&project_id=${project.id}&grant=grant_${safeSessionId}`;
+
+  useEffect(() => {
+    QRCode.toDataURL(qrPayload, {
+      width: 256,
+      margin: 2,
+      errorCorrectionLevel: 'M',
+      color: {
+        dark: '#1F150D',
+        light: '#FFFFFF'
+      }
+    })
+      .then(url => setQrDataUrl(url))
+      .catch(err => {
+        console.error('Failed to generate local QR code, using web fallback', err);
+        setQrDataUrl(`https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(qrPayload)}`);
+      });
+  }, [qrPayload]);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(mobileWebUrl);
@@ -55,43 +78,27 @@ export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
     setTimeout(() => setCopiedDeepLink(false), 2500);
   };
 
-  // Generate deterministic QR Code pattern SVG
-  const renderSVGQRCode = () => {
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(effectiveSessionCode);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2500);
+  };
+
+  // Render authentic scannable QR Code
+  const renderQRCode = () => {
+    if (qrDataUrl) {
+      return (
+        <img
+          src={qrDataUrl}
+          alt="VĀSTU Capture QR Code"
+          className="w-48 h-48 rounded-xl bg-white p-2 shadow-inner border border-[#D9C4A1] object-contain"
+        />
+      );
+    }
     return (
-      <svg className="w-48 h-48 rounded-xl bg-white p-2 shadow-inner" viewBox="0 0 200 200">
-        {/* Finder Pattern Top-Left */}
-        <rect x="15" y="15" width="45" height="45" fill="#0b0f17" rx="6" />
-        <rect x="23" y="23" width="29" height="29" fill="#ffffff" rx="3" />
-        <rect x="29" y="29" width="17" height="17" fill="#8F6834" rx="2" />
-
-        {/* Finder Pattern Top-Right */}
-        <rect x="140" y="15" width="45" height="45" fill="#0b0f17" rx="6" />
-        <rect x="148" y="23" width="29" height="29" fill="#ffffff" rx="3" />
-        <rect x="154" y="29" width="17" height="17" fill="#8F6834" rx="2" />
-
-        {/* Finder Pattern Bottom-Left */}
-        <rect x="15" y="140" width="45" height="45" fill="#0b0f17" rx="6" />
-        <rect x="23" y="148" width="29" height="29" fill="#ffffff" rx="3" />
-        <rect x="29" y="154" width="17" height="17" fill="#8F6834" rx="2" />
-
-        {/* Brand V Center Logo */}
-        <rect x="85" y="85" width="30" height="30" fill="#dfb873" rx="6" />
-        <text x="94" y="106" fill="#0b0f17" fontSize="16" fontWeight="bold" fontFamily="sans-serif">V</text>
-
-        {/* Timing & Data Grid Dots */}
-        {[
-          [70, 20], [90, 20], [110, 20], [130, 20],
-          [70, 40], [100, 40], [120, 50],
-          [20, 70], [40, 70], [70, 70], [140, 70], [160, 70],
-          [20, 90], [50, 90], [130, 90], [170, 90],
-          [30, 110], [60, 110], [140, 110], [160, 110],
-          [70, 130], [90, 130], [110, 130], [130, 130],
-          [70, 150], [100, 150], [120, 150], [150, 150],
-          [70, 170], [90, 170], [120, 170], [140, 170], [170, 170]
-        ].map(([x, y], idx) => (
-          <rect key={idx} x={x} y={y} width="10" height="10" fill="#1f150d" rx="2" />
-        ))}
-      </svg>
+      <div className="w-48 h-48 rounded-xl bg-white p-2 shadow-inner border border-[#D9C4A1] flex items-center justify-center text-xs text-[#7C6652]">
+        Generating QR Code...
+      </div>
     );
   };
 
@@ -143,7 +150,7 @@ export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
           {/* QR Code & Mobile App Instructions */}
           <div className="flex flex-col sm:flex-row items-center gap-6 p-5 bg-white rounded-2xl border border-[#EAE2D3]">
             <div className="flex flex-col items-center space-y-2 shrink-0">
-              {renderSVGQRCode()}
+              {renderQRCode()}
               <span className="text-[11px] font-mono text-[#7C6652] font-semibold">
                 Scan with VĀSTU Mobile App
               </span>
