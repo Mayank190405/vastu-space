@@ -764,7 +764,7 @@ class VastuDigitalTwinPipeline:
         # -------------------------------------------------------------
         # STAGE 16 & 17: PHOTOGRAPHIC TEXTURE PROJECTION VIA TEXTURE ENGINE
         # -------------------------------------------------------------
-        logger.info("\n[STAGE 16 & 17] Photographic Texture Projection & Seamless Atlas Baking...")
+        logger.info("\n[STAGE 16] Preparing Mesh & Aligned Cameras for UV Projection...")
         atlas_size = 2048
         tex_meta, uv_report = self._stage_16_and_17_texture_projection(
             frames, mesh_dec, poses, K, R_upright, y_floor, atlas_size
@@ -811,6 +811,7 @@ class VastuDigitalTwinPipeline:
         # -------------------------------------------------------------
         # STAGE 20: TWO WEBGL RENDERING MODES (Mode A: Unlit / Mode B: Photographic)
         # -------------------------------------------------------------
+        logger.info("\n[STAGE 20] Exporting Dual-Mode WebGL Viewer...")
         cam_positions_raw = np.array([(-p["R"].T @ p["t"]).flatten() for p in poses])
         cam_positions_upright = (R_upright @ cam_positions_raw.T).T
         cam_positions_upright[:, 1] -= y_floor
@@ -2276,6 +2277,7 @@ class VastuDigitalTwinPipeline:
             exposure_compensation=True
         )
 
+        logger.info("\n[STAGE 17] Photographic Texture Projection & Seamless Atlas Baking...")
         tex_meta = tex_engine.run_pipeline(
             vertices=verts,
             faces=faces,
