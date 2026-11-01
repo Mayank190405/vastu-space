@@ -20,6 +20,10 @@ class SfMWorker(BaseWorker):
         self.estimator = HierarchicalPoseEstimator()
 
     def load_input(self, context: WorkerContext) -> Dict[str, Any]:
+        if context.params.get("capture_package_dir"):
+            from core.packaging.capture_adapter import adapt_capture
+            payload = adapt_capture(context.params["capture_package_dir"])
+            return {"keyframes": payload["keyframes"], "validated_capture": payload}
         keyframes_meta = os.path.join(context.work_dir, "01_keyframes", "frame_metadata.json")
         if not os.path.exists(keyframes_meta):
             keyframes_meta = os.path.join(context.work_dir, "01_preprocessing", "frame_manifest.json")
@@ -62,6 +66,14 @@ class SfMWorker(BaseWorker):
         return raw_input
 
     def process(self, validated_input: Dict[str, Any], context: WorkerContext) -> Dict[str, Any]:
+        if "validated_capture" in validated_input:
+            # No heuristic scale changes or synthetic reprojection claims for recorded VIO.
+            payload = validated_input["validated_capture"]
+            return {
+                "camera_poses": payload,
+                "registered_count": len(payload["poses"]),
+                "unreliable_segments_count": 0,
+            }
         keyframes = validated_input["keyframes"]
         images = [cv2.imread(k["file_path"]) for k in keyframes]
 

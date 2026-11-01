@@ -381,4 +381,115 @@ export interface CreateAssetInput {
   custom_metadata?: Record<string, any>;
 }
 
+// ==================== PHASE 7 SESSION & DEVICE MANAGEMENT ====================
+
+export type SessionState = 'CREATED' | 'AUTHORIZED' | 'RECORDING' | 'UPLOADING' | 'COMPLETED' | 'EXPIRED' | 'REVOKED';
+
+export interface CaptureSessionRecord {
+  id: string;
+  session_code: string; // e.g. #S-1042
+  project_id: string;
+  project_name: string;
+  floor_id?: string;
+  floor_name?: string;
+  room_id?: string;
+  room_name: string;
+  operator_name?: string;
+  challenge_token: string;
+  nonce: string;
+  grant_token?: string;
+  device_id?: string;
+  status: SessionState;
+  qr_payload: string;
+  expires_at: string;
+  redeemed_at?: string;
+  completed_at?: string;
+  capture_package_url?: string;
+  quality_summary?: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateCaptureSessionInput {
+  project_id: string;
+  floor_id?: string;
+  room_id?: string;
+  room_name: string;
+  operator_name?: string;
+  ttl_minutes?: number;
+}
+
+export type DeviceOnlineStatus = 'ONLINE' | 'OFFLINE' | 'RECORDING' | 'UPLOADING';
+
+export interface ConnectedDevice {
+  id: string;
+  device_uuid: string;
+  device_model: string;
+  device_os: string;
+  app_version: string;
+  battery_level: number; // 0.0 to 1.0 (-1 if not reported)
+  arkit_tracking_status: string;
+  local_ai_status: string;
+  network_type: string;
+  current_session_id?: string;
+  current_project_id?: string;
+  current_room_id?: string;
+  last_heartbeat_at: string;
+  status: DeviceOnlineStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export type PipelineStageStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'RETRYING' | 'CANCELLED' | 'SKIPPED';
+
+export interface PipelineStageRecord {
+  id: string;
+  session_id: string;
+  job_id?: string;
+  stage_name: string;
+  stage_order: number;
+  status: PipelineStageStatus;
+  progress_percentage: number;
+  responsible_worker: string;
+  error_details?: string;
+  retry_count: number;
+  started_at?: string;
+  completed_at?: string;
+  updated_at: string;
+}
+
+export interface RoomWithHierarchy {
+  id: string;
+  level_id: string;
+  level_number: number;
+  level_name: string;
+  project_id: string;
+  project_name: string;
+  name: string;
+  section_type: string;
+  area_sqm: number;
+  capture_status: 'UNCAPTURED' | 'CAPTURING' | 'CAPTURED' | 'PROCESSING' | 'RECONSTRUCTED' | 'RESCAN_REQUESTED' | string;
+  provisional_floorplan_url?: string;
+  dimensions_validated?: {
+    length_m?: number;
+    width_m?: number;
+    height_m?: number;
+  };
+  coverage_percentage: number;
+  quality_score: number;
+  active_session_id?: string;
+  active_session_code?: string;
+  last_capture_at?: string;
+  rescan_requested: boolean;
+  viewer_3d_url?: string;
+  capture_attempts_count: number;
+}
+
+export interface CreateRoomInput {
+  name: string;
+  section_type?: string;
+  area_sqm?: number;
+}
+
+
 

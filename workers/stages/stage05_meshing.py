@@ -14,9 +14,6 @@ from geometry.mesh_repair import validate_manifold_mesh
 import sys
 
 def _get_open3d():
-    if os.environ.get("ENABLE_OPEN3D", "0") != "1" and sys.platform == "darwin":
-        # Known macOS ARM64 segfault/abort issue with Open3D 0.18+
-        return None
     try:
         import open3d as o3d
         return o3d
@@ -44,6 +41,9 @@ class MeshingWorker(BaseWorker):
         os.makedirs(mesh_dir, exist_ok=True)
         out_mesh_path = os.path.join(mesh_dir, "mesh3D.ply")
 
+        from core.dense.tsdf_fusion import TSDFFusionEngine
+        tsdf_engine = TSDFFusionEngine()
+
         o3d = _get_open3d()
         if o3d is not None:
             pcd = o3d.io.read_point_cloud(ply_path)
@@ -55,6 +55,9 @@ class MeshingWorker(BaseWorker):
             mesh = mesh.remove_degenerate_triangles()
             mesh = mesh.remove_duplicated_triangles()
             mesh = mesh.remove_non_manifold_edges()
+
+            # Multi-plane topology-preserving snapping
+            mesh = tsdf_engine.snap_to_architectural_planes(mesh, dist_threshold_m=0.08, smooth_sigma_m=0.05)
 
             o3d.io.write_triangle_mesh(out_mesh_path, mesh)
             verts = np.asarray(mesh.vertices)
@@ -70,7 +73,6 @@ class MeshingWorker(BaseWorker):
                 [0, 4, 5], [0, 5, 1], [1, 5, 6], [1, 6, 2],
                 [2, 6, 7], [2, 7, 3], [3, 7, 4], [3, 4, 0]
             ], dtype=np.int32)
-            # Write fallback PLY
             with open(out_mesh_path, "w") as f:
                 f.write("ply\nformat ascii 1.0\n")
                 f.write(f"element vertex {len(verts)}\nproperty float x\nproperty float y\nproperty float z\n")
@@ -83,7 +85,8 @@ class MeshingWorker(BaseWorker):
         manifold_stats = validate_manifold_mesh(verts, tris)
         return {
             "mesh_path": out_mesh_path,
-            "stats": manifold_stats
+            "stats": manifold_stats,
+            "backend_manifest": tsdf_engine.get_backend_manifest()
         }
 
     def generate_artifacts(self, processed_data: Dict[str, Any], context: WorkerContext) -> Dict[str, str]:
@@ -95,6 +98,7 @@ class MeshingWorker(BaseWorker):
             "vertex_count": processed_data["stats"]["vertex_count"],
             "triangle_count": processed_data["stats"]["triangle_count"],
             "is_watertight": processed_data["stats"]["is_watertight"],
+            "reconstruction_backend": processed_data.get("backend_manifest", {}),
             "artifacts": artifacts
         }
 

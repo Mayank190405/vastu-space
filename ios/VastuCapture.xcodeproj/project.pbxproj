@@ -1,0 +1,438 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0B0676D88BE34DAEB3EA3D3A /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 939092652E474CF481A00DD5 /* AppCoordinator.swift */; };
+		536736F2E9BE4200BC479F6C /* VastuCaptureApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B290B1129B1F4304A1FF8F41 /* VastuCaptureApp.swift */; };
+		0D90F52E4E194787BDE8132D /* CameraPose.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB430B21489F4A4987215493 /* CameraPose.swift */; };
+		8A95414ABF074A9AB9331C18 /* SessionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63A9426107E84AA59BDDB351 /* SessionModels.swift */; };
+		2C2273D8763D4B9E8F9B5C7C /* CaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B37C50BD62844949BEB6D059 /* CaptureView.swift */; };
+		8F0EA65A55D54985B82BECFC /* AIObjectOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78354CD678A4D299C702001 /* AIObjectOverlayView.swift */; };
+		39706DD9F2F94B4487819147 /* LiveFloorplanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2258566E24847DBA5C2F9D9 /* LiveFloorplanView.swift */; };
+		A2B5C1051ECC4CD68362B61C /* MiniMapFloorplanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D1CF5CF3C2946A896DE0AE6 /* MiniMapFloorplanView.swift */; };
+		ED199B90C33947CD817F0371 /* ScanningHUD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E420D026FE4CD895F3A84A /* ScanningHUD.swift */; };
+		3FE6F7B3408C49A29B7C04B9 /* CaptureValidationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCE063EC84DE4949AB7F8695 /* CaptureValidationView.swift */; };
+		68B5D4F72CAC4C239A1260E0 /* QRScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54D2FF24BCDA482383F350A4 /* QRScannerView.swift */; };
+		B82B1E2342BD467EB16DD162 /* SessionDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20AF303C417445C0A67DE808 /* SessionDetailsView.swift */; };
+		C1C56D4B735E4060B047C3A8 /* UploadCompletionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00E3149142DF46FF96A2B2B7 /* UploadCompletionView.swift */; };
+		8681EA8F2D67430185AF86BB /* AIConfidenceEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 063C783EB5DC4327B24A2CC6 /* AIConfidenceEvaluator.swift */; };
+		CEE5BBF90E594AECAD51DF08 /* ARSegmentationOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AD0748826234D50A0853F6B /* ARSegmentationOverlay.swift */; };
+		9C2AF8F97564441DADE237BA /* BoundaryDetectionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FC0C077F5F648998537284E /* BoundaryDetectionEngine.swift */; };
+		AE644360D5D24B1F8414B470 /* CaptureQualityEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FDB33C0D2244472B1706EE6 /* CaptureQualityEvaluator.swift */; };
+		F4304D93068C46F5B0A9256E /* CornerDetectionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EB4B27E4F844BFA88E57C34 /* CornerDetectionEngine.swift */; };
+		75AAB9A39D23481DB6339F1C /* FloorAnchorEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CAE5D6FBEA84DB0B7007BC3 /* FloorAnchorEstimator.swift */; };
+		2501B56C4E6D441A8CF87CA6 /* FloorWallBoundaryDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB93172F3E184A038C75AA3B /* FloorWallBoundaryDetector.swift */; };
+		A039DBF4E200493991DAEEE7 /* FloorWallSegmentationEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAE865510B3D46F9B0013701 /* FloorWallSegmentationEngine.swift */; };
+		0038A144CFE142179C5AA617 /* FurnitureDetectionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B176F15FED4AD4A6A3F99C /* FurnitureDetectionEngine.swift */; };
+		969221A8F0964A06B349082F /* ImageQualityAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC48440FE724080AD850182 /* ImageQualityAnalyzer.swift */; };
+		EB8731AC4B2F4D9AAEEF1FE1 /* ImageQualityAssessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A5E6888592147F08A60D10D /* ImageQualityAssessor.swift */; };
+		4C42EDD329AA4C3981F7BBB4 /* InferenceScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B09EF51D70E345C88A818CD3 /* InferenceScheduler.swift */; };
+		50D1008F93004E5AA76260C5 /* LiveFloorplanEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63D0534E6B414BA0A546E426 /* LiveFloorplanEngine.swift */; };
+		8F57AD9C3F4042C5B9FEAB46 /* LocalDepthEstimationEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64759DD758864A5598AB4410 /* LocalDepthEstimationEngine.swift */; };
+		81C120BA66D049CD8A7A282B /* LocalMLDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 270D00FB77EC487AB031711A /* LocalMLDiagnostics.swift */; };
+		3BBCC669737D4BEAA0DB2BB4 /* LocalModelManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177B0E4027A74487A8C9B156 /* LocalModelManager.swift */; };
+		DDF1BC97C3A24351B9F4CBD5 /* MultiViewObjectTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3F7C7412774C43A21D785C /* MultiViewObjectTracker.swift */; };
+		3C875A895E624DBC8CEAEE03 /* ObjectPositionEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B3E7AD2F0D7407E848F1489 /* ObjectPositionEstimator.swift */; };
+		4E9A9963622F46D3AD12D35C /* OcclusionAnalysisEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CDD07D444B94AA0B7EA457E /* OcclusionAnalysisEngine.swift */; };
+		AC607066348F4F02B5DAD126 /* ParallaxAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A3B1CD2198441A7AC5C9B16 /* ParallaxAnalyzer.swift */; };
+		6AF3318342DD4C5B90F66B27 /* RoomCoverageTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BC596DE3C904DD9B307F8F9 /* RoomCoverageTracker.swift */; };
+		3DAEFBA41D85444BA4EA06BE /* ScanGuidanceEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49820D16DCE743358743A008 /* ScanGuidanceEngine.swift */; };
+		61B828C3641448B79E3D95A5 /* SceneObservationWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C5FB1A711404E3184324F8C /* SceneObservationWriter.swift */; };
+		B67AEB88BFB5463D8F3A1B1C /* SceneUnderstandingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32A2F44FA05D4BD79E0C163E /* SceneUnderstandingManager.swift */; };
+		4540E5FE7E6044E69B26DDBD /* WallBoundaryMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4F1B960EDC442BB8A843C57 /* WallBoundaryMapper.swift */; };
+		149F6D201A9E449A89127620 /* SecureSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A63BC61B4B7745958E29D426 /* SecureSessionStore.swift */; };
+		D50C398ED189479D9B8E3FBD /* SessionAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AE86411118D45C6925ADB7D /* SessionAPIClient.swift */; };
+		4E165ABEAB43482CB69ACBDB /* SessionAuthorizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E48D962F081E45D58FA098B2 /* SessionAuthorizationManager.swift */; };
+		45C7A045FA4E4659B827657B /* StorageMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F525D317BFCE49678DD00AAC /* StorageMonitor.swift */; };
+		BB7A7B1352FC433D84A5E6EE /* ARSessionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2150E0EAE8A6433C9F1ED151 /* ARSessionController.swift */; };
+		4843E9CB997A4EEB8CFC4732 /* CameraCalibrationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 102F592263974D0082F5AFB4 /* CameraCalibrationManager.swift */; };
+		1F517BD39EA34C7485E3D873 /* CameraFrameRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B5FF24AC8C548DD84DD2C2D /* CameraFrameRecorder.swift */; };
+		4076F89DFD5B4451BAFF7775 /* CameraPoseLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DE22AD3C426456A9DEE9C73 /* CameraPoseLogger.swift */; };
+		7E5323E470A340FDA5B8341E /* CapturePackageWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1267597C25914F56980785C3 /* CapturePackageWriter.swift */; };
+		83C14AF542D44DD8960E85F4 /* CaptureSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7A2BAB75BC4AB7AC55D56E /* CaptureSessionManager.swift */; };
+		A716E97A9B37493CA842E2E6 /* KeyframeSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 829F3159D0A1423D9EB3BA3C /* KeyframeSelector.swift */; };
+		E78D6ED94BE54C68A9D2A2E9 /* VastuTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFD3C185681C4A37B17C9163 /* VastuTheme.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A8E18DDC340A45B4B6905693 /* VastuCapture.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VastuCapture.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8137E1A8690648A2989B6E60 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Info.plist"; path = "Info.plist"; sourceTree = "<group>"; };
+		939092652E474CF481A00DD5 /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "AppCoordinator.swift"; path = "App/AppCoordinator.swift"; sourceTree = "<group>"; };
+		B290B1129B1F4304A1FF8F41 /* VastuCaptureApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "VastuCaptureApp.swift"; path = "App/VastuCaptureApp.swift"; sourceTree = "<group>"; };
+		EB430B21489F4A4987215493 /* CameraPose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "CameraPose.swift"; path = "Domain/CameraPose.swift"; sourceTree = "<group>"; };
+		63A9426107E84AA59BDDB351 /* SessionModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "SessionModels.swift"; path = "Domain/SessionModels.swift"; sourceTree = "<group>"; };
+		B37C50BD62844949BEB6D059 /* CaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "CaptureView.swift"; path = "Features/Capture/CaptureView.swift"; sourceTree = "<group>"; };
+		D78354CD678A4D299C702001 /* AIObjectOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "AIObjectOverlayView.swift"; path = "Features/Capture/Components/AIObjectOverlayView.swift"; sourceTree = "<group>"; };
+		C2258566E24847DBA5C2F9D9 /* LiveFloorplanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LiveFloorplanView.swift"; path = "Features/Capture/Components/LiveFloorplanView.swift"; sourceTree = "<group>"; };
+		0D1CF5CF3C2946A896DE0AE6 /* MiniMapFloorplanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "MiniMapFloorplanView.swift"; path = "Features/Capture/Components/MiniMapFloorplanView.swift"; sourceTree = "<group>"; };
+		84E420D026FE4CD895F3A84A /* ScanningHUD.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ScanningHUD.swift"; path = "Features/Capture/Components/ScanningHUD.swift"; sourceTree = "<group>"; };
+		CCE063EC84DE4949AB7F8695 /* CaptureValidationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "CaptureValidationView.swift"; path = "Features/CaptureReview/CaptureValidationView.swift"; sourceTree = "<group>"; };
+		54D2FF24BCDA482383F350A4 /* QRScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "QRScannerView.swift"; path = "Features/QRScanner/QRScannerView.swift"; sourceTree = "<group>"; };
+		20AF303C417445C0A67DE808 /* SessionDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "SessionDetailsView.swift"; path = "Features/SessionDetails/SessionDetailsView.swift"; sourceTree = "<group>"; };
+		00E3149142DF46FF96A2B2B7 /* UploadCompletionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "UploadCompletionView.swift"; path = "Features/Upload/UploadCompletionView.swift"; sourceTree = "<group>"; };
+		063C783EB5DC4327B24A2CC6 /* AIConfidenceEvaluator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "AIConfidenceEvaluator.swift"; path = "LocalAI/AIConfidenceEvaluator.swift"; sourceTree = "<group>"; };
+		5AD0748826234D50A0853F6B /* ARSegmentationOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ARSegmentationOverlay.swift"; path = "LocalAI/ARSegmentationOverlay.swift"; sourceTree = "<group>"; };
+		8FC0C077F5F648998537284E /* BoundaryDetectionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "BoundaryDetectionEngine.swift"; path = "LocalAI/BoundaryDetectionEngine.swift"; sourceTree = "<group>"; };
+		6FDB33C0D2244472B1706EE6 /* CaptureQualityEvaluator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "CaptureQualityEvaluator.swift"; path = "LocalAI/CaptureQualityEvaluator.swift"; sourceTree = "<group>"; };
+		7EB4B27E4F844BFA88E57C34 /* CornerDetectionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "CornerDetectionEngine.swift"; path = "LocalAI/CornerDetectionEngine.swift"; sourceTree = "<group>"; };
+		8CAE5D6FBEA84DB0B7007BC3 /* FloorAnchorEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FloorAnchorEstimator.swift"; path = "LocalAI/FloorAnchorEstimator.swift"; sourceTree = "<group>"; };
+		CB93172F3E184A038C75AA3B /* FloorWallBoundaryDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FloorWallBoundaryDetector.swift"; path = "LocalAI/FloorWallBoundaryDetector.swift"; sourceTree = "<group>"; };
+		FAE865510B3D46F9B0013701 /* FloorWallSegmentationEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FloorWallSegmentationEngine.swift"; path = "LocalAI/FloorWallSegmentationEngine.swift"; sourceTree = "<group>"; };
+		75B176F15FED4AD4A6A3F99C /* FurnitureDetectionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "FurnitureDetectionEngine.swift"; path = "LocalAI/FurnitureDetectionEngine.swift"; sourceTree = "<group>"; };
+		1CC48440FE724080AD850182 /* ImageQualityAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ImageQualityAnalyzer.swift"; path = "LocalAI/ImageQualityAnalyzer.swift"; sourceTree = "<group>"; };
+		4A5E6888592147F08A60D10D /* ImageQualityAssessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ImageQualityAssessor.swift"; path = "LocalAI/ImageQualityAssessor.swift"; sourceTree = "<group>"; };
+		B09EF51D70E345C88A818CD3 /* InferenceScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "InferenceScheduler.swift"; path = "LocalAI/InferenceScheduler.swift"; sourceTree = "<group>"; };
+		63D0534E6B414BA0A546E426 /* LiveFloorplanEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LiveFloorplanEngine.swift"; path = "LocalAI/LiveFloorplanEngine.swift"; sourceTree = "<group>"; };
+		64759DD758864A5598AB4410 /* LocalDepthEstimationEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LocalDepthEstimationEngine.swift"; path = "LocalAI/LocalDepthEstimationEngine.swift"; sourceTree = "<group>"; };
+		270D00FB77EC487AB031711A /* LocalMLDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LocalMLDiagnostics.swift"; path = "LocalAI/LocalMLDiagnostics.swift"; sourceTree = "<group>"; };
+		177B0E4027A74487A8C9B156 /* LocalModelManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "LocalModelManager.swift"; path = "LocalAI/LocalModelManager.swift"; sourceTree = "<group>"; };
+		CC3F7C7412774C43A21D785C /* MultiViewObjectTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "MultiViewObjectTracker.swift"; path = "LocalAI/MultiViewObjectTracker.swift"; sourceTree = "<group>"; };
+		8B3E7AD2F0D7407E848F1489 /* ObjectPositionEstimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ObjectPositionEstimator.swift"; path = "LocalAI/ObjectPositionEstimator.swift"; sourceTree = "<group>"; };
+		3CDD07D444B94AA0B7EA457E /* OcclusionAnalysisEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "OcclusionAnalysisEngine.swift"; path = "LocalAI/OcclusionAnalysisEngine.swift"; sourceTree = "<group>"; };
+		9A3B1CD2198441A7AC5C9B16 /* ParallaxAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ParallaxAnalyzer.swift"; path = "LocalAI/ParallaxAnalyzer.swift"; sourceTree = "<group>"; };
+		0BC596DE3C904DD9B307F8F9 /* RoomCoverageTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "RoomCoverageTracker.swift"; path = "LocalAI/RoomCoverageTracker.swift"; sourceTree = "<group>"; };
+		49820D16DCE743358743A008 /* ScanGuidanceEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ScanGuidanceEngine.swift"; path = "LocalAI/ScanGuidanceEngine.swift"; sourceTree = "<group>"; };
+		5C5FB1A711404E3184324F8C /* SceneObservationWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "SceneObservationWriter.swift"; path = "LocalAI/SceneObservationWriter.swift"; sourceTree = "<group>"; };
+		32A2F44FA05D4BD79E0C163E /* SceneUnderstandingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "SceneUnderstandingManager.swift"; path = "LocalAI/SceneUnderstandingManager.swift"; sourceTree = "<group>"; };
+		E4F1B960EDC442BB8A843C57 /* WallBoundaryMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "WallBoundaryMapper.swift"; path = "LocalAI/WallBoundaryMapper.swift"; sourceTree = "<group>"; };
+		A63BC61B4B7745958E29D426 /* SecureSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "SecureSessionStore.swift"; path = "Services/SecureSessionStore.swift"; sourceTree = "<group>"; };
+		2AE86411118D45C6925ADB7D /* SessionAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "SessionAPIClient.swift"; path = "Services/SessionAPIClient.swift"; sourceTree = "<group>"; };
+		E48D962F081E45D58FA098B2 /* SessionAuthorizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "SessionAuthorizationManager.swift"; path = "Services/SessionAuthorizationManager.swift"; sourceTree = "<group>"; };
+		F525D317BFCE49678DD00AAC /* StorageMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "StorageMonitor.swift"; path = "Services/StorageMonitor.swift"; sourceTree = "<group>"; };
+		2150E0EAE8A6433C9F1ED151 /* ARSessionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "ARSessionController.swift"; path = "Spatial/ARSessionController.swift"; sourceTree = "<group>"; };
+		102F592263974D0082F5AFB4 /* CameraCalibrationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "CameraCalibrationManager.swift"; path = "Spatial/CameraCalibrationManager.swift"; sourceTree = "<group>"; };
+		6B5FF24AC8C548DD84DD2C2D /* CameraFrameRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "CameraFrameRecorder.swift"; path = "Spatial/CameraFrameRecorder.swift"; sourceTree = "<group>"; };
+		2DE22AD3C426456A9DEE9C73 /* CameraPoseLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "CameraPoseLogger.swift"; path = "Spatial/CameraPoseLogger.swift"; sourceTree = "<group>"; };
+		1267597C25914F56980785C3 /* CapturePackageWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "CapturePackageWriter.swift"; path = "Spatial/CapturePackageWriter.swift"; sourceTree = "<group>"; };
+		DE7A2BAB75BC4AB7AC55D56E /* CaptureSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "CaptureSessionManager.swift"; path = "Spatial/CaptureSessionManager.swift"; sourceTree = "<group>"; };
+		829F3159D0A1423D9EB3BA3C /* KeyframeSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "KeyframeSelector.swift"; path = "Spatial/KeyframeSelector.swift"; sourceTree = "<group>"; };
+		BFD3C185681C4A37B17C9163 /* VastuTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "VastuTheme.swift"; path = "Theme/VastuTheme.swift"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		42394A0327DA44A08C6080E7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A653F976D84E4E0DAB241EA6 = {
+			isa = PBXGroup;
+			children = (
+				A7EFE1B40AAC49978D574423 /* VastuCapture */,
+				6CB44286A22441A5A3E15C52 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A7EFE1B40AAC49978D574423 /* VastuCapture */ = {
+			isa = PBXGroup;
+			children = (
+				8137E1A8690648A2989B6E60 /* Info.plist */,
+				939092652E474CF481A00DD5 /* AppCoordinator.swift */,
+				B290B1129B1F4304A1FF8F41 /* VastuCaptureApp.swift */,
+				EB430B21489F4A4987215493 /* CameraPose.swift */,
+				63A9426107E84AA59BDDB351 /* SessionModels.swift */,
+				B37C50BD62844949BEB6D059 /* CaptureView.swift */,
+				D78354CD678A4D299C702001 /* AIObjectOverlayView.swift */,
+				C2258566E24847DBA5C2F9D9 /* LiveFloorplanView.swift */,
+				0D1CF5CF3C2946A896DE0AE6 /* MiniMapFloorplanView.swift */,
+				84E420D026FE4CD895F3A84A /* ScanningHUD.swift */,
+				CCE063EC84DE4949AB7F8695 /* CaptureValidationView.swift */,
+				54D2FF24BCDA482383F350A4 /* QRScannerView.swift */,
+				20AF303C417445C0A67DE808 /* SessionDetailsView.swift */,
+				00E3149142DF46FF96A2B2B7 /* UploadCompletionView.swift */,
+				063C783EB5DC4327B24A2CC6 /* AIConfidenceEvaluator.swift */,
+				5AD0748826234D50A0853F6B /* ARSegmentationOverlay.swift */,
+				8FC0C077F5F648998537284E /* BoundaryDetectionEngine.swift */,
+				6FDB33C0D2244472B1706EE6 /* CaptureQualityEvaluator.swift */,
+				7EB4B27E4F844BFA88E57C34 /* CornerDetectionEngine.swift */,
+				8CAE5D6FBEA84DB0B7007BC3 /* FloorAnchorEstimator.swift */,
+				CB93172F3E184A038C75AA3B /* FloorWallBoundaryDetector.swift */,
+				FAE865510B3D46F9B0013701 /* FloorWallSegmentationEngine.swift */,
+				75B176F15FED4AD4A6A3F99C /* FurnitureDetectionEngine.swift */,
+				1CC48440FE724080AD850182 /* ImageQualityAnalyzer.swift */,
+				4A5E6888592147F08A60D10D /* ImageQualityAssessor.swift */,
+				B09EF51D70E345C88A818CD3 /* InferenceScheduler.swift */,
+				63D0534E6B414BA0A546E426 /* LiveFloorplanEngine.swift */,
+				64759DD758864A5598AB4410 /* LocalDepthEstimationEngine.swift */,
+				270D00FB77EC487AB031711A /* LocalMLDiagnostics.swift */,
+				177B0E4027A74487A8C9B156 /* LocalModelManager.swift */,
+				CC3F7C7412774C43A21D785C /* MultiViewObjectTracker.swift */,
+				8B3E7AD2F0D7407E848F1489 /* ObjectPositionEstimator.swift */,
+				3CDD07D444B94AA0B7EA457E /* OcclusionAnalysisEngine.swift */,
+				9A3B1CD2198441A7AC5C9B16 /* ParallaxAnalyzer.swift */,
+				0BC596DE3C904DD9B307F8F9 /* RoomCoverageTracker.swift */,
+				49820D16DCE743358743A008 /* ScanGuidanceEngine.swift */,
+				5C5FB1A711404E3184324F8C /* SceneObservationWriter.swift */,
+				32A2F44FA05D4BD79E0C163E /* SceneUnderstandingManager.swift */,
+				E4F1B960EDC442BB8A843C57 /* WallBoundaryMapper.swift */,
+				A63BC61B4B7745958E29D426 /* SecureSessionStore.swift */,
+				2AE86411118D45C6925ADB7D /* SessionAPIClient.swift */,
+				E48D962F081E45D58FA098B2 /* SessionAuthorizationManager.swift */,
+				F525D317BFCE49678DD00AAC /* StorageMonitor.swift */,
+				2150E0EAE8A6433C9F1ED151 /* ARSessionController.swift */,
+				102F592263974D0082F5AFB4 /* CameraCalibrationManager.swift */,
+				6B5FF24AC8C548DD84DD2C2D /* CameraFrameRecorder.swift */,
+				2DE22AD3C426456A9DEE9C73 /* CameraPoseLogger.swift */,
+				1267597C25914F56980785C3 /* CapturePackageWriter.swift */,
+				DE7A2BAB75BC4AB7AC55D56E /* CaptureSessionManager.swift */,
+				829F3159D0A1423D9EB3BA3C /* KeyframeSelector.swift */,
+				BFD3C185681C4A37B17C9163 /* VastuTheme.swift */,
+			);
+			path = VastuCapture;
+			sourceTree = "<group>";
+		};
+		6CB44286A22441A5A3E15C52 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A8E18DDC340A45B4B6905693 /* VastuCapture.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		ECF3EAD4A4944A6C8B069580 /* VastuCapture */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 157CE17AF79D48EAB298C4F5 /* Build configuration list for PBXNativeTarget "VastuCapture" */;
+			buildPhases = (
+				71370C9D652842029E666BD2 /* Sources */,
+				42394A0327DA44A08C6080E7 /* Frameworks */,
+				A97403AC7E0440B993D0F78C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = VastuCapture;
+			productName = VastuCapture;
+			productReference = A8E18DDC340A45B4B6905693 /* VastuCapture.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2DF5989C74F04087A7449C2D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					ECF3EAD4A4944A6C8B069580 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 9E15B25B5C8D4AAEBFD5DFF2 /* Build configuration list for PBXProject "VastuCapture" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A653F976D84E4E0DAB241EA6;
+			productRefGroup = 6CB44286A22441A5A3E15C52 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				ECF3EAD4A4944A6C8B069580 /* VastuCapture */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A97403AC7E0440B993D0F78C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		71370C9D652842029E666BD2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0B0676D88BE34DAEB3EA3D3A /* AppCoordinator.swift in Sources */,
+				536736F2E9BE4200BC479F6C /* VastuCaptureApp.swift in Sources */,
+				0D90F52E4E194787BDE8132D /* CameraPose.swift in Sources */,
+				8A95414ABF074A9AB9331C18 /* SessionModels.swift in Sources */,
+				2C2273D8763D4B9E8F9B5C7C /* CaptureView.swift in Sources */,
+				8F0EA65A55D54985B82BECFC /* AIObjectOverlayView.swift in Sources */,
+				39706DD9F2F94B4487819147 /* LiveFloorplanView.swift in Sources */,
+				A2B5C1051ECC4CD68362B61C /* MiniMapFloorplanView.swift in Sources */,
+				ED199B90C33947CD817F0371 /* ScanningHUD.swift in Sources */,
+				3FE6F7B3408C49A29B7C04B9 /* CaptureValidationView.swift in Sources */,
+				68B5D4F72CAC4C239A1260E0 /* QRScannerView.swift in Sources */,
+				B82B1E2342BD467EB16DD162 /* SessionDetailsView.swift in Sources */,
+				C1C56D4B735E4060B047C3A8 /* UploadCompletionView.swift in Sources */,
+				8681EA8F2D67430185AF86BB /* AIConfidenceEvaluator.swift in Sources */,
+				CEE5BBF90E594AECAD51DF08 /* ARSegmentationOverlay.swift in Sources */,
+				9C2AF8F97564441DADE237BA /* BoundaryDetectionEngine.swift in Sources */,
+				AE644360D5D24B1F8414B470 /* CaptureQualityEvaluator.swift in Sources */,
+				F4304D93068C46F5B0A9256E /* CornerDetectionEngine.swift in Sources */,
+				75AAB9A39D23481DB6339F1C /* FloorAnchorEstimator.swift in Sources */,
+				2501B56C4E6D441A8CF87CA6 /* FloorWallBoundaryDetector.swift in Sources */,
+				A039DBF4E200493991DAEEE7 /* FloorWallSegmentationEngine.swift in Sources */,
+				0038A144CFE142179C5AA617 /* FurnitureDetectionEngine.swift in Sources */,
+				969221A8F0964A06B349082F /* ImageQualityAnalyzer.swift in Sources */,
+				EB8731AC4B2F4D9AAEEF1FE1 /* ImageQualityAssessor.swift in Sources */,
+				4C42EDD329AA4C3981F7BBB4 /* InferenceScheduler.swift in Sources */,
+				50D1008F93004E5AA76260C5 /* LiveFloorplanEngine.swift in Sources */,
+				8F57AD9C3F4042C5B9FEAB46 /* LocalDepthEstimationEngine.swift in Sources */,
+				81C120BA66D049CD8A7A282B /* LocalMLDiagnostics.swift in Sources */,
+				3BBCC669737D4BEAA0DB2BB4 /* LocalModelManager.swift in Sources */,
+				DDF1BC97C3A24351B9F4CBD5 /* MultiViewObjectTracker.swift in Sources */,
+				3C875A895E624DBC8CEAEE03 /* ObjectPositionEstimator.swift in Sources */,
+				4E9A9963622F46D3AD12D35C /* OcclusionAnalysisEngine.swift in Sources */,
+				AC607066348F4F02B5DAD126 /* ParallaxAnalyzer.swift in Sources */,
+				6AF3318342DD4C5B90F66B27 /* RoomCoverageTracker.swift in Sources */,
+				3DAEFBA41D85444BA4EA06BE /* ScanGuidanceEngine.swift in Sources */,
+				61B828C3641448B79E3D95A5 /* SceneObservationWriter.swift in Sources */,
+				B67AEB88BFB5463D8F3A1B1C /* SceneUnderstandingManager.swift in Sources */,
+				4540E5FE7E6044E69B26DDBD /* WallBoundaryMapper.swift in Sources */,
+				149F6D201A9E449A89127620 /* SecureSessionStore.swift in Sources */,
+				D50C398ED189479D9B8E3FBD /* SessionAPIClient.swift in Sources */,
+				4E165ABEAB43482CB69ACBDB /* SessionAuthorizationManager.swift in Sources */,
+				45C7A045FA4E4659B827657B /* StorageMonitor.swift in Sources */,
+				BB7A7B1352FC433D84A5E6EE /* ARSessionController.swift in Sources */,
+				4843E9CB997A4EEB8CFC4732 /* CameraCalibrationManager.swift in Sources */,
+				1F517BD39EA34C7485E3D873 /* CameraFrameRecorder.swift in Sources */,
+				4076F89DFD5B4451BAFF7775 /* CameraPoseLogger.swift in Sources */,
+				7E5323E470A340FDA5B8341E /* CapturePackageWriter.swift in Sources */,
+				83C14AF542D44DD8960E85F4 /* CaptureSessionManager.swift in Sources */,
+				A716E97A9B37493CA842E2E6 /* KeyframeSelector.swift in Sources */,
+				E78D6ED94BE54C68A9D2A2E9 /* VastuTheme.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		D336B74047EF48F5A432A2A3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		294E936BF8054EBFB2703CD7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		8BBC9CFB97764C3D88F209EE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = VastuCapture/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vastu.capture;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		74E832038278431B8E6843C4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = VastuCapture/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vastu.capture;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		9E15B25B5C8D4AAEBFD5DFF2 /* Build configuration list for PBXProject "VastuCapture" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D336B74047EF48F5A432A2A3 /* Debug */,
+				294E936BF8054EBFB2703CD7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		157CE17AF79D48EAB298C4F5 /* Build configuration list for PBXNativeTarget "VastuCapture" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8BBC9CFB97764C3D88F209EE /* Debug */,
+				74E832038278431B8E6843C4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 2DF5989C74F04087A7449C2D /* Project object */;
+}

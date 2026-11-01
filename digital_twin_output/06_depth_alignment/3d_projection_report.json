@@ -2,8 +2,8 @@
   "coordinate_convention": "+Y is World-Up, Floor at Y=0.00m, Right-Handed",
   "camera_model": "Pinhole",
   "focal_length_px": [
-    912.0,
-    912.0
+    645.4,
+    645.4
   ],
   "principal_point": [
     270.0,

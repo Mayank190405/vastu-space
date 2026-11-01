@@ -1,0 +1,241 @@
+{
+  "version": "1.0.0",
+  "project_id": "proj_vastu_residence",
+  "project_name": "V\u0100STU Residence Digital Twin",
+  "assembled_at": "2026-10-29T17:35:00Z",
+  "total_area_sqm": 80.03,
+  "room_count": 4,
+  "floors": [
+    1
+  ],
+  "assets": {
+    "architecture_obj": "unified_architecture.obj",
+    "collision_geometry": "collision_geometry.json",
+    "navmesh": "navmesh.json",
+    "connection_graph": "room_connection_graph.json",
+    "splats_spz": null
+  },
+  "rooms": [
+    {
+      "room_id": "room_living",
+      "room_name": "Grand Living Suite",
+      "floor_level": 1,
+      "area_sqm": 42.0,
+      "ceiling_height_m": 3.0,
+      "transform_matrix_4x4": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "boundary_polygon_world": [
+        [
+          -3.0,
+          -3.5
+        ],
+        [
+          3.0,
+          -3.5
+        ],
+        [
+          3.0,
+          3.5
+        ],
+        [
+          -3.0,
+          3.5
+        ]
+      ],
+      "doorway_count": 1,
+      "furniture_count": 2
+    },
+    {
+      "room_id": "room_corridor",
+      "room_name": "Central Gallery Corridor",
+      "floor_level": 1,
+      "area_sqm": 12.5,
+      "ceiling_height_m": 2.8,
+      "transform_matrix_4x4": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          4.25
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "boundary_polygon_world": [
+        [
+          3.0,
+          -2.5
+        ],
+        [
+          5.5,
+          -2.5
+        ],
+        [
+          5.5,
+          2.5
+        ],
+        [
+          3.0,
+          2.5
+        ]
+      ],
+      "doorway_count": 3,
+      "furniture_count": 0
+    },
+    {
+      "room_id": "room_bedroom",
+      "room_name": "Master Suite",
+      "floor_level": 1,
+      "area_sqm": 20.25,
+      "ceiling_height_m": 2.8,
+      "transform_matrix_4x4": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          7.75
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "boundary_polygon_world": [
+        [
+          5.5,
+          -2.25
+        ],
+        [
+          10.0,
+          -2.25
+        ],
+        [
+          10.0,
+          2.25
+        ],
+        [
+          5.5,
+          2.25
+        ]
+      ],
+      "doorway_count": 1,
+      "furniture_count": 1
+    },
+    {
+      "room_id": "room_washroom",
+      "room_name": "Ensuite Washroom",
+      "floor_level": 1,
+      "area_sqm": 5.28,
+      "ceiling_height_m": 2.6,
+      "transform_matrix_4x4": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          4.25
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          3.7
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "boundary_polygon_world": [
+        [
+          3.15,
+          2.5
+        ],
+        [
+          5.35,
+          2.5
+        ],
+        [
+          5.35,
+          4.9
+        ],
+        [
+          3.15,
+          4.9
+        ]
+      ],
+      "doorway_count": 1,
+      "furniture_count": 0
+    }
+  ],
+  "default_spawn": {
+    "room_id": "room_living",
+    "position_3d": [
+      0.0,
+      0.0,
+      1.6
+    ],
+    "eye_height_m": 1.6
+  }
+}

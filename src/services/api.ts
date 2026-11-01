@@ -17,22 +17,28 @@ import {
   AssignProjectMemberInput,
   Capture,
   CreateCaptureRequest,
+  CaptureSessionRecord,
+  CreateCaptureSessionInput,
+  ConnectedDevice,
+  PipelineStageRecord,
+  RoomWithHierarchy,
+  CreateRoomInput,
 } from '../types';
 
-const getApiBaseUrl = (): string => {
+export const getApiBaseUrl = (): string => {
   const metaEnv = (import.meta as any).env;
   if (metaEnv?.VITE_API_BASE_URL) {
     return metaEnv.VITE_API_BASE_URL;
   }
-  if (typeof window !== 'undefined') {
-    const host = window.location.hostname;
-    const port = window.location.port;
-    if (port !== '8080') {
-      const protocol = window.location.protocol || 'http:';
-      return `${protocol}//${host}:8080/api/v1`;
-    }
+  return 'https://vastu.krads.co.in/api/v1';
+};
+
+export const getPythonApiBaseUrl = (): string => {
+  const metaEnv = (import.meta as any).env;
+  if (metaEnv?.VITE_PYTHON_API_BASE_URL) {
+    return metaEnv.VITE_PYTHON_API_BASE_URL;
   }
-  return '/api/v1';
+  return 'https://vastu.krads.co.in/py';
 };
 
 const API_BASE = getApiBaseUrl();
@@ -679,6 +685,60 @@ class ApiService {
     return this.request<Capture>(`/captures/${id}/status`, {
       method: 'PUT',
       body: JSON.stringify({ status }),
+    });
+  }
+
+  // ==================== PHASE 7 SESSION & DEVICE MANAGEMENT ====================
+
+  async createQRSession(input: CreateCaptureSessionInput): Promise<CaptureSessionRecord> {
+    return this.request<CaptureSessionRecord>('/capture-sessions', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  }
+
+  async getQRSession(sessionId: string): Promise<CaptureSessionRecord> {
+    return this.request<CaptureSessionRecord>(`/capture-sessions/${sessionId}`);
+  }
+
+  async listQRSessions(projectId?: string): Promise<CaptureSessionRecord[]> {
+    const query = projectId ? `?project_id=${encodeURIComponent(projectId)}` : '';
+    return this.request<CaptureSessionRecord[]>(`/capture-sessions${query}`);
+  }
+
+  async revokeQRSession(sessionId: string): Promise<void> {
+    return this.request<void>(`/capture-sessions/${sessionId}/revoke`, {
+      method: 'POST',
+    });
+  }
+
+  async listDevices(): Promise<ConnectedDevice[]> {
+    return this.request<ConnectedDevice[]>('/devices');
+  }
+
+  async getPipelineStages(sessionId: string): Promise<PipelineStageRecord[]> {
+    return this.request<PipelineStageRecord[]>(`/capture-sessions/${sessionId}/pipeline`);
+  }
+
+  async updatePipelineStage(
+    sessionId: string,
+    stageName: string,
+    input: { status: string; progress_percentage?: number; responsible_worker?: string; error_details?: string }
+  ): Promise<PipelineStageRecord> {
+    return this.request<PipelineStageRecord>(`/capture-sessions/${sessionId}/stages/${stageName}`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  }
+
+  async listRoomsByProject(projectId: string): Promise<RoomWithHierarchy[]> {
+    return this.request<RoomWithHierarchy[]>(`/projects/${projectId}/rooms`);
+  }
+
+  async createRoom(projectId: string, floorId: string, input: CreateRoomInput): Promise<RoomWithHierarchy> {
+    return this.request<RoomWithHierarchy>(`/projects/${projectId}/floors/${floorId}/rooms`, {
+      method: 'POST',
+      body: JSON.stringify(input),
     });
   }
 }

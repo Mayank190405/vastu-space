@@ -1,0 +1,33 @@
+{
+  "floor_plane": [
+    0.0008,
+    0.9999,
+    0.0116,
+    -0.01
+  ],
+  "left_wall_plane": [
+    -0.9098,
+    -0.048,
+    -0.4123,
+    5.2911
+  ],
+  "back_wall_plane": [
+    -0.4149,
+    0.0759,
+    0.9067,
+    -4.7122
+  ],
+  "corner_direction": [
+    -0.0122,
+    0.996,
+    -0.0889
+  ],
+  "corner_origin": [
+    2.8661,
+    0.0,
+    6.5086
+  ],
+  "dihedral_angle_deg": 90.0,
+  "structural_points_count": 339112,
+  "clutter_points_excluded": 98194
+}

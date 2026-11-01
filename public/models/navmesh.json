@@ -1,0 +1,417 @@
+{
+  "status": "VALID",
+  "agent_radius_m": 0.35,
+  "node_count": 23,
+  "edge_count": 22,
+  "nodes": [
+    {
+      "node_id": "nav_center_room_living",
+      "room_id": "room_living",
+      "type": "ROOM_CENTER",
+      "position_3d": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_room_living_1",
+      "room_id": "room_living",
+      "type": "FLOOR_WAYPOINT",
+      "position_3d": [
+        -0.883,
+        -1.05,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_room_living_2",
+      "room_id": "room_living",
+      "type": "FLOOR_WAYPOINT",
+      "position_3d": [
+        -0.883,
+        1.05,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_room_living_3",
+      "room_id": "room_living",
+      "type": "FLOOR_WAYPOINT",
+      "position_3d": [
+        0.883,
+        -1.05,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_room_living_4",
+      "room_id": "room_living",
+      "type": "FLOOR_WAYPOINT",
+      "position_3d": [
+        0.883,
+        1.05,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_center_room_corridor",
+      "room_id": "room_corridor",
+      "type": "ROOM_CENTER",
+      "position_3d": [
+        4.25,
+        0.0,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_room_corridor_5",
+      "room_id": "room_corridor",
+      "type": "FLOOR_WAYPOINT",
+      "position_3d": [
+        3.95,
+        -0.717,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_room_corridor_6",
+      "room_id": "room_corridor",
+      "type": "FLOOR_WAYPOINT",
+      "position_3d": [
+        3.95,
+        0.717,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_room_corridor_7",
+      "room_id": "room_corridor",
+      "type": "FLOOR_WAYPOINT",
+      "position_3d": [
+        4.55,
+        -0.717,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_room_corridor_8",
+      "room_id": "room_corridor",
+      "type": "FLOOR_WAYPOINT",
+      "position_3d": [
+        4.55,
+        0.717,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_center_room_bedroom",
+      "room_id": "room_bedroom",
+      "type": "ROOM_CENTER",
+      "position_3d": [
+        7.75,
+        0.0,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_room_bedroom_9",
+      "room_id": "room_bedroom",
+      "type": "FLOOR_WAYPOINT",
+      "position_3d": [
+        7.117,
+        -0.633,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_room_bedroom_10",
+      "room_id": "room_bedroom",
+      "type": "FLOOR_WAYPOINT",
+      "position_3d": [
+        7.117,
+        0.633,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_room_bedroom_11",
+      "room_id": "room_bedroom",
+      "type": "FLOOR_WAYPOINT",
+      "position_3d": [
+        8.383,
+        -0.633,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_room_bedroom_12",
+      "room_id": "room_bedroom",
+      "type": "FLOOR_WAYPOINT",
+      "position_3d": [
+        8.383,
+        0.633,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_center_room_washroom",
+      "room_id": "room_washroom",
+      "type": "ROOM_CENTER",
+      "position_3d": [
+        4.25,
+        3.7,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_room_washroom_13",
+      "room_id": "room_washroom",
+      "type": "FLOOR_WAYPOINT",
+      "position_3d": [
+        4.0,
+        3.417,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_room_washroom_14",
+      "room_id": "room_washroom",
+      "type": "FLOOR_WAYPOINT",
+      "position_3d": [
+        4.0,
+        3.983,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_room_washroom_15",
+      "room_id": "room_washroom",
+      "type": "FLOOR_WAYPOINT",
+      "position_3d": [
+        4.5,
+        3.417,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_room_washroom_16",
+      "room_id": "room_washroom",
+      "type": "FLOOR_WAYPOINT",
+      "position_3d": [
+        4.5,
+        3.983,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_door_door_liv_corr",
+      "room_id": "room_living_room_corridor",
+      "type": "DOORWAY_PORTAL",
+      "position_3d": [
+        3.0,
+        0.0,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_door_door_corr_bed",
+      "room_id": "room_corridor_room_bedroom",
+      "type": "DOORWAY_PORTAL",
+      "position_3d": [
+        5.5,
+        0.0,
+        0.0
+      ],
+      "is_accessible": true
+    },
+    {
+      "node_id": "nav_door_door_corr_bath",
+      "room_id": "room_corridor_room_washroom",
+      "type": "DOORWAY_PORTAL",
+      "position_3d": [
+        4.25,
+        2.5,
+        0.0
+      ],
+      "is_accessible": true
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "edge_nav_center_room_living_nav_room_living_1",
+      "source_node": "nav_center_room_living",
+      "target_node": "nav_room_living_1",
+      "distance_m": 1.372,
+      "is_doorway": false
+    },
+    {
+      "edge_id": "edge_nav_center_room_living_nav_room_living_2",
+      "source_node": "nav_center_room_living",
+      "target_node": "nav_room_living_2",
+      "distance_m": 1.372,
+      "is_doorway": false
+    },
+    {
+      "edge_id": "edge_nav_center_room_living_nav_room_living_3",
+      "source_node": "nav_center_room_living",
+      "target_node": "nav_room_living_3",
+      "distance_m": 1.372,
+      "is_doorway": false
+    },
+    {
+      "edge_id": "edge_nav_center_room_living_nav_room_living_4",
+      "source_node": "nav_center_room_living",
+      "target_node": "nav_room_living_4",
+      "distance_m": 1.372,
+      "is_doorway": false
+    },
+    {
+      "edge_id": "edge_nav_center_room_corridor_nav_room_corridor_5",
+      "source_node": "nav_center_room_corridor",
+      "target_node": "nav_room_corridor_5",
+      "distance_m": 0.777,
+      "is_doorway": false
+    },
+    {
+      "edge_id": "edge_nav_center_room_corridor_nav_room_corridor_6",
+      "source_node": "nav_center_room_corridor",
+      "target_node": "nav_room_corridor_6",
+      "distance_m": 0.777,
+      "is_doorway": false
+    },
+    {
+      "edge_id": "edge_nav_center_room_corridor_nav_room_corridor_7",
+      "source_node": "nav_center_room_corridor",
+      "target_node": "nav_room_corridor_7",
+      "distance_m": 0.777,
+      "is_doorway": false
+    },
+    {
+      "edge_id": "edge_nav_center_room_corridor_nav_room_corridor_8",
+      "source_node": "nav_center_room_corridor",
+      "target_node": "nav_room_corridor_8",
+      "distance_m": 0.777,
+      "is_doorway": false
+    },
+    {
+      "edge_id": "edge_nav_center_room_bedroom_nav_room_bedroom_9",
+      "source_node": "nav_center_room_bedroom",
+      "target_node": "nav_room_bedroom_9",
+      "distance_m": 0.896,
+      "is_doorway": false
+    },
+    {
+      "edge_id": "edge_nav_center_room_bedroom_nav_room_bedroom_10",
+      "source_node": "nav_center_room_bedroom",
+      "target_node": "nav_room_bedroom_10",
+      "distance_m": 0.896,
+      "is_doorway": false
+    },
+    {
+      "edge_id": "edge_nav_center_room_bedroom_nav_room_bedroom_11",
+      "source_node": "nav_center_room_bedroom",
+      "target_node": "nav_room_bedroom_11",
+      "distance_m": 0.896,
+      "is_doorway": false
+    },
+    {
+      "edge_id": "edge_nav_center_room_bedroom_nav_room_bedroom_12",
+      "source_node": "nav_center_room_bedroom",
+      "target_node": "nav_room_bedroom_12",
+      "distance_m": 0.896,
+      "is_doorway": false
+    },
+    {
+      "edge_id": "edge_nav_center_room_washroom_nav_room_washroom_13",
+      "source_node": "nav_center_room_washroom",
+      "target_node": "nav_room_washroom_13",
+      "distance_m": 0.378,
+      "is_doorway": false
+    },
+    {
+      "edge_id": "edge_nav_center_room_washroom_nav_room_washroom_14",
+      "source_node": "nav_center_room_washroom",
+      "target_node": "nav_room_washroom_14",
+      "distance_m": 0.378,
+      "is_doorway": false
+    },
+    {
+      "edge_id": "edge_nav_center_room_washroom_nav_room_washroom_15",
+      "source_node": "nav_center_room_washroom",
+      "target_node": "nav_room_washroom_15",
+      "distance_m": 0.378,
+      "is_doorway": false
+    },
+    {
+      "edge_id": "edge_nav_center_room_washroom_nav_room_washroom_16",
+      "source_node": "nav_center_room_washroom",
+      "target_node": "nav_room_washroom_16",
+      "distance_m": 0.378,
+      "is_doorway": false
+    },
+    {
+      "edge_id": "edge_nav_door_door_liv_corr_nav_center_room_living",
+      "source_node": "nav_center_room_living",
+      "target_node": "nav_door_door_liv_corr",
+      "distance_m": 3.0,
+      "is_doorway": true
+    },
+    {
+      "edge_id": "edge_nav_door_door_liv_corr_nav_center_room_corridor",
+      "source_node": "nav_door_door_liv_corr",
+      "target_node": "nav_center_room_corridor",
+      "distance_m": 1.25,
+      "is_doorway": true
+    },
+    {
+      "edge_id": "edge_nav_door_door_corr_bed_nav_center_room_corridor",
+      "source_node": "nav_center_room_corridor",
+      "target_node": "nav_door_door_corr_bed",
+      "distance_m": 1.25,
+      "is_doorway": true
+    },
+    {
+      "edge_id": "edge_nav_door_door_corr_bed_nav_center_room_bedroom",
+      "source_node": "nav_door_door_corr_bed",
+      "target_node": "nav_center_room_bedroom",
+      "distance_m": 2.25,
+      "is_doorway": true
+    },
+    {
+      "edge_id": "edge_nav_door_door_corr_bath_nav_center_room_corridor",
+      "source_node": "nav_center_room_corridor",
+      "target_node": "nav_door_door_corr_bath",
+      "distance_m": 2.5,
+      "is_doorway": true
+    },
+    {
+      "edge_id": "edge_nav_door_door_corr_bath_nav_center_room_washroom",
+      "source_node": "nav_door_door_corr_bath",
+      "target_node": "nav_center_room_washroom",
+      "distance_m": 1.2,
+      "is_doorway": true
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "uv_parameterization": "Planar Chart Clustering & Box Packing",
+  "atlas_resolution": "2048x2048",
+  "coverage_metrics": {
+    "total_faces": 32079,
+    "untextured_faces": 6,
+    "surface_coverage_pct": 99.98,
+    "total_surface_area_m2": 26.8981,
+    "total_painted_texels": 386557,
+    "texel_density_pts_m2": 14371.1,
+    "is_valid": true
+  },
+  "status": "PASS"
+}

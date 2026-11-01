@@ -121,9 +121,10 @@ class DenseEvidenceFusion:
             # World coordinates: X_w = R.T @ (pts_cam.T - t)
             pts_w = (R.T @ (pts_cam.T - t)).T
 
-            # Camera forward ray in world space for approximate normal
-            view_dir = (R.T @ np.array([[0], [0], [-1]])).flatten()
-            norm_unit = view_dir / np.linalg.norm(view_dir)
+            # Camera forward optical ray in world space (+Z forward in OpenCV RDF convention)
+            view_dir = (R.T @ np.array([[0.0], [0.0], [1.0]])).flatten()
+            norm_unit = view_dir / (np.linalg.norm(view_dir) + 1e-7)
+            cam_center = (-R.T @ t).flatten()
 
             cols = rgb[v_val, u_val]
 
@@ -155,10 +156,15 @@ class DenseEvidenceFusion:
                 else:
                     prov = ProvenanceTag.INFERRED
 
+                # Ensure normal points toward camera viewpoint
+                pt_pos = pts_w[pt_idx]
+                ray_to_cam = cam_center - pt_pos
+                pt_normal = norm_unit if np.dot(norm_unit, ray_to_cam) >= 0 else -norm_unit
+
                 point = DenseEvidencePoint(
-                    position=pts_w[pt_idx],
+                    position=pt_pos,
                     color=cols[pt_idx],
-                    normal=norm_unit,
+                    normal=pt_normal,
                     confidence=round(conf, 3),
                     source_frames=all_sources,
                     provenance=prov

@@ -216,7 +216,8 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
       args:
-        - VITE_API_BASE_URL=/api/v1
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-https://vastu.krads.co.in/api/v1}
+        - VITE_PYTHON_API_BASE_URL=${VITE_PYTHON_API_BASE_URL:-https://vastu.krads.co.in/py}
     container_name: vastu_frontend
     restart: unless-stopped
     networks:

@@ -7,9 +7,11 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Accept API base URL build argument (default is relative path for reverse proxy)
-ARG VITE_API_BASE_URL=/api/v1
+# Accept API base URL build arguments
+ARG VITE_API_BASE_URL=https://vastu.krads.co.in/api/v1
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ARG VITE_PYTHON_API_BASE_URL=https://vastu.krads.co.in/py
+ENV VITE_PYTHON_API_BASE_URL=$VITE_PYTHON_API_BASE_URL
 
 # Install dependencies with clean cache
 COPY package.json package-lock.json ./

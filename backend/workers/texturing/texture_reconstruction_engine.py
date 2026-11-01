@@ -366,8 +366,8 @@ class TextureReconstructionEngine:
         chart_assignments = np.argmax(face_normals @ cardinal_normals.T, axis=1)
 
         # Compute optimal grid layout based on triangle counts
-        grid_cols = int(np.ceil(np.sqrt(num_faces)))
-        grid_rows = int(np.ceil(num_faces / float(grid_cols)))
+        grid_cols = max(1, int(np.ceil(np.sqrt(num_faces))))
+        grid_rows = max(1, int(np.ceil(num_faces / float(grid_cols))))
 
         cell_w = self.atlas_size / float(grid_cols)
         cell_h = self.atlas_size / float(grid_rows)

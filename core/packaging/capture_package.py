@@ -18,6 +18,17 @@ class CapturePackage:
     Self-contained capture bundle format and offline reproducibility manager.
     """
 
+    @staticmethod
+    def write_v1(*args, **kwargs):
+        """Write the calibrated keyframe format without changing legacy exports."""
+        from core.packaging.keyframe_package import write_package
+        return write_package(*args, **kwargs)
+
+    @staticmethod
+    def validate_v1(capture_dir):
+        from core.validation.package_validator import validate_package
+        return validate_package(capture_dir)
+
     @classmethod
     def export_archive(cls, capture_dir: str, output_archive_path: str) -> str:
         """

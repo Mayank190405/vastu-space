@@ -1,8 +1,130 @@
 {
-  "gate_passed": true,
-  "overlap_ratio": 0.949,
-  "depth_residual_m": 0.0815,
+  "gate_passed": false,
+  "pairs": [
+    {
+      "gate_passed": false,
+      "overlap_ratio": 0.848,
+      "depth_residual_m": 0.1846,
+      "reprojection_error_px": 1.45,
+      "depth_ordering_consistent": true,
+      "error_reason": "Overlap=0.85 (req>=0.50), residual=0.185m (req<=0.050m)"
+    },
+    {
+      "gate_passed": false,
+      "overlap_ratio": 0.462,
+      "depth_residual_m": 0.1736,
+      "reprojection_error_px": 1.45,
+      "depth_ordering_consistent": true,
+      "error_reason": "Overlap=0.46 (req>=0.50), residual=0.174m (req<=0.050m)"
+    },
+    {
+      "gate_passed": false,
+      "overlap_ratio": 0.817,
+      "depth_residual_m": 0.0503,
+      "reprojection_error_px": 1.45,
+      "depth_ordering_consistent": true,
+      "error_reason": "Overlap=0.82 (req>=0.50), residual=0.050m (req<=0.050m)"
+    },
+    {
+      "gate_passed": false,
+      "overlap_ratio": 0.671,
+      "depth_residual_m": 0.1001,
+      "reprojection_error_px": 1.45,
+      "depth_ordering_consistent": true,
+      "error_reason": "Overlap=0.67 (req>=0.50), residual=0.100m (req<=0.050m)"
+    },
+    {
+      "gate_passed": false,
+      "overlap_ratio": 0.724,
+      "depth_residual_m": 0.1159,
+      "reprojection_error_px": 1.45,
+      "depth_ordering_consistent": true,
+      "error_reason": "Overlap=0.72 (req>=0.50), residual=0.116m (req<=0.050m)"
+    },
+    {
+      "gate_passed": false,
+      "overlap_ratio": 0.747,
+      "depth_residual_m": 0.1619,
+      "reprojection_error_px": 1.45,
+      "depth_ordering_consistent": true,
+      "error_reason": "Overlap=0.75 (req>=0.50), residual=0.162m (req<=0.050m)"
+    },
+    {
+      "gate_passed": false,
+      "overlap_ratio": 0.795,
+      "depth_residual_m": 0.0658,
+      "reprojection_error_px": 1.45,
+      "depth_ordering_consistent": true,
+      "error_reason": "Overlap=0.80 (req>=0.50), residual=0.066m (req<=0.050m)"
+    },
+    {
+      "gate_passed": false,
+      "overlap_ratio": 1.0,
+      "depth_residual_m": 0.4011,
+      "reprojection_error_px": 1.45,
+      "depth_ordering_consistent": true,
+      "error_reason": "Overlap=1.00 (req>=0.50), residual=0.401m (req<=0.050m)"
+    },
+    {
+      "gate_passed": false,
+      "overlap_ratio": 0.844,
+      "depth_residual_m": 0.124,
+      "reprojection_error_px": 1.45,
+      "depth_ordering_consistent": true,
+      "error_reason": "Overlap=0.84 (req>=0.50), residual=0.124m (req<=0.050m)"
+    },
+    {
+      "gate_passed": false,
+      "overlap_ratio": 0.716,
+      "depth_residual_m": 0.1806,
+      "reprojection_error_px": 1.45,
+      "depth_ordering_consistent": true,
+      "error_reason": "Overlap=0.72 (req>=0.50), residual=0.181m (req<=0.050m)"
+    },
+    {
+      "gate_passed": false,
+      "overlap_ratio": 1.0,
+      "depth_residual_m": 0.9717,
+      "reprojection_error_px": 1.45,
+      "depth_ordering_consistent": true,
+      "error_reason": "Overlap=1.00 (req>=0.50), residual=0.972m (req<=0.050m)"
+    },
+    {
+      "gate_passed": false,
+      "overlap_ratio": 0.809,
+      "depth_residual_m": 0.1691,
+      "reprojection_error_px": 1.45,
+      "depth_ordering_consistent": true,
+      "error_reason": "Overlap=0.81 (req>=0.50), residual=0.169m (req<=0.050m)"
+    },
+    {
+      "gate_passed": false,
+      "overlap_ratio": 0.396,
+      "depth_residual_m": 0.0774,
+      "reprojection_error_px": 1.45,
+      "depth_ordering_consistent": true,
+      "error_reason": "Overlap=0.40 (req>=0.50), residual=0.077m (req<=0.050m)"
+    },
+    {
+      "gate_passed": false,
+      "overlap_ratio": 0.52,
+      "depth_residual_m": 0.0522,
+      "reprojection_error_px": 1.45,
+      "depth_ordering_consistent": true,
+      "error_reason": "Overlap=0.52 (req>=0.50), residual=0.052m (req<=0.050m)"
+    },
+    {
+      "gate_passed": false,
+      "overlap_ratio": 1.0,
+      "depth_residual_m": 0.4056,
+      "reprojection_error_px": 1.45,
+      "depth_ordering_consistent": true,
+      "error_reason": "Overlap=1.00 (req>=0.50), residual=0.406m (req<=0.050m)"
+    }
+  ],
+  "overlap_ratio": 0.757,
+  "depth_residual_m": 0.1619,
   "reprojection_error_px": 1.45,
   "depth_ordering_consistent": true,
-  "error_reason": null
+  "error_reason": "One or more view pairs failed two-view validation"
 }

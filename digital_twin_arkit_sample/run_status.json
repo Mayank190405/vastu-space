@@ -1,0 +1,4 @@
+{
+  "accepted": false,
+  "error": "OpenCV(4.9.0) /Users/xperience/GHA-OpenCV-Python2/_work/opencv-python/opencv-python/opencv/modules/calib3d/src/solvepnp.cpp:227: error: (-215:Assertion failed) npoints >= 4 && npoints == std::max(ipoints.checkVector(2, CV_32F), ipoints.checkVector(2, CV_64F)) in function 'solvePnPRansac'\n"
+}

@@ -1,0 +1,13 @@
+{
+  "depth_model": "DEPTH_ANYTHING_V2_METRIC",
+  "pose_estimator": "DIRECT_3D_2D_PNP_RANSAC",
+  "fusion_engine": "TSDF_SCALABLE_VOLUME",
+  "meshing_method": "TSDF_MARCHING_CUBES_TOPOLOGY_PRESERVING",
+  "voxel_length_m": 0.03,
+  "sdf_trunc_m": 0.09,
+  "depth_range_m": [
+    0.4,
+    5.0
+  ],
+  "integrated_frames": 16
+}

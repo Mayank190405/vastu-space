@@ -1,21 +1,20 @@
 {
   "status": "BEST_EFFORT",
   "total_trials": 3,
-  "final_quality_score": 0.0,
+  "final_quality_score": 0.65,
   "trials": [
     {
-      "quality_score": 0.0,
+      "quality_score": 0.65,
       "approved": false,
       "defects": [
-        "CRUMPLED_WALL_FACETING",
-        "FLOOR_HOLE_DEFECT"
+        "CRUMPLED_WALL_FACETING"
       ],
-      "wall_normal_jitter": 0.415,
-      "wall_normal_std": 0.5525,
-      "floor_coverage_ratio": 0.4724,
+      "wall_normal_jitter": 1.5707,
+      "wall_normal_std": 0.0001,
+      "floor_coverage_ratio": 1.0,
       "boundary_bubble_ratio": 0.0,
-      "vertex_count": 406212,
-      "triangle_count": 814468,
+      "vertex_count": 1466,
+      "triangle_count": 2391,
       "trial": 1,
       "parameters": {
         "linear_fit": true,
@@ -30,18 +29,17 @@
       }
     },
     {
-      "quality_score": 0.0,
+      "quality_score": 0.65,
       "approved": false,
       "defects": [
-        "CRUMPLED_WALL_FACETING",
-        "FLOOR_HOLE_DEFECT"
+        "CRUMPLED_WALL_FACETING"
       ],
-      "wall_normal_jitter": 0.4241,
-      "wall_normal_std": 0.5544,
-      "floor_coverage_ratio": 0.4683,
+      "wall_normal_jitter": 1.5707,
+      "wall_normal_std": 0.0001,
+      "floor_coverage_ratio": 1.0,
       "boundary_bubble_ratio": 0.0,
-      "vertex_count": 397799,
-      "triangle_count": 797294,
+      "vertex_count": 1466,
+      "triangle_count": 2391,
       "trial": 2,
       "parameters": {
         "linear_fit": true,
@@ -51,23 +49,22 @@
         "normal_max_nn": 65,
         "taubin_iterations": 18,
         "solid_floor_seal": true,
-        "floor_seal_y_max": 0.065,
-        "consensus_distance_thresh": 0.19
+        "floor_seal_y_max": 0.05,
+        "consensus_distance_thresh": 0.15
       }
     },
     {
-      "quality_score": 0.0,
+      "quality_score": 0.65,
       "approved": false,
       "defects": [
-        "CRUMPLED_WALL_FACETING",
-        "FLOOR_HOLE_DEFECT"
+        "CRUMPLED_WALL_FACETING"
       ],
-      "wall_normal_jitter": 0.4319,
-      "wall_normal_std": 0.5566,
-      "floor_coverage_ratio": 0.4655,
+      "wall_normal_jitter": 1.5707,
+      "wall_normal_std": 0.0001,
+      "floor_coverage_ratio": 1.0,
       "boundary_bubble_ratio": 0.0,
-      "vertex_count": 390233,
-      "triangle_count": 781889,
+      "vertex_count": 1466,
+      "triangle_count": 2391,
       "trial": 3,
       "parameters": {
         "linear_fit": true,
@@ -77,8 +74,8 @@
         "normal_max_nn": 80,
         "taubin_iterations": 24,
         "solid_floor_seal": true,
-        "floor_seal_y_max": 0.08,
-        "consensus_distance_thresh": 0.22
+        "floor_seal_y_max": 0.05,
+        "consensus_distance_thresh": 0.15
       }
     }
   ],
@@ -90,7 +87,7 @@
     "normal_max_nn": 80,
     "taubin_iterations": 24,
     "solid_floor_seal": true,
-    "floor_seal_y_max": 0.08,
-    "consensus_distance_thresh": 0.22
+    "floor_seal_y_max": 0.05,
+    "consensus_distance_thresh": 0.15
   }
 }

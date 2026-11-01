@@ -1,0 +1,29 @@
+{
+  "calibration_source": "self_calibrated",
+  "camera_model": "PINHOLE",
+  "original_resolution": [
+    2160,
+    3840
+  ],
+  "processing_resolution": [
+    540,
+    960
+  ],
+  "intrinsics": {
+    "fx": 645.402,
+    "fy": 645.402,
+    "cx": 270.0,
+    "cy": 480.0
+  },
+  "distortion_coefficients": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "field_of_view_deg": {
+    "horizontal": 45.4,
+    "vertical": 73.28
+  }
+}

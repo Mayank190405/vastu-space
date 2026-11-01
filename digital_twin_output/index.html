@@ -221,9 +221,64 @@
             font-weight: 600;
             color: var(--gold);
         }
+
+        #roam-hud {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(13, 17, 24, 0.92);
+            border: 1px solid var(--gold);
+            border-radius: 14px;
+            padding: 20px 28px;
+            text-align: center;
+            z-index: 20;
+            backdrop-filter: blur(16px);
+            pointer-events: none;
+            box-shadow: 0 0 30px rgba(223, 184, 115, 0.25);
+        }
+
+        #roam-hud h2 {
+            font-size: 16px;
+            color: var(--gold);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        #roam-hud p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin: 4px 0;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        #crosshair {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 15;
+        }
+        #crosshair::before, #crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(223, 184, 115, 0.85);
+        }
+        #crosshair::before {
+            top: 4px; left: -6px; width: 22px; height: 2px;
+        }
+        #crosshair::after {
+            top: -6px; left: 4px; width: 2px; height: 22px;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/MTLLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/PLYLoader.js"></script>
@@ -244,34 +299,52 @@
     </div>
 
     <div class="control-panel">
-        <div class="panel-title">Layer Controls</div>
+        <div class="panel-title">Navigation Mode</div>
+        <div class="btn-group">
+            <button class="btn active" id="btn-mode-orbit">Orbit Inspection</button>
+            <button class="btn" id="btn-mode-roam">First-Person Roam</button>
+        </div>
+
+        <div class="panel-title" style="margin-top: 14px;">Layer Controls</div>
         <div class="toggle-group">
             <label class="toggle-row">
-                <span>Photographic 3D Mesh</span>
+                <span>Solid Textured 3D Mesh</span>
                 <input type="checkbox" id="toggle-mesh" checked>
             </label>
             <label class="toggle-row">
-                <span>Consensus Point Cloud</span>
+                <span>Wireframe Geometry</span>
+                <input type="checkbox" id="toggle-wireframe">
+            </label>
+            <label class="toggle-row">
+                <span>Dense 3D Room Splats</span>
                 <input type="checkbox" id="toggle-pcd">
             </label>
+            <div style="margin: 6px 0 10px 0;">
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#94a3b8; margin-bottom:4px;">
+                    <span>Splat Solid Density</span>
+                    <span id="splat-size-val">Solid (0.038)</span>
+                </div>
+                <input type="range" id="splat-size-slider" min="0.012" max="0.065" step="0.003" value="0.038" style="width:100%; accent-color:#dfb873; cursor:pointer;">
+            </div>
             <label class="toggle-row">
                 <span>Camera Trajectory Path</span>
                 <input type="checkbox" id="toggle-cam" checked>
             </label>
             <label class="toggle-row">
-                <span>Architectural Grid</span>
+                <span>Floor Grid (Y=0.00m)</span>
                 <input type="checkbox" id="toggle-grid" checked>
             </label>
         </div>
 
-        <div class="panel-title" style="margin-top: 14px;">Rendering Mode</div>
+        <div class="panel-title" style="margin-top: 14px;">Camera Perspectives</div>
         <div class="btn-group">
-            <button class="btn active" id="mode-shaded">Mode B: Photographic</button>
-            <button class="btn" id="mode-unlit">Mode A: Debug Unlit</button>
+            <button class="btn active" id="btn-view-room">Room Overview</button>
+            <button class="btn" id="btn-view-front">Bed Front</button>
         </div>
         <div class="btn-group" style="margin-top: 8px;">
-            <button class="btn" id="btn-reset">Reset View</button>
-            <button class="btn" id="btn-top">Top Down</button>
+            <button class="btn" id="btn-view-iso">Isometric 45°</button>
+            <button class="btn" id="btn-view-top">Top Down</button>
+            <button class="btn" id="btn-reset">Reset</button>
         </div>
     </div>
 
@@ -279,15 +352,15 @@
         <div class="panel-title">Spatial Metrics</div>
         <div class="metric-row">
             <span class="metric-label">Dimensions</span>
-            <span class="metric-val">3.58m × 2.43m × 3.26m</span>
+            <span class="metric-val">7.3m × 4.85m × 5.97m</span>
         </div>
         <div class="metric-row">
             <span class="metric-label">Triangles</span>
-            <span class="metric-val">814,468</span>
+            <span class="metric-val">256,632</span>
         </div>
         <div class="metric-row">
             <span class="metric-label">Vertices</span>
-            <span class="metric-val">406,212</span>
+            <span class="metric-val">129,375</span>
         </div>
         <div class="metric-row">
             <span class="metric-label">Floor Level</span>
@@ -302,6 +375,15 @@
             <span class="metric-val" style="color: var(--green);">PASS (100% Measured)</span>
         </div>
     </div>
+
+    <div id="roam-hud">
+        <h2>CLICK SCREEN TO ROAM</h2>
+        <p>W / A / S / D — Move in Space</p>
+        <p>Shift — Sprint / Fast Walk</p>
+        <p>Mouse — Look Around</p>
+        <p>Esc — Exit Roam Mode</p>
+    </div>
+    <div id="crosshair"></div>
 
     <div id="canvas-container"></div>
 
@@ -320,10 +402,29 @@
         renderer.toneMappingExposure = 1.15;
         container.appendChild(renderer.domElement);
 
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.target.set(0, 1.1, 1.2);
+        const orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+        orbitControls.enableDamping = true;
+        orbitControls.dampingFactor = 0.05;
+        orbitControls.target.set(0, 1.1, 1.2);
+
+        // First Person Pointer Lock Controls
+        const roamControls = new THREE.PointerLockControls(camera, renderer.domElement);
+        let isRoamMode = false;
+        const roamHud = document.getElementById('roam-hud');
+        const crosshair = document.getElementById('crosshair');
+
+        // Movement Kinematics
+        const moveState = { forward: false, backward: false, left: false, right: false, sprint: false };
+        const velocity = new THREE.Vector3();
+        const direction = new THREE.Vector3();
+        let prevTime = performance.now();
+        const eyeHeight = 1.60; // 1.60m metric eye level
+
+        // Navigation Boundaries (Scene Bounding Box)
+        const sceneMinX = -1.348 - 0.5;
+        const sceneMaxX = 6.178 + 0.5;
+        const sceneMinZ = -0.65 - 0.5;
+        const sceneMaxZ = 4.893 + 0.5;
 
         // Lighting
         const hemiLight = new THREE.HemisphereLight(0xffffff, 0x1e293b, 1.2);
@@ -347,11 +448,43 @@
         let camGroup = new THREE.Group();
         scene.add(camGroup);
 
-        let origMaterials = new Map();
-        let unlitMaterials = new Map();
+        let pcdCenter = new THREE.Vector3(0.28, 1.0, 1.21);
+        let pcdBbox = null;
 
-        // Load MTL & OBJ
+        // Circular Gaussian Splat Texture Generator
+        function createGaussianSplatTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+            grad.addColorStop(0.0, 'rgba(255,255,255,1.0)');
+            grad.addColorStop(0.55, 'rgba(255,255,255,0.98)');
+            grad.addColorStop(0.80, 'rgba(255,255,255,0.70)');
+            grad.addColorStop(1.0, 'rgba(255,255,255,0.0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 64, 64);
+            const texture = new THREE.CanvasTexture(canvas);
+            return texture;
+        }
+
+        const splatTexture = createGaussianSplatTexture();
+        let currentSplatSize = 0.038;
+
+        const splatMaterial = new THREE.PointsMaterial({
+            size: currentSplatSize,
+            map: splatTexture,
+            vertexColors: true,
+            transparent: true,
+            alphaTest: 0.06,
+            depthWrite: true,
+            sizeAttenuation: true
+        });
+
+        const plyLoader = new THREE.PLYLoader();
         const mtlLoader = new THREE.MTLLoader();
+
+        // 1. Primary Solid Digital Twin Loader: Photographic Textured Mesh
         mtlLoader.load('textured_mesh.mtl', (materials) => {
             materials.preload();
             const objLoader = new THREE.OBJLoader();
@@ -361,34 +494,86 @@
                 meshObject.traverse((child) => {
                     if (child.isMesh) {
                         child.material.side = THREE.DoubleSide;
-                        origMaterials.set(child, child.material);
-                        const unlit = new THREE.MeshBasicMaterial({
-                            map: child.material.map,
-                            side: THREE.DoubleSide
-                        });
-                        unlitMaterials.set(child, unlit);
-                        child.castShadow = true;
-                        child.receiveShadow = true;
                     }
                 });
                 scene.add(meshObject);
+                meshObject.visible = true;
+
+                const wireGroup = new THREE.Group();
+                meshObject.traverse((child) => {
+                    if (child.isMesh && child.geometry) {
+                        const wireGeom = new THREE.WireframeGeometry(child.geometry);
+                        const wireMat = new THREE.LineBasicMaterial({ color: 0xdfb873, transparent: true, opacity: 0.35 });
+                        wireGroup.add(new THREE.LineSegments(wireGeom, wireMat));
+                    }
+                });
+                wireframeObject = wireGroup;
+                wireframeObject.visible = false;
+                scene.add(wireframeObject);
+
+                const box = new THREE.Box3().setFromObject(meshObject);
+                pcdBbox = box;
+                box.getCenter(pcdCenter);
+                setRoomOverview();
+            });
+        }, undefined, () => {
+            plyLoader.load('mesh.ply', (geom) => {
+                geom.computeVertexNormals();
+                const mat = new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, roughness: 0.65 });
+                meshObject = new THREE.Mesh(geom, mat);
+                scene.add(meshObject);
+                const box = new THREE.Box3().setFromObject(meshObject);
+                pcdBbox = box;
+                box.getCenter(pcdCenter);
+                setRoomOverview();
             });
         });
 
-        // Load Point Cloud
-        const plyLoader = new THREE.PLYLoader();
+        // 2. High-Density Photographic Splats (Secondary Layer)
         plyLoader.load('dense_pointcloud_clean.ply', (geom) => {
-            const pcdMat = new THREE.PointsMaterial({
-                size: 0.015,
-                vertexColors: true
-            });
-            pcdObject = new THREE.Points(geom, pcdMat);
+            geom.computeBoundingBox();
+            if (!pcdBbox) {
+                pcdBbox = geom.boundingBox;
+                pcdBbox.getCenter(pcdCenter);
+                setRoomOverview();
+            }
+
+            pcdObject = new THREE.Points(geom, splatMaterial);
             pcdObject.visible = false;
+            pcdObject.name = "photorealistic_splat_twin";
             scene.add(pcdObject);
         });
 
+        // Level Upright Bedroom Perspective
+        function setRoomOverview() {
+            const zFront = pcdBbox ? pcdBbox.min.z - 1.6 : -2.0;
+            camera.position.set(pcdCenter.x, pcdCenter.y + 0.35, zFront);
+            orbitControls.target.set(pcdCenter.x, pcdCenter.y, pcdCenter.z);
+            orbitControls.update();
+        }
+
+        function setBedFrontView() {
+            const zFront = pcdBbox ? pcdBbox.min.z - 1.1 : 0.4;
+            camera.position.set(pcdCenter.x, pcdCenter.y + 0.35, zFront);
+            orbitControls.target.set(pcdCenter.x, pcdCenter.y, pcdCenter.z);
+            orbitControls.update();
+        }
+
+        function setIsoView() {
+            const zFront = pcdBbox ? pcdBbox.min.z - 1.5 : 0.0;
+            camera.position.set(pcdCenter.x - 2.2, pcdCenter.y + 1.8, zFront);
+            orbitControls.target.copy(pcdCenter);
+            orbitControls.update();
+        }
+
+        function setTopView() {
+            camera.position.set(pcdCenter.x, pcdCenter.y + 3.8, pcdCenter.z + 0.01);
+            orbitControls.target.copy(pcdCenter);
+            orbitControls.update();
+        }
+
         // Camera Trajectory
-        const camCoords = [[0.0, 0.592, 0.0], [0.003, 0.596, 0.006], [0.013, 0.607, 0.04], [0.03, 0.594, 0.101], [0.042, 0.59, 0.121], [0.076, 0.58, 0.189], [0.087, 0.586, 0.234], [0.103, 0.576, 0.334], [0.099, 0.521, 0.469], [0.146, 0.515, 0.548], [0.175, 0.505, 0.587], [0.143, 0.524, 0.528], [0.145, 0.528, 0.521], [0.151, 0.536, 0.506], [0.163, 0.539, 0.495], [0.201, 0.534, 0.509]];
+        const camCoords = [[0.102, 2.282, 0.162], [0.366, 2.281, 0.18], [1.417, 2.275, 0.189], [1.694, 2.296, 0.223], [2.309, 2.262, 0.083], [2.708, 2.296, 0.01], [3.311, 2.216, 0.059], [3.521, 2.214, 0.159], [3.521, 2.214, 0.159], [3.292, 2.199, 0.204], [2.941, 2.288, 0.38], [2.941, 2.288, 0.38], [2.778, 2.221, 0.642], [2.464, 2.265, 0.938], [2.63, 2.21, 1.089], [2.63, 2.21, 1.089]];
         if (camCoords.length > 1) {
             const points = [];
             const sphereGeom = new THREE.SphereGeometry(0.03, 16, 16);
@@ -411,51 +596,143 @@
             camGroup.add(tubeMesh);
         }
 
-        // Controls binding
-        document.getElementById('toggle-mesh').addEventListener('change', (e) => {
+        // Mode Switching: Orbit vs First Person Roam
+        const btnModeOrbit = document.getElementById('btn-mode-orbit');
+        const btnModeRoam = document.getElementById('btn-mode-roam');
+
+        btnModeOrbit.addEventListener('click', () => {
+            isRoamMode = false;
+            btnModeOrbit.classList.add('active');
+            btnModeRoam.classList.remove('active');
+            roamControls.unlock();
+            orbitControls.enabled = true;
+            roamHud.style.display = 'none';
+            crosshair.style.display = 'none';
+        });
+
+        btnModeRoam.addEventListener('click', () => {
+            isRoamMode = true;
+            btnModeRoam.classList.add('active');
+            btnModeOrbit.classList.remove('active');
+            orbitControls.enabled = false;
+            roamHud.style.display = 'block';
+            camera.position.set(0.0, eyeHeight, 0.5);
+            camera.lookAt(0.0, eyeHeight, 2.0);
+        });
+
+        container.addEventListener('click', () => {
+            if (isRoamMode && !roamControls.isLocked) {
+                roamControls.lock();
+            }
+        });
+
+        roamControls.addEventListener('lock', () => {
+            roamHud.style.display = 'none';
+            crosshair.style.display = 'block';
+        });
+
+        roamControls.addEventListener('unlock', () => {
+            if (isRoamMode) {
+                roamHud.style.display = 'block';
+                crosshair.style.display = 'none';
+            }
+        });
+
+        // Keyboard Event Handlers for WASD Free Roaming
+        window.addEventListener('keydown', (e) => {
+            if (!roamControls.isLocked) return;
+            switch (e.code) {
+                case 'KeyW': case 'ArrowUp': moveState.forward = true; break;
+                case 'KeyS': case 'ArrowDown': moveState.backward = true; break;
+                case 'KeyA': case 'ArrowLeft': moveState.left = true; break;
+                case 'KeyD': case 'ArrowRight': moveState.right = true; break;
+                case 'ShiftLeft': case 'ShiftRight': moveState.sprint = true; break;
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            switch (e.code) {
+                case 'KeyW': case 'ArrowUp': moveState.forward = false; break;
+                case 'KeyS': case 'ArrowDown': moveState.backward = false; break;
+                case 'KeyA': case 'ArrowLeft': moveState.left = false; break;
+                case 'KeyD': case 'ArrowRight': moveState.right = false; break;
+                case 'ShiftLeft': case 'ShiftRight': moveState.sprint = false; break;
+            }
+        });
+
+        // Layer Controls binding
+        const toggleMesh = document.getElementById('toggle-mesh');
+        if (toggleMesh) toggleMesh.addEventListener('change', (e) => {
             if (meshObject) meshObject.visible = e.target.checked;
         });
-        document.getElementById('toggle-pcd').addEventListener('change', (e) => {
+        const toggleWireframe = document.getElementById('toggle-wireframe');
+        if (toggleWireframe) toggleWireframe.addEventListener('change', (e) => {
+            if (wireframeObject) wireframeObject.visible = e.target.checked;
+        });
+        const togglePcd = document.getElementById('toggle-pcd');
+        if (togglePcd) togglePcd.addEventListener('change', (e) => {
             if (pcdObject) pcdObject.visible = e.target.checked;
         });
-        document.getElementById('toggle-cam').addEventListener('change', (e) => {
+        const toggleCam = document.getElementById('toggle-cam');
+        if (toggleCam) toggleCam.addEventListener('change', (e) => {
             camGroup.visible = e.target.checked;
         });
-        document.getElementById('toggle-grid').addEventListener('change', (e) => {
+        const toggleGrid = document.getElementById('toggle-grid');
+        if (toggleGrid) toggleGrid.addEventListener('change', (e) => {
             grid.visible = e.target.checked;
         });
 
-        const btnShaded = document.getElementById('mode-shaded');
-        const btnUnlit = document.getElementById('mode-unlit');
+        const splatSlider = document.getElementById('splat-size-slider');
+        const splatValLabel = document.getElementById('splat-size-val');
+        if (splatSlider) {
+            splatSlider.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                splatMaterial.size = val;
+                splatMaterial.needsUpdate = true;
+                if (splatValLabel) {
+                    splatValLabel.textContent = val >= 0.035 ? `Solid (${val.toFixed(3)})` : `Crisp (${val.toFixed(3)})`;
+                }
+            });
+        }
 
-        btnShaded.addEventListener('click', () => {
-            btnShaded.classList.add('active');
-            btnUnlit.classList.remove('active');
-            if (meshObject) {
-                meshObject.traverse((c) => {
-                    if (c.isMesh && origMaterials.has(c)) c.material = origMaterials.get(c);
-                });
-            }
-        });
+        const btnViewRoom = document.getElementById('btn-view-room');
+        const btnViewFront = document.getElementById('btn-view-front');
+        const btnViewIso = document.getElementById('btn-view-iso');
+        const btnViewTop = document.getElementById('btn-view-top');
 
-        btnUnlit.addEventListener('click', () => {
-            btnUnlit.classList.add('active');
-            btnShaded.classList.remove('active');
-            if (meshObject) {
-                meshObject.traverse((c) => {
-                    if (c.isMesh && unlitMaterials.has(c)) c.material = unlitMaterials.get(c);
-                });
-            }
-        });
+        function setActivePerspective(activeBtn) {
+            [btnViewRoom, btnViewFront, btnViewIso, btnViewTop].forEach(b => { if (b) b.classList.remove('active'); });
+            if (activeBtn) activeBtn.classList.add('active');
+        }
+
+        if (btnViewRoom) {
+            btnViewRoom.addEventListener('click', () => {
+                setActivePerspective(btnViewRoom);
+                setRoomOverview();
+            });
+        }
+        if (btnViewFront) {
+            btnViewFront.addEventListener('click', () => {
+                setActivePerspective(btnViewFront);
+                setBedFrontView();
+            });
+        }
+        if (btnViewIso) {
+            btnViewIso.addEventListener('click', () => {
+                setActivePerspective(btnViewIso);
+                setIsoView();
+            });
+        }
+        if (btnViewTop) {
+            btnViewTop.addEventListener('click', () => {
+                setActivePerspective(btnViewTop);
+                setTopView();
+            });
+        }
 
         document.getElementById('btn-reset').addEventListener('click', () => {
-            camera.position.set(0.0, 1.6, -3.8);
-            controls.target.set(0, 1.1, 1.2);
-        });
-
-        document.getElementById('btn-top').addEventListener('click', () => {
-            camera.position.set(0.0, 5.5, 1.2);
-            controls.target.set(0, 0, 1.2);
+            setActivePerspective(btnViewRoom);
+            setRoomOverview();
         });
 
         window.addEventListener('resize', () => {
@@ -466,7 +743,36 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            controls.update();
+            const time = performance.now();
+            const delta = (time - prevTime) / 1000.0;
+
+            if (isRoamMode && roamControls.isLocked) {
+                // Roaming physics and friction
+                velocity.x -= velocity.x * 10.0 * delta;
+                velocity.z -= velocity.z * 10.0 * delta;
+
+                const speed = moveState.sprint ? 5.5 : 2.5; // m/s
+                direction.z = Number(moveState.forward) - Number(moveState.backward);
+                direction.x = Number(moveState.right) - Number(moveState.left);
+                direction.normalize();
+
+                if (moveState.forward || moveState.backward) velocity.z -= direction.z * speed * 10.0 * delta;
+                if (moveState.left || moveState.right) velocity.x -= direction.x * speed * 10.0 * delta;
+
+                roamControls.moveRight(-velocity.x * delta);
+                roamControls.moveForward(-velocity.z * delta);
+
+                // Enforce metric eye height
+                camera.position.y = eyeHeight;
+
+                // Enforce room-scale navigation boundaries
+                camera.position.x = Math.max(sceneMinX, Math.min(sceneMaxX, camera.position.x));
+                camera.position.z = Math.max(sceneMinZ, Math.min(sceneMaxZ, camera.position.z));
+            } else if (!isRoamMode) {
+                orbitControls.update();
+            }
+
+            prevTime = time;
             renderer.render(scene, camera);
         }
         animate();

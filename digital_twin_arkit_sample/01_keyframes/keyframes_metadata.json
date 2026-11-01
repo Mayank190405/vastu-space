@@ -1,0 +1,162 @@
+[
+  {
+    "frame_id": 0,
+    "raw_frame_idx": 0,
+    "timestamp_sec": 0.0,
+    "sharpness": 328.6,
+    "feature_count": 720,
+    "motion_from_previous": 0.0,
+    "overlap_score": 1.0,
+    "selection_reason": "Optimal sharpness & motion baseline"
+  },
+  {
+    "frame_id": 1,
+    "raw_frame_idx": 270,
+    "timestamp_sec": 4.5,
+    "sharpness": 313.22,
+    "feature_count": 688,
+    "motion_from_previous": 7.04,
+    "overlap_score": 0.765,
+    "selection_reason": "Optimal sharpness & motion baseline"
+  },
+  {
+    "frame_id": 2,
+    "raw_frame_idx": 450,
+    "timestamp_sec": 7.5,
+    "sharpness": 113.93,
+    "feature_count": 200,
+    "motion_from_previous": 14.23,
+    "overlap_score": 0.526,
+    "selection_reason": "Optimal sharpness & motion baseline"
+  },
+  {
+    "frame_id": 3,
+    "raw_frame_idx": 540,
+    "timestamp_sec": 9.0,
+    "sharpness": 201.64,
+    "feature_count": 290,
+    "motion_from_previous": 18.04,
+    "overlap_score": 0.399,
+    "selection_reason": "Optimal sharpness & motion baseline"
+  },
+  {
+    "frame_id": 4,
+    "raw_frame_idx": 720,
+    "timestamp_sec": 12.0,
+    "sharpness": 160.64,
+    "feature_count": 673,
+    "motion_from_previous": 14.52,
+    "overlap_score": 0.516,
+    "selection_reason": "Optimal sharpness & motion baseline"
+  },
+  {
+    "frame_id": 5,
+    "raw_frame_idx": 900,
+    "timestamp_sec": 15.0,
+    "sharpness": 130.4,
+    "feature_count": 276,
+    "motion_from_previous": 14.28,
+    "overlap_score": 0.524,
+    "selection_reason": "Optimal sharpness & motion baseline"
+  },
+  {
+    "frame_id": 6,
+    "raw_frame_idx": 1080,
+    "timestamp_sec": 18.0,
+    "sharpness": 126.31,
+    "feature_count": 648,
+    "motion_from_previous": 9.92,
+    "overlap_score": 0.669,
+    "selection_reason": "Optimal sharpness & motion baseline"
+  },
+  {
+    "frame_id": 7,
+    "raw_frame_idx": 1260,
+    "timestamp_sec": 21.0,
+    "sharpness": 124.47,
+    "feature_count": 1217,
+    "motion_from_previous": 9.88,
+    "overlap_score": 0.671,
+    "selection_reason": "Optimal sharpness & motion baseline"
+  },
+  {
+    "frame_id": 8,
+    "raw_frame_idx": 1440,
+    "timestamp_sec": 24.0,
+    "sharpness": 32.7,
+    "feature_count": 322,
+    "motion_from_previous": 8.87,
+    "overlap_score": 0.704,
+    "selection_reason": "Optimal sharpness & motion baseline"
+  },
+  {
+    "frame_id": 9,
+    "raw_frame_idx": 1620,
+    "timestamp_sec": 27.0,
+    "sharpness": 209.85,
+    "feature_count": 505,
+    "motion_from_previous": 12.6,
+    "overlap_score": 0.58,
+    "selection_reason": "Optimal sharpness & motion baseline"
+  },
+  {
+    "frame_id": 10,
+    "raw_frame_idx": 1890,
+    "timestamp_sec": 31.5,
+    "sharpness": 379.21,
+    "feature_count": 1500,
+    "motion_from_previous": 14.1,
+    "overlap_score": 0.53,
+    "selection_reason": "Optimal sharpness & motion baseline"
+  },
+  {
+    "frame_id": 11,
+    "raw_frame_idx": 2070,
+    "timestamp_sec": 34.5,
+    "sharpness": 67.3,
+    "feature_count": 166,
+    "motion_from_previous": 15.61,
+    "overlap_score": 0.48,
+    "selection_reason": "Optimal sharpness & motion baseline"
+  },
+  {
+    "frame_id": 12,
+    "raw_frame_idx": 2160,
+    "timestamp_sec": 36.0,
+    "sharpness": 127.04,
+    "feature_count": 528,
+    "motion_from_previous": 14.65,
+    "overlap_score": 0.512,
+    "selection_reason": "Optimal sharpness & motion baseline"
+  },
+  {
+    "frame_id": 13,
+    "raw_frame_idx": 2340,
+    "timestamp_sec": 39.0,
+    "sharpness": 92.18,
+    "feature_count": 482,
+    "motion_from_previous": 12.13,
+    "overlap_score": 0.596,
+    "selection_reason": "Optimal sharpness & motion baseline"
+  },
+  {
+    "frame_id": 14,
+    "raw_frame_idx": 2520,
+    "timestamp_sec": 42.0,
+    "sharpness": 73.67,
+    "feature_count": 1171,
+    "motion_from_previous": 10.16,
+    "overlap_score": 0.661,
+    "selection_reason": "Optimal sharpness & motion baseline"
+  },
+  {
+    "frame_id": 15,
+    "raw_frame_idx": 2790,
+    "timestamp_sec": 46.5,
+    "sharpness": 109.61,
+    "feature_count": 344,
+    "motion_from_previous": 7.38,
+    "overlap_score": 0.754,
+    "selection_reason": "Optimal sharpness & motion baseline"
+  }
+]

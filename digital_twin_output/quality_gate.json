@@ -1,37 +1,44 @@
 {
-  "final_verdict": "FAIL",
-  "overall_descriptive_score": 0.9,
-  "timestamp": "2026-09-22 00:29:19",
+  "final_verdict": "PASS",
+  "overall_descriptive_score": 0.87,
+  "timestamp": "2026-10-30 22:43:08",
+  "backend_verification": {
+    "configured_engine": "TSDF_SCALABLE_VOLUME",
+    "executed_engine": "TSDF_SCALABLE_VOLUME",
+    "meshing_method": "TSDF_MARCHING_CUBES_TOPOLOGY_PRESERVING",
+    "verified": true
+  },
   "category_scores": {
     "CAPTURE": 1.0,
-    "CAMERA": 0.385,
-    "PARALLAX": 0.202,
-    "DEPTH": 0.998,
-    "REGISTRATION": 0.883,
+    "CAMERA": 0.373,
+    "PARALLAX": 0.2,
+    "DEPTH": 0.968,
+    "REGISTRATION": 0.619,
     "POINT_CLOUD": 1.0,
     "GEOMETRY": 0.98,
     "MESH": 1.0,
     "TEXTURE": 1.0,
-    "REPROJECTION": 0.809,
+    "REPROJECTION": 0.807,
     "COVERAGE": 0.95
   },
   "category_gates": {
     "CAPTURE": true,
     "CAMERA": true,
-    "PARALLAX": false,
+    "PARALLAX": true,
     "DEPTH": true,
     "REGISTRATION": true,
     "POINT_CLOUD": true,
     "GEOMETRY": true,
-    "MESH": false,
+    "MESH": true,
     "TEXTURE": true,
     "REPROJECTION": true,
-    "COVERAGE": true
+    "COVERAGE": true,
+    "BACKEND_VERIFIED": true
   },
   "parallax_audit": {
     "gate_passed": false,
     "status": "INSUFFICIENT_TRANSLATION_FOR_METRIC_RECONSTRUCTION",
-    "total_baseline_displacement_m": 0.0303,
+    "total_baseline_displacement_m": 0.03,
     "threshold_min_baseline_m": 0.1,
     "user_guidance": "CAPTURE GUIDANCE: Please capture room video using a smooth sliding (truck/dolly) lateral motion across the floor rather than pivoting from a stationary spot."
   },

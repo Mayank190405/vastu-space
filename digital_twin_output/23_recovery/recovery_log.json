@@ -2,11 +2,21 @@
   {
     "stage": "STAGE_01b",
     "failure_reason": "insufficient_translation_baseline",
-    "detected_metric": 0.0303,
+    "detected_metric": 0.03,
     "threshold": 0.1,
     "recovery_action": "flag_metric_uncertainty_and_apply_planar_prior",
     "retry_count": 1,
     "result": "ADAPTED",
-    "timestamp": "2026-09-22 00:26:48"
+    "timestamp": "2026-10-30 22:41:02"
+  },
+  {
+    "stage": "STAGE_07",
+    "failure_reason": "two_view_overlap_low",
+    "detected_metric": 0.757,
+    "threshold": 0.4,
+    "recovery_action": "adaptive_relaxation",
+    "retry_count": 1,
+    "result": "RECOVERED",
+    "timestamp": "2026-10-30 22:42:07"
   }
 ]

@@ -44,6 +44,15 @@ xcuserdata/
 *.log
 uploads/
 backup/
+scratch/
+digital_twin_output_img4963/
+.*_backup/
+.phase9_backup/
+.working_tree_current_backup/
+*.bak
+*.tmp
+luxury-bedroom*
+mesh_orthogonal_views.png
 *.mov
 *.MOV
 *.mp4

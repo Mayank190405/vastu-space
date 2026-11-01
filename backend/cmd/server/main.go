@@ -57,6 +57,7 @@ func main() {
 	poiRepo := postgres.NewPOIRepo(pool)
 	navRepo := postgres.NewNavigationRepo(pool)
 	viewerRepo := postgres.NewViewerRepo(pool)
+	sessionRepo := postgres.NewSessionRepository(pool)
 
 	// 3. Initialize Packages & Clients
 	jwtManager := jwt.NewTokenManager(cfg.JWTSecret, cfg.JWTAccessExpiryMin, cfg.JWTRefreshExpiryDays)
@@ -82,6 +83,7 @@ func main() {
 	viewerService := service.NewViewerService(viewerRepo, projectRepo)
 	locationService := service.NewLocationService()
 	rescanService := service.NewRescanService(pool)
+	sessionService := service.NewSessionManagerService(sessionRepo, cfg.AppURL)
 
 	// 5. Initialize Middlewares & Handlers
 	authMiddleware := middleware.NewAuthMiddleware(jwtManager)
@@ -90,6 +92,7 @@ func main() {
 	projectHandler := handler.NewProjectHandler(projectService, cfg.UploadDir)
 	locationHandler := handler.NewLocationHandler(locationService)
 	captureHandler := handler.NewCaptureHandler(captureService)
+	sessionHandler := handler.NewSessionManagementHandler(sessionService)
 	rescanHandler := handler.NewRescanHandler(rescanService)
 	uploadHandler := handler.NewUploadHandler(uploadService)
 	jobHandler := handler.NewJobHandler(jobService)
@@ -98,6 +101,7 @@ func main() {
 	searchHandler := handler.NewSearchHandler(searchService)
 	navHandler := handler.NewNavigationHandler(navService)
 	viewerHandler := handler.NewViewerHandler(viewerService)
+	unifiedViewerHandler := handler.NewUnifiedViewerHandler(sessionRepo)
 
 	// 6. Router Setup
 	r := chi.NewRouter()
@@ -247,6 +251,14 @@ func main() {
 			r.Get("/{projectId}/render", projectHandler.GetRender)
 			r.Get("/{projectId}/view-link", projectHandler.GetViewingLink)
 			r.Get("/{projectId}/pois", poiHandler.ListByProject)
+
+			// Room Mapping & Management
+			r.Get("/{projectId}/rooms", sessionHandler.ListRooms)
+			r.Post("/{projectId}/floors/{floorId}/rooms", sessionHandler.CreateRoom)
+			r.Get("/{projectId}/rooms/connection-graph", unifiedViewerHandler.GetConnectionGraph)
+			r.Get("/{projectId}/scene-manifest", unifiedViewerHandler.GetSceneManifest)
+			r.Post("/{projectId}/align-rooms", unifiedViewerHandler.AlignRooms)
+			r.Post("/{projectId}/assemble-space", unifiedViewerHandler.AssembleSpace)
 		})
 
 		// 4. Captures Core Service Routes (Protected)
@@ -265,6 +277,34 @@ func main() {
 			r.Get("/project/{projectId}", rescanHandler.ListPending)
 			r.Patch("/{id}/status", rescanHandler.UpdateStatus)
 			r.Put("/{id}/status", rescanHandler.UpdateStatus)
+		})
+
+		// 4c. Phase 7 Capture Sessions & Real-Time Management Routes
+		r.Route("/capture-sessions", func(r chi.Router) {
+			// Public redemption for mobile apps
+			r.Post("/redeem", sessionHandler.RedeemChallenge)
+
+			r.Group(func(r chi.Router) {
+				r.Use(authMiddleware.Authenticate)
+				r.Post("/", sessionHandler.CreateSession)
+				r.Get("/", sessionHandler.ListSessions)
+				r.Get("/{sessionId}", sessionHandler.GetSession)
+				r.Post("/{sessionId}/revoke", sessionHandler.RevokeSession)
+				r.Get("/{sessionId}/pipeline", sessionHandler.GetPipelineStages)
+				r.Post("/{sessionId}/stages/{stageName}", sessionHandler.UpdatePipelineStage)
+				r.Get("/{sessionId}/events", sessionHandler.StreamPipelineEvents)
+			})
+		})
+
+		// 4d. Connected Devices & Telemetry Routes
+		r.Route("/devices", func(r chi.Router) {
+			// Heartbeat endpoint reported from mobile devices
+			r.Post("/heartbeat", sessionHandler.RecordHeartbeat)
+
+			r.Group(func(r chi.Router) {
+				r.Use(authMiddleware.Authenticate)
+				r.Get("/", sessionHandler.ListDevices)
+			})
 		})
 
 		// 5. Uploads Core Service Routes (Protected)

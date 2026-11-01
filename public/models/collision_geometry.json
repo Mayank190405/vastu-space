@@ -1,0 +1,623 @@
+{
+  "project_id": "proj_vastu_residence",
+  "room_count": 4,
+  "rooms": [
+    {
+      "room_id": "room_living",
+      "floor_collider": {
+        "collider_id": "col_floor_room_living",
+        "type": "FLOOR_PLANE",
+        "elevation_z": 0.0,
+        "boundary_polygon_2d": [
+          [
+            -3.0,
+            -3.5
+          ],
+          [
+            3.0,
+            -3.5
+          ],
+          [
+            3.0,
+            3.5
+          ],
+          [
+            -3.0,
+            3.5
+          ]
+        ]
+      },
+      "wall_colliders": [
+        {
+          "collider_id": "col_wall_room_living_00",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            -3.0,
+            -3.5,
+            0.0
+          ],
+          "p1": [
+            3.0,
+            -3.5,
+            0.0
+          ],
+          "height_m": 3.0,
+          "thickness_m": 0.15
+        },
+        {
+          "collider_id": "col_wall_room_living_01_sub_0",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            3.0,
+            -3.5,
+            0.0
+          ],
+          "p1": [
+            3.0,
+            -0.5,
+            0.0
+          ],
+          "height_m": 3.0,
+          "thickness_m": 0.15
+        },
+        {
+          "collider_id": "col_wall_room_living_01_sub_1",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            3.0,
+            0.5,
+            0.0
+          ],
+          "p1": [
+            3.0,
+            3.5,
+            0.0
+          ],
+          "height_m": 3.0,
+          "thickness_m": 0.15
+        },
+        {
+          "collider_id": "col_wall_room_living_02",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            3.0,
+            3.5,
+            0.0
+          ],
+          "p1": [
+            -3.0,
+            3.5,
+            0.0
+          ],
+          "height_m": 3.0,
+          "thickness_m": 0.15
+        },
+        {
+          "collider_id": "col_wall_room_living_03",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            -3.0,
+            3.5,
+            0.0
+          ],
+          "p1": [
+            -3.0,
+            -3.5,
+            0.0
+          ],
+          "height_m": 3.0,
+          "thickness_m": 0.15
+        }
+      ],
+      "furniture_colliders": [
+        {
+          "collider_id": "col_furn_sofa_01",
+          "type": "FURNITURE_AABB",
+          "category": "SOFA",
+          "center_3d": [
+            0.0,
+            1.5,
+            0.45
+          ],
+          "dimensions_m": [
+            2.2,
+            0.9,
+            0.85
+          ],
+          "min_3d": [
+            -1.1,
+            1.05,
+            0.025000000000000022
+          ],
+          "max_3d": [
+            1.1,
+            1.95,
+            0.875
+          ]
+        },
+        {
+          "collider_id": "col_furn_table_01",
+          "type": "FURNITURE_AABB",
+          "category": "COFFEE_TABLE",
+          "center_3d": [
+            0.0,
+            0.0,
+            0.25
+          ],
+          "dimensions_m": [
+            1.2,
+            0.7,
+            0.45
+          ],
+          "min_3d": [
+            -0.6,
+            -0.35,
+            0.024999999999999994
+          ],
+          "max_3d": [
+            0.6,
+            0.35,
+            0.475
+          ]
+        }
+      ],
+      "walkable_boundary_polygon_2d": [
+        [
+          -3.0,
+          -3.5
+        ],
+        [
+          3.0,
+          -3.5
+        ],
+        [
+          3.0,
+          3.5
+        ],
+        [
+          -3.0,
+          3.5
+        ]
+      ]
+    },
+    {
+      "room_id": "room_corridor",
+      "floor_collider": {
+        "collider_id": "col_floor_room_corridor",
+        "type": "FLOOR_PLANE",
+        "elevation_z": 0.0,
+        "boundary_polygon_2d": [
+          [
+            3.0,
+            -2.5
+          ],
+          [
+            5.5,
+            -2.5
+          ],
+          [
+            5.5,
+            2.5
+          ],
+          [
+            3.0,
+            2.5
+          ]
+        ]
+      },
+      "wall_colliders": [
+        {
+          "collider_id": "col_wall_room_corridor_00",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            3.0,
+            -2.5,
+            0.0
+          ],
+          "p1": [
+            5.5,
+            -2.5,
+            0.0
+          ],
+          "height_m": 2.8,
+          "thickness_m": 0.15
+        },
+        {
+          "collider_id": "col_wall_room_corridor_01_sub_0",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            5.5,
+            -2.5,
+            0.0
+          ],
+          "p1": [
+            5.5,
+            -0.4500000000000002,
+            0.0
+          ],
+          "height_m": 2.8,
+          "thickness_m": 0.15
+        },
+        {
+          "collider_id": "col_wall_room_corridor_01_sub_1",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            5.5,
+            0.4500000000000002,
+            0.0
+          ],
+          "p1": [
+            5.5,
+            2.5,
+            0.0
+          ],
+          "height_m": 2.8,
+          "thickness_m": 0.15
+        },
+        {
+          "collider_id": "col_wall_room_corridor_02_sub_0",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            5.5,
+            2.5,
+            0.0
+          ],
+          "p1": [
+            4.675,
+            2.5,
+            0.0
+          ],
+          "height_m": 2.8,
+          "thickness_m": 0.15
+        },
+        {
+          "collider_id": "col_wall_room_corridor_02_sub_1",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            3.825,
+            2.5,
+            0.0
+          ],
+          "p1": [
+            3.0,
+            2.5,
+            0.0
+          ],
+          "height_m": 2.8,
+          "thickness_m": 0.15
+        },
+        {
+          "collider_id": "col_wall_room_corridor_03_sub_0",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            3.0,
+            2.5,
+            0.0
+          ],
+          "p1": [
+            3.0,
+            0.5,
+            0.0
+          ],
+          "height_m": 2.8,
+          "thickness_m": 0.15
+        },
+        {
+          "collider_id": "col_wall_room_corridor_03_sub_1",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            3.0,
+            -0.5,
+            0.0
+          ],
+          "p1": [
+            3.0,
+            -2.5,
+            0.0
+          ],
+          "height_m": 2.8,
+          "thickness_m": 0.15
+        }
+      ],
+      "furniture_colliders": [],
+      "walkable_boundary_polygon_2d": [
+        [
+          3.0,
+          -2.5
+        ],
+        [
+          5.5,
+          -2.5
+        ],
+        [
+          5.5,
+          2.5
+        ],
+        [
+          3.0,
+          2.5
+        ]
+      ]
+    },
+    {
+      "room_id": "room_bedroom",
+      "floor_collider": {
+        "collider_id": "col_floor_room_bedroom",
+        "type": "FLOOR_PLANE",
+        "elevation_z": 0.0,
+        "boundary_polygon_2d": [
+          [
+            5.5,
+            -2.25
+          ],
+          [
+            10.0,
+            -2.25
+          ],
+          [
+            10.0,
+            2.25
+          ],
+          [
+            5.5,
+            2.25
+          ]
+        ]
+      },
+      "wall_colliders": [
+        {
+          "collider_id": "col_wall_room_bedroom_00",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            5.5,
+            -2.25,
+            0.0
+          ],
+          "p1": [
+            10.0,
+            -2.25,
+            0.0
+          ],
+          "height_m": 2.8,
+          "thickness_m": 0.15
+        },
+        {
+          "collider_id": "col_wall_room_bedroom_01",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            10.0,
+            -2.25,
+            0.0
+          ],
+          "p1": [
+            10.0,
+            2.25,
+            0.0
+          ],
+          "height_m": 2.8,
+          "thickness_m": 0.15
+        },
+        {
+          "collider_id": "col_wall_room_bedroom_02",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            10.0,
+            2.25,
+            0.0
+          ],
+          "p1": [
+            5.5,
+            2.25,
+            0.0
+          ],
+          "height_m": 2.8,
+          "thickness_m": 0.15
+        },
+        {
+          "collider_id": "col_wall_room_bedroom_03_sub_0",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            5.5,
+            2.25,
+            0.0
+          ],
+          "p1": [
+            5.5,
+            0.44999999999999996,
+            0.0
+          ],
+          "height_m": 2.8,
+          "thickness_m": 0.15
+        },
+        {
+          "collider_id": "col_wall_room_bedroom_03_sub_1",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            5.5,
+            -0.4500000000000002,
+            0.0
+          ],
+          "p1": [
+            5.5,
+            -2.25,
+            0.0
+          ],
+          "height_m": 2.8,
+          "thickness_m": 0.15
+        }
+      ],
+      "furniture_colliders": [
+        {
+          "collider_id": "col_furn_bed_01",
+          "type": "FURNITURE_AABB",
+          "category": "KING_BED",
+          "center_3d": [
+            8.25,
+            0.0,
+            0.5
+          ],
+          "dimensions_m": [
+            2.0,
+            1.9,
+            1.0
+          ],
+          "min_3d": [
+            7.25,
+            -0.95,
+            0.0
+          ],
+          "max_3d": [
+            9.25,
+            0.95,
+            1.0
+          ]
+        }
+      ],
+      "walkable_boundary_polygon_2d": [
+        [
+          5.5,
+          -2.25
+        ],
+        [
+          10.0,
+          -2.25
+        ],
+        [
+          10.0,
+          2.25
+        ],
+        [
+          5.5,
+          2.25
+        ]
+      ]
+    },
+    {
+      "room_id": "room_washroom",
+      "floor_collider": {
+        "collider_id": "col_floor_room_washroom",
+        "type": "FLOOR_PLANE",
+        "elevation_z": 0.0,
+        "boundary_polygon_2d": [
+          [
+            3.15,
+            2.5
+          ],
+          [
+            5.35,
+            2.5
+          ],
+          [
+            5.35,
+            4.9
+          ],
+          [
+            3.15,
+            4.9
+          ]
+        ]
+      },
+      "wall_colliders": [
+        {
+          "collider_id": "col_wall_room_washroom_00_sub_0",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            3.15,
+            2.5,
+            0.0
+          ],
+          "p1": [
+            3.825,
+            2.5,
+            0.0
+          ],
+          "height_m": 2.6,
+          "thickness_m": 0.15
+        },
+        {
+          "collider_id": "col_wall_room_washroom_00_sub_1",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            4.675,
+            2.5,
+            0.0
+          ],
+          "p1": [
+            5.35,
+            2.5,
+            0.0
+          ],
+          "height_m": 2.6,
+          "thickness_m": 0.15
+        },
+        {
+          "collider_id": "col_wall_room_washroom_01",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            5.35,
+            2.5,
+            0.0
+          ],
+          "p1": [
+            5.35,
+            4.9,
+            0.0
+          ],
+          "height_m": 2.6,
+          "thickness_m": 0.15
+        },
+        {
+          "collider_id": "col_wall_room_washroom_02",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            5.35,
+            4.9,
+            0.0
+          ],
+          "p1": [
+            3.15,
+            4.9,
+            0.0
+          ],
+          "height_m": 2.6,
+          "thickness_m": 0.15
+        },
+        {
+          "collider_id": "col_wall_room_washroom_03",
+          "type": "WALL_SEGMENT",
+          "p0": [
+            3.15,
+            4.9,
+            0.0
+          ],
+          "p1": [
+            3.15,
+            2.5,
+            0.0
+          ],
+          "height_m": 2.6,
+          "thickness_m": 0.15
+        }
+      ],
+      "furniture_colliders": [],
+      "walkable_boundary_polygon_2d": [
+        [
+          3.15,
+          2.5
+        ],
+        [
+          5.35,
+          2.5
+        ],
+        [
+          5.35,
+          4.9
+        ],
+        [
+          3.15,
+          4.9
+        ]
+      ]
+    }
+  ]
+}

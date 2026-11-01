@@ -14,6 +14,13 @@ from core.quality.evaluators.navigation import NavigationQualityEvaluator
 from core.quality.rescan_generator import TargetedRescanGenerator
 from core.quality.targeted_integrator import TargetedCellIntegrator
 
+from core.quality.pose_consistency_validator import PoseConsistencyValidator
+from core.quality.geometry_accuracy_validator import GeometryAccuracyValidator
+from core.quality.room_alignment_validator import RoomAlignmentValidator
+from core.quality.navigation_validation_engine import NavigationValidationEngine
+from core.quality.quality_report_generator import QualityReportGenerator
+from core.quality.reconstruction_quality_evaluator import ReconstructionQualityEvaluator
+
 __all__ = [
     "CentralQualityEngine",
     "QualityDecisionEngine",
@@ -25,4 +32,10 @@ __all__ = [
     "NavigationQualityEvaluator",
     "TargetedRescanGenerator",
     "TargetedCellIntegrator",
+    "PoseConsistencyValidator",
+    "GeometryAccuracyValidator",
+    "RoomAlignmentValidator",
+    "NavigationValidationEngine",
+    "QualityReportGenerator",
+    "ReconstructionQualityEvaluator",
 ]

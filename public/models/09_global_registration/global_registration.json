@@ -1,0 +1,10 @@
+{
+  "total_raw_points": 921600,
+  "confidence_filtered_points": 891631,
+  "voxel_downsampled_points": 719345,
+  "consensus_surviving_points": 445156,
+  "statistical_clean_points": 437306,
+  "clutter_isolated_points": 98194,
+  "consensus_support_ratio": 0.619,
+  "status": "PASS"
+}

@@ -1,0 +1,865 @@
+{
+  "algorithm": "BOUNDED_PLANE_REGULARIZATION_AND_SMALL_GAP_COMPLETION",
+  "config": {
+    "max_planes": 6,
+    "plane_distance_m": 0.025,
+    "max_snap_m": 0.04,
+    "min_plane_points": 200,
+    "min_plane_extent_m": 0.7,
+    "min_normal_alignment": 0.9,
+    "smoothing_iterations": 3,
+    "max_smoothing_m": 0.015,
+    "max_hole_diameter_m": 0.1,
+    "max_hole_perimeter_m": 0.35,
+    "max_holes": 300
+  },
+  "planes": [
+    {
+      "normal": [
+        -0.05216154136973567,
+        0.025284245803422246,
+        -0.9983185265816145
+      ],
+      "offset": 4.691678235525843,
+      "support_vertices": 7143,
+      "snapped_vertices": 4153,
+      "extent_m": [
+        6.244644831780163,
+        4.956507043554936
+      ],
+      "semantics": "large_observed_plane_not_semantically_classified"
+    },
+    {
+      "normal": [
+        -0.04209164088433095,
+        -0.031905814696306926,
+        -0.9986041822244835
+      ],
+      "offset": 4.739690273304644,
+      "support_vertices": 5001,
+      "snapped_vertices": 2622,
+      "extent_m": [
+        6.272364116446937,
+        4.53039599807881
+      ],
+      "semantics": "large_observed_plane_not_semantically_classified"
+    },
+    {
+      "normal": [
+        0.06800583501390088,
+        0.09725409452732293,
+        0.9929334557268845
+      ],
+      "offset": -4.907655923528612,
+      "support_vertices": 4485,
+      "snapped_vertices": 2178,
+      "extent_m": [
+        6.632579172651244,
+        5.4032690231955325
+      ],
+      "semantics": "large_observed_plane_not_semantically_classified"
+    },
+    {
+      "normal": [
+        0.7223081533539598,
+        0.004093923173236135,
+        0.6915592320195315
+      ],
+      "offset": -4.862564821823309,
+      "support_vertices": 3988,
+      "snapped_vertices": 3328,
+      "extent_m": [
+        6.576425387383421,
+        5.437519021833192
+      ],
+      "semantics": "large_observed_plane_not_semantically_classified"
+    },
+    {
+      "normal": [
+        -0.5587931472341501,
+        -0.008065227293477988,
+        -0.8292678522123343
+      ],
+      "offset": 6.239724019105979,
+      "support_vertices": 4301,
+      "snapped_vertices": 3911,
+      "extent_m": [
+        4.976200554253607,
+        2.91124894973118
+      ],
+      "semantics": "large_observed_plane_not_semantically_classified"
+    },
+    {
+      "normal": [
+        0.0923827151811873,
+        -0.0015121928775334752,
+        0.9957224247793423
+      ],
+      "offset": -4.656570241987876,
+      "support_vertices": 3560,
+      "snapped_vertices": 1674,
+      "extent_m": [
+        6.570312035745554,
+        5.010742778101534
+      ],
+      "semantics": "large_observed_plane_not_semantically_classified"
+    }
+  ],
+  "filled_holes": [
+    {
+      "boundary_vertices": [
+        115,
+        116,
+        154,
+        119
+      ],
+      "diameter_m": 0.02242278985932653,
+      "perimeter_m": 0.06494896586123129
+    },
+    {
+      "boundary_vertices": [
+        151,
+        152,
+        192,
+        156
+      ],
+      "diameter_m": 0.02045291570848562,
+      "perimeter_m": 0.045184037594997825
+    },
+    {
+      "boundary_vertices": [
+        175,
+        177,
+        210,
+        178
+      ],
+      "diameter_m": 0.0391922275011396,
+      "perimeter_m": 0.09861374837206263
+    },
+    {
+      "boundary_vertices": [
+        240,
+        241,
+        243,
+        287
+      ],
+      "diameter_m": 0.03922217275553458,
+      "perimeter_m": 0.08825726871009712
+    },
+    {
+      "boundary_vertices": [
+        250,
+        251,
+        295,
+        252
+      ],
+      "diameter_m": 0.005089573937961944,
+      "perimeter_m": 0.010308760690453079
+    },
+    {
+      "boundary_vertices": [
+        327,
+        328,
+        356,
+        329
+      ],
+      "diameter_m": 0.032491717886726335,
+      "perimeter_m": 0.06515650323613836
+    },
+    {
+      "boundary_vertices": [
+        602,
+        603,
+        604,
+        630,
+        652,
+        628
+      ],
+      "diameter_m": 0.09808848312024443,
+      "perimeter_m": 0.21908009001123904
+    },
+    {
+      "boundary_vertices": [
+        3203,
+        3204,
+        4816,
+        3206
+      ],
+      "diameter_m": 0.05188255813303666,
+      "perimeter_m": 0.1287793695594327
+    },
+    {
+      "boundary_vertices": [
+        4818,
+        4819,
+        6431,
+        4821
+      ],
+      "diameter_m": 0.05083596925575762,
+      "perimeter_m": 0.1261814379680436
+    },
+    {
+      "boundary_vertices": [
+        8034,
+        8035,
+        8047,
+        9847
+      ],
+      "diameter_m": 0.047519787452629636,
+      "perimeter_m": 0.12921021178659775
+    },
+    {
+      "boundary_vertices": [
+        15933,
+        15934,
+        15936,
+        17937
+      ],
+      "diameter_m": 0.05288727002980664,
+      "perimeter_m": 0.13127313208062213
+    },
+    {
+      "boundary_vertices": [
+        22040,
+        22041,
+        22043,
+        24327
+      ],
+      "diameter_m": 0.05382178247527758,
+      "perimeter_m": 0.13359262765178237
+    },
+    {
+      "boundary_vertices": [
+        26642,
+        26644,
+        28974,
+        26645
+      ],
+      "diameter_m": 0.0524471228265142,
+      "perimeter_m": 0.13018116703517763
+    },
+    {
+      "boundary_vertices": [
+        26654,
+        26655,
+        28982,
+        26657
+      ],
+      "diameter_m": 0.053926294199757585,
+      "perimeter_m": 0.13385239944063346
+    },
+    {
+      "boundary_vertices": [
+        28985,
+        28986,
+        28988,
+        31633
+      ],
+      "diameter_m": 0.051878917778998,
+      "perimeter_m": 0.12877062592193503
+    },
+    {
+      "boundary_vertices": [
+        34318,
+        34319,
+        37337,
+        34321
+      ],
+      "diameter_m": 0.05263590487428971,
+      "perimeter_m": 0.13064938980437824
+    },
+    {
+      "boundary_vertices": [
+        55595,
+        55598,
+        56924,
+        55610
+      ],
+      "diameter_m": 0.06469657853373079,
+      "perimeter_m": 0.14171856577535993
+    },
+    {
+      "boundary_vertices": [
+        64456,
+        64457,
+        65302,
+        64464
+      ],
+      "diameter_m": 0.05310641417935891,
+      "perimeter_m": 0.14439961783332295
+    },
+    {
+      "boundary_vertices": [
+        85628,
+        85629,
+        86225,
+        85634
+      ],
+      "diameter_m": 0.0538669125381217,
+      "perimeter_m": 0.1464679827177114
+    },
+    {
+      "boundary_vertices": [
+        89445,
+        89446,
+        90239,
+        89448
+      ],
+      "diameter_m": 0.054118071148728575,
+      "perimeter_m": 0.134328325690567
+    },
+    {
+      "boundary_vertices": [
+        89850,
+        89851,
+        90776,
+        90790,
+        89878,
+        89867
+      ],
+      "diameter_m": 0.09851376165869663,
+      "perimeter_m": 0.24334275485052695
+    },
+    {
+      "boundary_vertices": [
+        90802,
+        90803,
+        90810,
+        91800
+      ],
+      "diameter_m": 0.052126152036314544,
+      "perimeter_m": 0.14173473057681737
+    },
+    {
+      "boundary_vertices": [
+        90883,
+        90884,
+        90895,
+        90907,
+        91900,
+        91888
+      ],
+      "diameter_m": 0.09916380718135098,
+      "perimeter_m": 0.24526312335026554
+    },
+    {
+      "boundary_vertices": [
+        91010,
+        91011,
+        91995,
+        91020
+      ],
+      "diameter_m": 0.052863104275332695,
+      "perimeter_m": 0.14373855635264812
+    },
+    {
+      "boundary_vertices": [
+        91936,
+        91937,
+        91945,
+        91949,
+        92772,
+        92768
+      ],
+      "diameter_m": 0.099077248588197,
+      "perimeter_m": 0.24500732792618124
+    },
+    {
+      "boundary_vertices": [
+        91981,
+        91982,
+        91997,
+        92811
+      ],
+      "diameter_m": 0.0533778141911494,
+      "perimeter_m": 0.14513808937769632
+    },
+    {
+      "boundary_vertices": [
+        92010,
+        92011,
+        92022,
+        92830
+      ],
+      "diameter_m": 0.05231782571283006,
+      "perimeter_m": 0.14225590499384932
+    },
+    {
+      "boundary_vertices": [
+        92031,
+        92032,
+        92040,
+        92843
+      ],
+      "diameter_m": 0.05280196698196171,
+      "perimeter_m": 0.14357231968514753
+    },
+    {
+      "boundary_vertices": [
+        93310,
+        93311,
+        93320,
+        94006
+      ],
+      "diameter_m": 0.053920614214732154,
+      "perimeter_m": 0.1466134858849683
+    },
+    {
+      "boundary_vertices": [
+        93324,
+        93325,
+        93336,
+        94017
+      ],
+      "diameter_m": 0.052602031509043634,
+      "perimeter_m": 0.14302816532644386
+    },
+    {
+      "boundary_vertices": [
+        94083,
+        94084,
+        94753,
+        94095
+      ],
+      "diameter_m": 0.052645819029971896,
+      "perimeter_m": 0.1431477422505818
+    },
+    {
+      "boundary_vertices": [
+        95373,
+        95374,
+        96028,
+        95388
+      ],
+      "diameter_m": 0.052806097880162106,
+      "perimeter_m": 0.14358406742173932
+    },
+    {
+      "boundary_vertices": [
+        95414,
+        95415,
+        96067,
+        95428
+      ],
+      "diameter_m": 0.052680518574859114,
+      "perimeter_m": 0.14324209279159722
+    },
+    {
+      "boundary_vertices": [
+        96078,
+        96079,
+        96736,
+        96087
+      ],
+      "diameter_m": 0.05350339349645328,
+      "perimeter_m": 0.14547954847851138
+    },
+    {
+      "boundary_vertices": [
+        98060,
+        98061,
+        98071,
+        98805
+      ],
+      "diameter_m": 0.05304238525724703,
+      "perimeter_m": 0.14422654967721507
+    },
+    {
+      "boundary_vertices": [
+        98101,
+        98102,
+        98113,
+        98837
+      ],
+      "diameter_m": 0.05240622693432684,
+      "perimeter_m": 0.14249575870215186
+    },
+    {
+      "boundary_vertices": [
+        98663,
+        98664,
+        99398,
+        99401,
+        98672,
+        98667
+      ],
+      "diameter_m": 0.0983093502117871,
+      "perimeter_m": 0.24274321043602942
+    },
+    {
+      "boundary_vertices": [
+        99499,
+        99500,
+        100209,
+        99509
+      ],
+      "diameter_m": 0.05326049668224808,
+      "perimeter_m": 0.1448196102207304
+    },
+    {
+      "boundary_vertices": [
+        100319,
+        100320,
+        101024,
+        100327
+      ],
+      "diameter_m": 0.05405528149607708,
+      "perimeter_m": 0.14698017136893213
+    },
+    {
+      "boundary_vertices": [
+        101167,
+        101168,
+        101809,
+        101174
+      ],
+      "diameter_m": 0.05196422082684382,
+      "perimeter_m": 0.14129442805208317
+    },
+    {
+      "boundary_vertices": [
+        101797,
+        101798,
+        101810,
+        102480
+      ],
+      "diameter_m": 0.052347568179875736,
+      "perimeter_m": 0.14233677688614715
+    },
+    {
+      "boundary_vertices": [
+        102369,
+        102370,
+        102373,
+        102377,
+        103047,
+        103041
+      ],
+      "diameter_m": 0.09867622547969424,
+      "perimeter_m": 0.24382275582531715
+    },
+    {
+      "boundary_vertices": [
+        102382,
+        102383,
+        102387,
+        103066
+      ],
+      "diameter_m": 0.05289862999985928,
+      "perimeter_m": 0.1438346378079661
+    },
+    {
+      "boundary_vertices": [
+        102400,
+        102401,
+        102408,
+        103098
+      ],
+      "diameter_m": 0.05295976729323115,
+      "perimeter_m": 0.1440013900026176
+    },
+    {
+      "boundary_vertices": [
+        102412,
+        102413,
+        102419,
+        103110
+      ],
+      "diameter_m": 0.053930528370413455,
+      "perimeter_m": 0.14664044318240008
+    },
+    {
+      "boundary_vertices": [
+        105700,
+        105701,
+        106347,
+        105706
+      ],
+      "diameter_m": 0.05403958408291398,
+      "perimeter_m": 0.14693748898132977
+    },
+    {
+      "boundary_vertices": [
+        106337,
+        106339,
+        106346,
+        107001
+      ],
+      "diameter_m": 0.051906388252032976,
+      "perimeter_m": 0.14113717715039195
+    },
+    {
+      "boundary_vertices": [
+        106357,
+        106359,
+        106362,
+        107010
+      ],
+      "diameter_m": 0.05212202113811326,
+      "perimeter_m": 0.14172349836955322
+    },
+    {
+      "boundary_vertices": [
+        108374,
+        108375,
+        108381,
+        109015
+      ],
+      "diameter_m": 0.05393961634645539,
+      "perimeter_m": 0.14666515403838032
+    },
+    {
+      "boundary_vertices": [
+        108412,
+        108414,
+        108418,
+        109062
+      ],
+      "diameter_m": 0.05206749328186344,
+      "perimeter_m": 0.14157523323367394
+    },
+    {
+      "boundary_vertices": [
+        109023,
+        109024,
+        109036,
+        109668
+      ],
+      "diameter_m": 0.05388921938840596,
+      "perimeter_m": 0.14652863663693447
+    },
+    {
+      "boundary_vertices": [
+        110358,
+        110359,
+        110367,
+        110376,
+        110964,
+        110959
+      ],
+      "diameter_m": 0.09933806579965676,
+      "perimeter_m": 0.2457780702355421
+    },
+    {
+      "boundary_vertices": [
+        111489,
+        111490,
+        111496,
+        111508,
+        112121,
+        112112
+      ],
+      "diameter_m": 0.0990458592082617,
+      "perimeter_m": 0.24491574593052107
+    },
+    {
+      "boundary_vertices": [
+        112065,
+        112066,
+        112729,
+        112737,
+        112077,
+        112070
+      ],
+      "diameter_m": 0.09788540334399798,
+      "perimeter_m": 0.24149129186546953
+    },
+    {
+      "boundary_vertices": [
+        112696,
+        112697,
+        112699,
+        112702,
+        113289,
+        113282
+      ],
+      "diameter_m": 0.09792896799857465,
+      "perimeter_m": 0.24161811818913842
+    },
+    {
+      "boundary_vertices": [
+        112891,
+        112892,
+        113448,
+        112909
+      ],
+      "diameter_m": 0.05297959560459464,
+      "perimeter_m": 0.14405530459748278
+    },
+    {
+      "boundary_vertices": [
+        113892,
+        113893,
+        113901,
+        114522
+      ],
+      "diameter_m": 0.05250123759294478,
+      "perimeter_m": 0.142754614996355
+    },
+    {
+      "boundary_vertices": [
+        115810,
+        115811,
+        116364,
+        115832
+      ],
+      "diameter_m": 0.052009660707052596,
+      "perimeter_m": 0.14141798233198333
+    },
+    {
+      "boundary_vertices": [
+        116723,
+        116724,
+        116729,
+        117258
+      ],
+      "diameter_m": 0.05281518585620404,
+      "perimeter_m": 0.14360826274839078
+    },
+    {
+      "boundary_vertices": [
+        118298,
+        118299,
+        118306,
+        118901
+      ],
+      "diameter_m": 0.05342160171207766,
+      "perimeter_m": 0.14525715077469084
+    },
+    {
+      "boundary_vertices": [
+        118337,
+        118338,
+        118346,
+        118954
+      ],
+      "diameter_m": 0.05311756760450059,
+      "perimeter_m": 0.14443097584941084
+    },
+    {
+      "boundary_vertices": [
+        118388,
+        118389,
+        118995,
+        118396
+      ],
+      "diameter_m": 0.05361162302931355,
+      "perimeter_m": 0.14577383230881782
+    },
+    {
+      "boundary_vertices": [
+        118404,
+        118405,
+        118413,
+        119012
+      ],
+      "diameter_m": 0.052769745975995264,
+      "perimeter_m": 0.14348470846849062
+    },
+    {
+      "boundary_vertices": [
+        118944,
+        118945,
+        118953,
+        119618
+      ],
+      "diameter_m": 0.05338277126899005,
+      "perimeter_m": 0.1451510524992531
+    },
+    {
+      "boundary_vertices": [
+        119002,
+        119003,
+        119663,
+        119011
+      ],
+      "diameter_m": 0.05182624882693876,
+      "perimeter_m": 0.14091927232947898
+    },
+    {
+      "boundary_vertices": [
+        119538,
+        119539,
+        120226,
+        119542
+      ],
+      "diameter_m": 0.052658211724574855,
+      "perimeter_m": 0.14318195440170556
+    },
+    {
+      "boundary_vertices": [
+        120261,
+        120262,
+        120270,
+        120985
+      ],
+      "diameter_m": 0.05218315843148513,
+      "perimeter_m": 0.14188921950992112
+    },
+    {
+      "boundary_vertices": [
+        120366,
+        120367,
+        121154,
+        120375
+      ],
+      "diameter_m": 0.052359960874478695,
+      "perimeter_m": 0.14237047350793888
+    },
+    {
+      "boundary_vertices": [
+        129038,
+        129039,
+        129040,
+        129048
+      ],
+      "diameter_m": 0.0268136411748765,
+      "perimeter_m": 0.06016277307630316
+    },
+    {
+      "boundary_vertices": [
+        129126,
+        129127,
+        129135,
+        129128
+      ],
+      "diameter_m": 0.011452219064827851,
+      "perimeter_m": 0.027789562695170304
+    },
+    {
+      "boundary_vertices": [
+        129247,
+        129248,
+        129260,
+        129249
+      ],
+      "diameter_m": 0.019082376154258007,
+      "perimeter_m": 0.05012930562434224
+    },
+    {
+      "boundary_vertices": [
+        129292,
+        129293,
+        129302,
+        129294
+      ],
+      "diameter_m": 0.056137908507767786,
+      "perimeter_m": 0.13717477831770253
+    }
+  ],
+  "original_vertices": 129303,
+  "original_triangles": 256324,
+  "output_vertices": 129375,
+  "output_triangles": 256632,
+  "max_existing_vertex_displacement_m": 0.039999794359140826,
+  "boundary_loops_preserved": 39,
+  "new_inferred_vertices": 72,
+  "new_inferred_triangles": 308,
+  "scale_verified": false,
+  "complete_room_recovered": false,
+  "limitations": [
+    "Structural planes are geometric hypotheses, not semantic wall labels",
+    "Small filled gaps are inferred; large openings remain unchanged",
+    "No global camera bundle adjustment or semantic object completion in this stage"
+  ]
+}

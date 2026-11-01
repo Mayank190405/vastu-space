@@ -1,48 +1,48 @@
 {
   "raw_points": 921600,
-  "confidence_filtered_points": 905939,
-  "registered_consensus_points": 304386,
-  "clean_points": 278672,
-  "mesh_vertices": 17000,
-  "mesh_triangles": 32666,
+  "confidence_filtered_points": 891631,
+  "registered_consensus_points": 445156,
+  "clean_points": 437306,
+  "mesh_vertices": 129375,
+  "mesh_triangles": 256632,
   "floor_level_m": 0.0,
-  "ceiling_level_m": 2.29,
+  "ceiling_level_m": 4.57,
   "dimensions_m": {
-    "width_x": 1.47,
-    "height_y": 2.39,
-    "depth_z": 3.08
+    "width_x": 7.3,
+    "height_y": 4.85,
+    "depth_z": 5.97
   },
   "architectural_planes": {
     "floor_plane": [
-      0.1189,
-      0.9917,
-      -0.0484,
-      0.0631
+      0.0008,
+      0.9999,
+      0.0116,
+      -0.01
     ],
     "left_wall_plane": [
-      0.9961,
-      0.0493,
-      0.0725,
-      -0.6063
+      -0.9098,
+      -0.048,
+      -0.4123,
+      5.2911
     ],
     "back_wall_plane": [
-      -0.07,
-      -0.0497,
-      0.9963,
-      -2.7868
+      -0.4149,
+      0.0759,
+      0.9067,
+      -4.7122
     ],
     "corner_direction": [
-      -0.0528,
-      0.9975,
-      0.046
+      -0.0122,
+      0.996,
+      -0.0889
     ],
     "corner_origin": [
-      0.4031,
+      2.8661,
       0.0,
-      2.8254
+      6.5086
     ],
     "dihedral_angle_deg": 90.0,
-    "structural_points_count": 207987,
-    "clutter_points_excluded": 70685
+    "structural_points_count": 339112,
+    "clutter_points_excluded": 98194
   }
 }

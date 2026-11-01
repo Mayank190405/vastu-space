@@ -51,6 +51,13 @@ class DepthWorker(BaseWorker):
         loaded_keyframes = []
 
         # 1. Estimate initial depth maps
+        intrinsics_raw = validated_input.get("intrinsics", [1400.0, 1400.0, 960.0, 540.0])
+        K = np.array([
+            [intrinsics_raw[0], 0.0, intrinsics_raw[2]],
+            [0.0, intrinsics_raw[1], intrinsics_raw[3]],
+            [0.0, 0.0, 1.0]
+        ], dtype=np.float64)
+
         for idx, k in enumerate(validated_input["metadata"]):
             if not k.get("is_keyframe", True):
                 continue
@@ -59,18 +66,12 @@ class DepthWorker(BaseWorker):
                 continue
 
             bgr = cv2.imread(img_path)
-            depth_map, conf_map = self.estimator.estimate_depth(bgr)
+            depth_map, conf_map = self.estimator.estimate_depth(bgr, intrinsics_k=K)
 
             raw_depth_maps.append((k["frame_index"], depth_map, conf_map))
             loaded_keyframes.append(k)
 
         # 2. Multi-view depth consistency verification
-        K = np.array([
-            [validated_input["intrinsics"][0], 0.0, validated_input["intrinsics"][2]],
-            [0.0, validated_input["intrinsics"][1], validated_input["intrinsics"][3]],
-            [0.0, 0.0, 1.0]
-        ], dtype=np.float64)
-
         pose_map = {p["frame_index"]: p for p in validated_input["poses"]}
         all_stats = []
 
@@ -107,23 +108,34 @@ class DepthWorker(BaseWorker):
             d_filename = f"depth_{f_idx:05d}.npy"
             c_filename = f"conf_{f_idx:05d}.npy"
             cons_filename = f"consensus_{f_idx:05d}.npy"
+            vis_filename = f"depth_{f_idx:05d}_vis.jpg"
 
             np.save(os.path.join(depth_dir, d_filename), d_map)
             np.save(os.path.join(depth_dir, c_filename), c_map)
             np.save(os.path.join(depth_dir, cons_filename), consensus_map)
+
+            # Persist visual depth preview for inspection
+            d_vis = self.estimator.colorize_depth(d_map)
+            cv2.imwrite(os.path.join(depth_dir, vis_filename), d_vis)
 
             depth_records.append({
                 "frame_index": f_idx,
                 "depth_file": d_filename,
                 "conf_file": c_filename,
                 "consensus_file": cons_filename,
-                "mean_depth_m": float(np.mean(d_map)),
-                "mean_confidence": float(np.mean(c_map)),
-                "consistency_ratio": stats.get("consistency_ratio", 1.0)
+                "vis_preview_file": vis_filename,
+                "depth_type": "METRIC",
+                "min_depth_m": round(float(np.min(d_map)), 3),
+                "max_depth_m": round(float(np.max(d_map)), 3),
+                "mean_depth_m": round(float(np.mean(d_map)), 3),
+                "mean_confidence": round(float(np.mean(c_map)), 3),
+                "consistency_ratio": round(float(stats.get("consistency_ratio", 1.0)), 4)
             })
 
         # Save depth confidence summary
         confidence_summary = {
+            "depth_model_backend": self.estimator.active_backend,
+            "depth_type": "METRIC",
             "total_frames_evaluated": len(depth_records),
             "mean_depth_consistency_ratio": round(float(np.mean([s["consistency_ratio"] for s in all_stats])) if all_stats else 1.0, 4),
             "frame_stats": depth_records

@@ -2,68 +2,68 @@
   "per_frame_contributions": [
     {
       "frame_id": 0,
-      "contributed_points": 57537
+      "contributed_points": 48687
     },
     {
       "frame_id": 1,
-      "contributed_points": 57548
+      "contributed_points": 56386
     },
     {
       "frame_id": 2,
-      "contributed_points": 57543
+      "contributed_points": 56841
     },
     {
       "frame_id": 3,
-      "contributed_points": 57552
+      "contributed_points": 56357
     },
     {
       "frame_id": 4,
-      "contributed_points": 57573
+      "contributed_points": 56834
     },
     {
       "frame_id": 5,
-      "contributed_points": 57505
+      "contributed_points": 57171
     },
     {
       "frame_id": 6,
-      "contributed_points": 57494
+      "contributed_points": 57306
     },
     {
       "frame_id": 7,
-      "contributed_points": 57545
+      "contributed_points": 57470
     },
     {
       "frame_id": 8,
-      "contributed_points": 57575
+      "contributed_points": 57342
     },
     {
       "frame_id": 9,
-      "contributed_points": 57522
+      "contributed_points": 57237
     },
     {
       "frame_id": 10,
-      "contributed_points": 57550
+      "contributed_points": 57220
     },
     {
       "frame_id": 11,
-      "contributed_points": 57558
+      "contributed_points": 57320
     },
     {
       "frame_id": 12,
-      "contributed_points": 57547
+      "contributed_points": 57404
     },
     {
       "frame_id": 13,
-      "contributed_points": 57541
+      "contributed_points": 57178
     },
     {
       "frame_id": 14,
-      "contributed_points": 57528
+      "contributed_points": 57054
     },
     {
       "frame_id": 15,
-      "contributed_points": 56908
+      "contributed_points": 43824
     }
   ],
-  "total_verified_points": 335607
+  "total_verified_points": 437306
 }

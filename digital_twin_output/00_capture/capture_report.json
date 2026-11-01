@@ -1,17 +1,17 @@
 {
-  "video_path": "/Users/kradsagency/Desktop/vastu-namma-space/luxury-bedroom-look-like-a-five-star-hotel-trending-viral-video-interiordesign-interior-ytmp4.savetube.vip.mp4",
+  "video_path": "/Users/kradsagency/Desktop/vastu-namma-space/IMG_4963.MOV",
   "resolution": [
-    360,
-    640
+    2160,
+    3840
   ],
-  "fps": 30.0,
-  "duration_sec": 7.3,
-  "total_frames": 219,
-  "mean_sharpness": 252.96,
-  "mean_exposure": 115.66,
+  "fps": 59.98,
+  "duration_sec": 32.48,
+  "total_frames": 1948,
+  "mean_sharpness": 241.8,
+  "mean_exposure": 167.21,
   "motion_blur_pct": 0.0,
-  "excessive_darkness_pct": 6.4,
-  "excessive_saturation_pct": 3.0,
+  "excessive_darkness_pct": 2.1,
+  "excessive_saturation_pct": 0.0,
   "frame_duplication_pct": 0.0,
   "usable_frame_pct": 100.0,
   "verdict": "PASS"

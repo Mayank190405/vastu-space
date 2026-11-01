@@ -64,13 +64,15 @@ class HierarchicalPoseEstimator:
         min_parallax_deg: float = 1.5,
         max_reprojection_error_px: float = 3.0,
         max_interframe_displacement_m: float = 2.0,
-        loop_closure_threshold_m: float = 0.50
+        loop_closure_threshold_m: float = 0.50,
+        default_step_m: float = 0.20
     ):
         self.tracker = VisualPoseTracker()
         self.min_parallax_deg = min_parallax_deg
         self.max_reprojection_error_px = max_reprojection_error_px
         self.max_interframe_displacement_m = max_interframe_displacement_m
         self.loop_closure_threshold_m = loop_closure_threshold_m
+        self.default_step_m = default_step_m
 
     def estimate_trajectory(
         self,
@@ -172,17 +174,24 @@ class HierarchicalPoseEstimator:
                     vio_t = np.array(vio_data.get("translation_vector_m", [0, 0, 0])).reshape(3, 1)
                     vio_R = np.array(vio_data.get("rotation_matrix", np.eye(3)))
                     delta_t = vio_t - t_curr
-                    step_len = np.linalg.norm(delta_t)
-                    t_curr = t_curr + (R_curr @ (vis_result.t_rel * max(0.1, step_len)))
-                    R_curr = vis_result.R_rel @ R_curr
+                    step_len = float(np.linalg.norm(delta_t))
+                    step_len = max(0.02, min(step_len, self.max_interframe_displacement_m))
+                    R_next = vis_result.R_rel @ R_curr
+                    t_next = vis_result.R_rel @ t_curr + step_len * vis_result.t_rel
+                    R_curr = R_next
+                    t_curr = t_next
                     tracking_source = TrackingSource.FUSED_HYBRID
                     confidence = min(1.0, vis_result.inliers_count / 80.0)
                     if vis_result.is_repetitive:
                         confidence *= 0.8
                 else:
                     # Pure Visual / SfM Odometry
-                    t_curr = t_curr + (R_curr @ (vis_result.t_rel * 0.3))
-                    R_curr = vis_result.R_rel @ R_curr
+                    # Scale unit translation vector by calibrated inter-frame baseline scale
+                    step_len = self.default_step_m
+                    R_next = vis_result.R_rel @ R_curr
+                    t_next = vis_result.R_rel @ t_curr + step_len * vis_result.t_rel
+                    R_curr = R_next
+                    t_curr = t_next
                     tracking_source = TrackingSource.SFM_BA
                     confidence = min(1.0, vis_result.inliers_count / 100.0)
                     if vis_result.is_repetitive:
@@ -202,8 +211,8 @@ class HierarchicalPoseEstimator:
                 is_reliable = False
                 tracking_source = TrackingSource.ESTIMATED_INTERPOLATION
                 confidence = 0.05
-                # Extrapolate slightly to avoid exact collapse
-                t_curr = t_curr + np.array([[0.05], [0.0], [0.0]])
+                # Extrapolate smoothly without jumping
+                t_curr = t_curr + np.array([[0.01], [0.0], [0.0]])
 
             # Disconnected trajectory check
             prev_t = np.array(trajectory[-1].translation_vector_m).reshape(3, 1)

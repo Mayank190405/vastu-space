@@ -1,0 +1,227 @@
+[
+  {
+    "frame_a": 0,
+    "frame_b": 1,
+    "pair": "00_01",
+    "good_matches": 243,
+    "inliers": 157,
+    "inlier_ratio": 0.646,
+    "camera_position": [
+      -0.237,
+      -0.004,
+      0.1248
+    ],
+    "translation_mag_m": 0.2679,
+    "confidence": 0.646
+  },
+  {
+    "frame_a": 1,
+    "frame_b": 2,
+    "pair": "01_02",
+    "good_matches": 114,
+    "inliers": 66,
+    "inlier_ratio": 0.579,
+    "camera_position": [
+      -1.1847,
+      -0.0583,
+      0.5674
+    ],
+    "translation_mag_m": 1.0473,
+    "confidence": 0.579
+  },
+  {
+    "frame_a": 2,
+    "frame_b": 3,
+    "pair": "02_03",
+    "good_matches": 244,
+    "inliers": 169,
+    "inlier_ratio": 0.693,
+    "camera_position": [
+      -1.4226,
+      -0.0953,
+      0.7101
+    ],
+    "translation_mag_m": 0.2799,
+    "confidence": 0.693
+  },
+  {
+    "frame_a": 3,
+    "frame_b": 4,
+    "pair": "03_04",
+    "good_matches": 168,
+    "inliers": 53,
+    "inlier_ratio": 0.315,
+    "camera_position": [
+      -2.0404,
+      -0.0807,
+      0.84
+    ],
+    "translation_mag_m": 0.6315,
+    "confidence": 0.315
+  },
+  {
+    "frame_a": 4,
+    "frame_b": 5,
+    "pair": "04_05",
+    "good_matches": 172,
+    "inliers": 32,
+    "inlier_ratio": 0.186,
+    "camera_position": [
+      -2.433,
+      -0.1279,
+      0.9353
+    ],
+    "translation_mag_m": 0.4067,
+    "confidence": 0.186
+  },
+  {
+    "frame_a": 5,
+    "frame_b": 6,
+    "pair": "05_06",
+    "good_matches": 131,
+    "inliers": 47,
+    "inlier_ratio": 0.359,
+    "camera_position": [
+      -2.9632,
+      -0.0803,
+      1.2353
+    ],
+    "translation_mag_m": 0.6111,
+    "confidence": 0.359
+  },
+  {
+    "frame_a": 6,
+    "frame_b": 7,
+    "pair": "06_07",
+    "good_matches": 218,
+    "inliers": 109,
+    "inlier_ratio": 0.5,
+    "camera_position": [
+      -3.1122,
+      -0.0961,
+      1.4126
+    ],
+    "translation_mag_m": 0.2321,
+    "confidence": 0.5
+  },
+  {
+    "frame_a": 7,
+    "frame_b": 8,
+    "pair": "07_08",
+    "good_matches": 26,
+    "inliers": 0,
+    "inlier_ratio": 0.0,
+    "camera_position": [
+      -3.1122,
+      -0.0961,
+      1.4126
+    ],
+    "translation_mag_m": 0.0,
+    "confidence": 0.0
+  },
+  {
+    "frame_a": 8,
+    "frame_b": 9,
+    "pair": "08_09",
+    "good_matches": 94,
+    "inliers": 49,
+    "inlier_ratio": 0.521,
+    "camera_position": [
+      -2.885,
+      -0.0738,
+      1.3605
+    ],
+    "translation_mag_m": 0.2341,
+    "confidence": 0.521
+  },
+  {
+    "frame_a": 9,
+    "frame_b": 10,
+    "pair": "09_10",
+    "good_matches": 38,
+    "inliers": 20,
+    "inlier_ratio": 0.526,
+    "camera_position": [
+      -2.4921,
+      -0.159,
+      1.3675
+    ],
+    "translation_mag_m": 0.4021,
+    "confidence": 0.526
+  },
+  {
+    "frame_a": 10,
+    "frame_b": 11,
+    "pair": "10_11",
+    "good_matches": 17,
+    "inliers": 0,
+    "inlier_ratio": 0.0,
+    "camera_position": [
+      -2.4921,
+      -0.159,
+      1.3675
+    ],
+    "translation_mag_m": 0.0,
+    "confidence": 0.0
+  },
+  {
+    "frame_a": 11,
+    "frame_b": 12,
+    "pair": "11_12",
+    "good_matches": 122,
+    "inliers": 63,
+    "inlier_ratio": 0.516,
+    "camera_position": [
+      -2.2358,
+      -0.1047,
+      1.5436
+    ],
+    "translation_mag_m": 0.3156,
+    "confidence": 0.516
+  },
+  {
+    "frame_a": 12,
+    "frame_b": 13,
+    "pair": "12_13",
+    "good_matches": 180,
+    "inliers": 125,
+    "inlier_ratio": 0.694,
+    "camera_position": [
+      -1.8269,
+      -0.1551,
+      1.6784
+    ],
+    "translation_mag_m": 0.4335,
+    "confidence": 0.694
+  },
+  {
+    "frame_a": 13,
+    "frame_b": 14,
+    "pair": "13_14",
+    "good_matches": 147,
+    "inliers": 72,
+    "inlier_ratio": 0.49,
+    "camera_position": [
+      -1.9158,
+      -0.1197,
+      1.8889
+    ],
+    "translation_mag_m": 0.2312,
+    "confidence": 0.49
+  },
+  {
+    "frame_a": 14,
+    "frame_b": 15,
+    "pair": "14_15",
+    "good_matches": 29,
+    "inliers": 16,
+    "inlier_ratio": 0.552,
+    "camera_position": [
+      -1.9158,
+      -0.1197,
+      1.8889
+    ],
+    "translation_mag_m": 0.0,
+    "confidence": 0.552
+  }
+]

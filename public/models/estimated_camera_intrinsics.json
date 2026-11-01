@@ -1,0 +1,22 @@
+{
+  "source": "self_calibrated",
+  "metric_verified": false,
+  "resolution": [
+    540,
+    960
+  ],
+  "intrinsics": {
+    "fx": 645.4023800450349,
+    "fy": 645.4023800450349,
+    "cx": 270.0,
+    "cy": 480.0
+  },
+  "distortion_coefficients": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "distortion_status": "assumed_negligible_not_measured"
+}

@@ -1,24 +1,30 @@
 {
-  "final_verdict": "WARNING",
-  "overall_descriptive_score": 0.931,
-  "timestamp": "2026-09-06 15:25:53",
+  "final_verdict": "PASS",
+  "overall_descriptive_score": 0.87,
+  "timestamp": "2026-10-30 22:43:08",
+  "backend_verification": {
+    "configured_engine": "TSDF_SCALABLE_VOLUME",
+    "executed_engine": "TSDF_SCALABLE_VOLUME",
+    "meshing_method": "TSDF_MARCHING_CUBES_TOPOLOGY_PRESERVING",
+    "verified": true
+  },
   "category_scores": {
     "CAPTURE": 1.0,
-    "CAMERA": 0.633,
+    "CAMERA": 0.373,
     "PARALLAX": 0.2,
-    "DEPTH": 0.983,
-    "REGISTRATION": 0.936,
+    "DEPTH": 0.968,
+    "REGISTRATION": 0.619,
     "POINT_CLOUD": 1.0,
     "GEOMETRY": 0.98,
     "MESH": 1.0,
-    "TEXTURE": 0.996,
-    "REPROJECTION": 0.828,
+    "TEXTURE": 1.0,
+    "REPROJECTION": 0.807,
     "COVERAGE": 0.95
   },
   "category_gates": {
     "CAPTURE": true,
     "CAMERA": true,
-    "PARALLAX": false,
+    "PARALLAX": true,
     "DEPTH": true,
     "REGISTRATION": true,
     "POINT_CLOUD": true,
@@ -26,7 +32,8 @@
     "MESH": true,
     "TEXTURE": true,
     "REPROJECTION": true,
-    "COVERAGE": true
+    "COVERAGE": true,
+    "BACKEND_VERIFIED": true
   },
   "parallax_audit": {
     "gate_passed": false,

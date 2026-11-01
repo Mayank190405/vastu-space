@@ -1,0 +1,136 @@
+{
+  "model": "DEPTH_ANYTHING_V2_METRIC",
+  "metric_scale_status": "CALIBRATED_METRIC_NEURAL",
+  "depth_type": "METRIC",
+  "clutter_layer_active": true,
+  "frame_statistics": [
+    {
+      "frame_id": 0,
+      "min_depth_m": 2.231,
+      "max_depth_m": 4.989,
+      "median_depth_m": 4.563,
+      "confidence_ratio": 0.846,
+      "clutter_ratio": 0.039
+    },
+    {
+      "frame_id": 1,
+      "min_depth_m": 2.114,
+      "max_depth_m": 4.708,
+      "median_depth_m": 4.271,
+      "confidence_ratio": 0.978,
+      "clutter_ratio": 0.041
+    },
+    {
+      "frame_id": 2,
+      "min_depth_m": 2.397,
+      "max_depth_m": 4.467,
+      "median_depth_m": 3.787,
+      "confidence_ratio": 0.986,
+      "clutter_ratio": 0.0
+    },
+    {
+      "frame_id": 3,
+      "min_depth_m": 2.433,
+      "max_depth_m": 4.329,
+      "median_depth_m": 3.637,
+      "confidence_ratio": 0.979,
+      "clutter_ratio": 0.0
+    },
+    {
+      "frame_id": 4,
+      "min_depth_m": 2.404,
+      "max_depth_m": 4.175,
+      "median_depth_m": 3.473,
+      "confidence_ratio": 0.988,
+      "clutter_ratio": 0.0
+    },
+    {
+      "frame_id": 5,
+      "min_depth_m": 2.45,
+      "max_depth_m": 3.927,
+      "median_depth_m": 3.347,
+      "confidence_ratio": 0.991,
+      "clutter_ratio": 0.0
+    },
+    {
+      "frame_id": 6,
+      "min_depth_m": 2.313,
+      "max_depth_m": 3.244,
+      "median_depth_m": 2.866,
+      "confidence_ratio": 0.995,
+      "clutter_ratio": 0.092
+    },
+    {
+      "frame_id": 7,
+      "min_depth_m": 2.332,
+      "max_depth_m": 3.199,
+      "median_depth_m": 2.781,
+      "confidence_ratio": 0.998,
+      "clutter_ratio": 0.22
+    },
+    {
+      "frame_id": 8,
+      "min_depth_m": 1.424,
+      "max_depth_m": 3.267,
+      "median_depth_m": 2.284,
+      "confidence_ratio": 0.996,
+      "clutter_ratio": 0.161
+    },
+    {
+      "frame_id": 9,
+      "min_depth_m": 0.966,
+      "max_depth_m": 3.266,
+      "median_depth_m": 2.169,
+      "confidence_ratio": 0.994,
+      "clutter_ratio": 0.184
+    },
+    {
+      "frame_id": 10,
+      "min_depth_m": 1.398,
+      "max_depth_m": 3.169,
+      "median_depth_m": 2.381,
+      "confidence_ratio": 0.993,
+      "clutter_ratio": 0.191
+    },
+    {
+      "frame_id": 11,
+      "min_depth_m": 2.187,
+      "max_depth_m": 3.986,
+      "median_depth_m": 3.527,
+      "confidence_ratio": 0.995,
+      "clutter_ratio": 0.058
+    },
+    {
+      "frame_id": 12,
+      "min_depth_m": 2.402,
+      "max_depth_m": 4.459,
+      "median_depth_m": 3.577,
+      "confidence_ratio": 0.997,
+      "clutter_ratio": 0.114
+    },
+    {
+      "frame_id": 13,
+      "min_depth_m": 2.644,
+      "max_depth_m": 4.56,
+      "median_depth_m": 3.485,
+      "confidence_ratio": 0.993,
+      "clutter_ratio": 0.004
+    },
+    {
+      "frame_id": 14,
+      "min_depth_m": 2.626,
+      "max_depth_m": 4.355,
+      "median_depth_m": 3.414,
+      "confidence_ratio": 0.99,
+      "clutter_ratio": 0.009
+    },
+    {
+      "frame_id": 15,
+      "min_depth_m": 2.424,
+      "max_depth_m": 5.0,
+      "median_depth_m": 3.294,
+      "confidence_ratio": 0.762,
+      "clutter_ratio": 0.001
+    }
+  ]
+}

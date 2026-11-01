@@ -1,0 +1,23 @@
+{
+  "base_resolution": "2048x2048",
+  "mipmap_levels": 4,
+  "pyramid": [
+    {
+      "resolution": "1024x1024",
+      "file": "mipmap_1024x1024.png"
+    },
+    {
+      "resolution": "512x512",
+      "file": "mipmap_512x512.png"
+    },
+    {
+      "resolution": "256x256",
+      "file": "mipmap_256x256.png"
+    },
+    {
+      "resolution": "128x128",
+      "file": "mipmap_128x128.png"
+    }
+  ],
+  "status": "PASS"
+}

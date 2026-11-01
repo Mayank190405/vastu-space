@@ -23,6 +23,11 @@ import { AssetsPage } from './pages/assets/AssetsPage';
 import { FloorPlanStudioPage } from './pages/cad/FloorPlanStudioPage';
 import { PipelineCommandCenterPage } from './pages/pipeline/PipelineCommandCenterPage';
 import { VirtualTourStudioPage } from './pages/tours/VirtualTourStudioPage';
+import { ReconstructionTrackingPage } from './pages/dashboard/ReconstructionTrackingPage';
+import { SessionDetailPage } from './pages/dashboard/SessionDetailPage';
+import { SessionListPage } from './pages/dashboard/SessionListPage';
+import { DeviceMonitoringPage } from './pages/dashboard/DeviceMonitoringPage';
+import { RoomMappingPage } from './pages/dashboard/RoomMappingPage';
 
 
 // Root gatekeeper: absolutely no marketing home page between opening the app and authentication
@@ -267,6 +272,72 @@ export const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <SettingsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Phase 7 Admin Dashboard & Real-Time Session Routes */}
+          <Route
+            path="/dashboard/projects"
+            element={
+              <ProtectedRoute>
+                <ProjectsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/projects/new"
+            element={
+              <ProtectedRoute>
+                <ProjectCreationWizard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/projects/:projectId"
+            element={
+              <ProtectedRoute>
+                <ProjectDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/projects/:projectId/rooms"
+            element={
+              <ProtectedRoute>
+                <RoomMappingPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/sessions"
+            element={
+              <ProtectedRoute>
+                <SessionListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/sessions/:sessionId"
+            element={
+              <ProtectedRoute>
+                <SessionDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/devices"
+            element={
+              <ProtectedRoute>
+                <DeviceMonitoringPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/reconstruction/:jobId"
+            element={
+              <ProtectedRoute>
+                <ReconstructionTrackingPage />
               </ProtectedRoute>
             }
           />

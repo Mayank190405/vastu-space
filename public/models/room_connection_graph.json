@@ -1,0 +1,100 @@
+{
+  "project_id": "proj_vastu_residence",
+  "room_count": 4,
+  "connection_count": 3,
+  "rooms": [
+    {
+      "room_id": "room_living",
+      "room_name": "Grand Living Suite",
+      "floor_level": 1,
+      "area_sqm": 42.0,
+      "center_3d": [
+        0.0,
+        0.0,
+        1.4
+      ],
+      "boundary_polygon_2d": []
+    },
+    {
+      "room_id": "room_corridor",
+      "room_name": "Central Gallery Corridor",
+      "floor_level": 1,
+      "area_sqm": 12.5,
+      "center_3d": [
+        0.0,
+        0.0,
+        1.4
+      ],
+      "boundary_polygon_2d": []
+    },
+    {
+      "room_id": "room_bedroom",
+      "room_name": "Master Suite",
+      "floor_level": 1,
+      "area_sqm": 20.25,
+      "center_3d": [
+        0.0,
+        0.0,
+        1.4
+      ],
+      "boundary_polygon_2d": []
+    },
+    {
+      "room_id": "room_washroom",
+      "room_name": "Ensuite Washroom",
+      "floor_level": 1,
+      "area_sqm": 5.28,
+      "center_3d": [
+        0.0,
+        0.0,
+        1.4
+      ],
+      "boundary_polygon_2d": []
+    }
+  ],
+  "doorways": [
+    {
+      "doorway_id": "door_liv_corr",
+      "source_room_id": "room_living",
+      "target_room_id": "room_corridor",
+      "width_m": 1.0,
+      "height_m": 2.1,
+      "center_3d": [
+        3.0,
+        0.0,
+        1.1
+      ],
+      "confidence": 0.95,
+      "is_open": true
+    },
+    {
+      "doorway_id": "door_corr_bed",
+      "source_room_id": "room_corridor",
+      "target_room_id": "room_bedroom",
+      "width_m": 0.9,
+      "height_m": 2.1,
+      "center_3d": [
+        5.5,
+        0.0,
+        1.05
+      ],
+      "confidence": 0.95,
+      "is_open": true
+    },
+    {
+      "doorway_id": "door_corr_bath",
+      "source_room_id": "room_corridor",
+      "target_room_id": "room_washroom",
+      "width_m": 0.85,
+      "height_m": 2.1,
+      "center_3d": [
+        4.25,
+        2.5,
+        1.05
+      ],
+      "confidence": 0.95,
+      "is_open": true
+    }
+  ],
+  "connected_components": 1
+}

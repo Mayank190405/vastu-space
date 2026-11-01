@@ -12,6 +12,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { Spatial3DViewer } from '../../components/viewer/Spatial3DViewer';
+import { DigitalTwinViewer } from '../../components/viewer/DigitalTwinViewer';
 import { api } from '../../services/api';
 import { Project } from '../../types';
 
@@ -22,6 +23,7 @@ export const SpatialViewerPage: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [loadingProjects, setLoadingProjects] = useState<boolean>(true);
+  const [viewerTab, setViewerTab] = useState<'universal' | 'metrology'>('universal');
 
   // Fetch project list and auto-select the FIRST project by default
   useEffect(() => {
@@ -151,16 +153,60 @@ export const SpatialViewerPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Viewer Engine Mode Switcher Tabs */}
+      <div className="flex items-center justify-between border-b border-[#D9CEBD] pb-3">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setViewerTab('universal')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+              viewerTab === 'universal'
+                ? 'bg-[#241A13] text-[#F2DFB8] shadow-md border border-[#C5A059]/40'
+                : 'bg-white/80 text-slate-600 hover:text-slate-900 border border-[#D9CEBD]'
+            }`}
+          >
+            <Box className="w-4 h-4 text-[#C5A059]" />
+            <span>Universal Facility Twin (WASD & Isometric)</span>
+            <span className="text-[10px] bg-[#C5A059] text-slate-950 px-1.5 py-0.2 rounded font-extrabold uppercase">
+              Phase 8
+            </span>
+          </button>
+
+          <button
+            onClick={() => setViewerTab('metrology')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
+              viewerTab === 'metrology'
+                ? 'bg-[#241A13] text-[#F2DFB8] shadow-md border border-[#C5A059]/40'
+                : 'bg-white/80 text-slate-600 hover:text-slate-900 border border-[#D9CEBD]'
+            }`}
+          >
+            <Layers className="w-4 h-4 text-[#C5A059]" />
+            <span>Metrology & Single-Room Inspector</span>
+          </button>
+        </div>
+
+        <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500 font-medium">
+          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+          <span>Real-time Collision & Navmesh Active</span>
+        </div>
+      </div>
+
       {/* 3D Viewport Component */}
       <div className="w-full">
-        <Spatial3DViewer
-          key={activeProjectId || 'default-viewer'}
-          projectId={activeProjectId || undefined}
-          initialModelUrl={modelUrl}
-          modelName={title}
-          projectCode={selectedProject?.project_code}
-          projectType={selectedProject?.project_type}
-        />
+        {viewerTab === 'universal' ? (
+          <DigitalTwinViewer
+            key={`universal-${activeProjectId || 'default'}`}
+            projectId={activeProjectId || undefined}
+          />
+        ) : (
+          <Spatial3DViewer
+            key={`metrology-${activeProjectId || 'default-viewer'}`}
+            projectId={activeProjectId || undefined}
+            initialModelUrl={modelUrl}
+            modelName={title}
+            projectCode={selectedProject?.project_code}
+            projectType={selectedProject?.project_type}
+          />
+        )}
       </div>
 
       {/* Feature Information Cards */}

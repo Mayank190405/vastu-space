@@ -3,6 +3,15 @@ VĀSTU Formal System Contracts (1 to 13)
 """
 
 from core.schemas.capture_manifest import CaptureManifest, DeviceInfo, CameraCalibration, CaptureFiles
+from core.schemas.capture_package_v1 import (
+    CaptureManifestV1,
+    CameraPoseRecord,
+    CameraIntrinsicsRecord,
+    TrackingState,
+    TrackingStateEvent,
+    FloorAnchorObservation,
+    FloorBoundaryObservation,
+)
 from core.schemas.frame_metadata import FrameMetadata
 from core.schemas.imu_samples import IMUSample, Vector3D
 from core.schemas.camera_poses import CameraPoses, CameraTrajectoryFrame
@@ -161,4 +170,11 @@ __all__ = [
     "ARRouteProjectionResult",
     "ARValidationMetrics",
     "ARValidationReport",
+    "CaptureManifestV1",
+    "CameraPoseRecord",
+    "CameraIntrinsicsRecord",
+    "TrackingState",
+    "TrackingStateEvent",
+    "FloorAnchorObservation",
+    "FloorBoundaryObservation",
 ]

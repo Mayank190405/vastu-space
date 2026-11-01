@@ -1,0 +1,18 @@
+{
+  "video_path": "/Users/kradsagency/Downloads/arkitscenes_sample.mov",
+  "resolution": [
+    1920,
+    1440
+  ],
+  "fps": 60.02,
+  "duration_sec": 60.16,
+  "total_frames": 3611,
+  "mean_sharpness": 131.19,
+  "mean_exposure": 141.26,
+  "motion_blur_pct": 0.0,
+  "excessive_darkness_pct": 2.5,
+  "excessive_saturation_pct": 0.9,
+  "frame_duplication_pct": 0.0,
+  "usable_frame_pct": 100.0,
+  "verdict": "PASS"
+}

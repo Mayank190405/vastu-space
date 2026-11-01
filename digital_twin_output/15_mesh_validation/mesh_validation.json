@@ -1,25 +1,44 @@
 {
-  "vertex_count": 406212,
-  "triangle_count": 814468,
-  "non_manifold_edges": 710,
-  "degenerate_triangles": 680,
+  "vertex_count": 129375,
+  "triangle_count": 256632,
+  "strict_non_manifold_edges": 0,
+  "boundary_edges": 0,
+  "non_manifold_vertices": 0,
+  "connected_components_count": 1,
+  "largest_component_triangles": 256632,
+  "largest_component_ratio": 1.0,
+  "self_intersecting_triangles": 0,
+  "degenerate_triangles": 0,
   "floating_boundary_bubbles_clipped": true,
-  "below_floor_vertices_count": 0,
+  "below_floor_vertices_count": 4125,
   "corner_dihedral_angle_deg": 90.0,
   "bounding_box_min": [
-    -0.745,
-    0.0,
-    0.758
+    -1.348,
+    -0.192,
+    -0.65
   ],
   "bounding_box_max": [
-    2.885,
-    2.297,
-    4.034
+    6.178,
+    4.745,
+    4.893
   ],
   "dimensions_m": {
-    "width_x": 3.63,
-    "height_y": 2.3,
-    "depth_z": 3.28
+    "width_x": 7.53,
+    "height_y": 4.94,
+    "depth_z": 5.54
   },
-  "validation_verdict": "WARNING"
+  "validation_verdict": "FAIL",
+  "reconstruction_backend": {
+    "depth_model": "DEPTH_ANYTHING_V2_METRIC",
+    "pose_estimator": "DIRECT_3D_2D_PNP_RANSAC",
+    "fusion_engine": "TSDF_SCALABLE_VOLUME",
+    "meshing_method": "TSDF_MARCHING_CUBES_TOPOLOGY_PRESERVING",
+    "voxel_length_m": 0.03,
+    "sdf_trunc_m": 0.09,
+    "depth_range_m": [
+      0.4,
+      5.0
+    ],
+    "integrated_frames": 16
+  }
 }
