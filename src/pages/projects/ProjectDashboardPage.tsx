@@ -1008,6 +1008,9 @@ export const ProjectDashboardPage: React.FC = () => {
             setPairingSession(null);
             navigate(`/projects/${project.id}/capture/${sid}`);
           }}
+          onSessionRegenerated={(newId) => {
+            setPairingSession((prev: any) => ({ ...prev, id: newId }));
+          }}
         />
       )}
     </div>

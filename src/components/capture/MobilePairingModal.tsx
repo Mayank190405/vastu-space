@@ -26,6 +26,7 @@ interface MobilePairingModalProps {
   floorName: string;
   onClose: () => void;
   onLaunchWebStudio: () => void;
+  onSessionRegenerated?: (newSessionId: string) => void;
 }
 
 export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
@@ -35,23 +36,51 @@ export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
   operatorName,
   floorName,
   onClose,
-  onLaunchWebStudio
+  onLaunchWebStudio,
+  onSessionRegenerated
 }) => {
-  const safeSessionId = sessionId || 'CAP-01-LIVE';
-  const effectiveSessionCode = sessionCode || `V-CAP-${safeSessionId.replace(/[^A-Za-z0-9]/g, '').slice(-6).toUpperCase() || 'LIVE'}`;
+  const [currentSessionId, setCurrentSessionId] = useState<string>(sessionId || 'CAP-01-LIVE');
+  const [sessionNonce, setSessionNonce] = useState<string>(() => `n_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`);
+  const [isRegenerating, setIsRegenerating] = useState<boolean>(false);
+  const [regeneratedNotice, setRegeneratedNotice] = useState<boolean>(false);
+
+  const effectiveSessionCode = `V-CAP-${currentSessionId.replace(/[^A-Za-z0-9]/g, '').slice(-6).toUpperCase() || 'LIVE'}`;
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedDeepLink, setCopiedDeepLink] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [surveyorStatus, setSurveyorStatus] = useState<'WAITING' | 'CONNECTED' | 'RECORDING'>('WAITING');
 
-  // Generate a cryptographically distinct single-use nonce for this modal instance
-  const [sessionNonce] = useState(() => `n_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`);
-
   const liveBase = 'https://vastu.krads.co.in';
-  const mobileWebUrl = `${liveBase}/capture/${safeSessionId}`;
-  const qrPayload = `${liveBase}/capture/${safeSessionId}?endpoint=${encodeURIComponent(liveBase)}&challenge=chal_${safeSessionId}_${sessionNonce}&nonce=${sessionNonce}&session_id=${safeSessionId}&project_id=${project.id}&project_name=${encodeURIComponent(project.name)}&room_name=${encodeURIComponent(floorName)}&operator=${encodeURIComponent(operatorName)}&grant=grant_${safeSessionId}`;
-  const iosDeepLink = `vastuspatial://capture/${safeSessionId}?endpoint=${encodeURIComponent(liveBase)}&session_id=${safeSessionId}&project_id=${project.id}&grant=grant_${safeSessionId}&nonce=${sessionNonce}`;
+  const mobileWebUrl = `${liveBase}/capture/${currentSessionId}`;
+  const qrPayload = `${liveBase}/capture/${currentSessionId}?endpoint=${encodeURIComponent(liveBase)}&challenge=chal_${currentSessionId}_${sessionNonce}&nonce=${sessionNonce}&session_id=${currentSessionId}&project_id=${project.id}&project_name=${encodeURIComponent(project.name)}&room_name=${encodeURIComponent(floorName)}&operator=${encodeURIComponent(operatorName)}&grant=grant_${currentSessionId}`;
+  const iosDeepLink = `vastuspatial://capture/${currentSessionId}?endpoint=${encodeURIComponent(liveBase)}&session_id=${currentSessionId}&project_id=${project.id}&grant=grant_${currentSessionId}&nonce=${sessionNonce}`;
+
+  const handleTruncateAndRegenerate = async () => {
+    setIsRegenerating(true);
+    try {
+      if (currentSessionId) {
+        await api.revokeQRSession(currentSessionId).catch(() => {});
+      }
+    } catch {
+      // Best-effort revocation
+    }
+
+    const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const newSessionId = `CAP-${randomSuffix}-SOP`;
+    const newNonce = `n_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+
+    setCurrentSessionId(newSessionId);
+    setSessionNonce(newNonce);
+    setSurveyorStatus('WAITING');
+    setIsRegenerating(false);
+    setRegeneratedNotice(true);
+    setTimeout(() => setRegeneratedNotice(false), 3500);
+
+    if (onSessionRegenerated) {
+      onSessionRegenerated(newSessionId);
+    }
+  };
 
   useEffect(() => {
     QRCode.toDataURL(qrPayload, {
@@ -75,7 +104,7 @@ export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
     let isMounted = true;
     const interval = setInterval(async () => {
       try {
-        const session = await api.getQRSession(safeSessionId);
+        const session = await api.getQRSession(currentSessionId);
         if (!isMounted) return;
         const s = session as any;
         if (s && (s.status === 'AUTHORIZED' || s.status === 'ACTIVE' || s.status === 'RECORDING')) {
@@ -90,7 +119,7 @@ export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
       isMounted = false;
       clearInterval(interval);
     };
-  }, [safeSessionId]);
+  }, [currentSessionId]);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(mobileWebUrl);
@@ -175,11 +204,25 @@ export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
 
           {/* QR Code & Mobile App Instructions */}
           <div className="flex flex-col sm:flex-row items-center gap-6 p-5 bg-white rounded-2xl border border-[#EAE2D3]">
-            <div className="flex flex-col items-center space-y-2 shrink-0">
+            <div className="flex flex-col items-center space-y-2.5 shrink-0">
               {renderQRCode()}
               <span className="text-[11px] font-mono text-[#7C6652] font-semibold">
                 Scan with VĀSTU Mobile App
               </span>
+              <button
+                onClick={handleTruncateAndRegenerate}
+                disabled={isRegenerating}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FAF3E0] hover:bg-[#F3E7C4] text-[#8F6834] border border-[#D9C4A1] text-xs font-bold rounded-xl shadow-xs transition-all disabled:opacity-50 cursor-pointer"
+                title="Revoke and truncate this session, and generate a brand-new code and QR"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isRegenerating ? 'animate-spin' : ''}`} />
+                <span>{isRegenerating ? 'Revoking...' : 'Truncate & New QR'}</span>
+              </button>
+              {regeneratedNotice && (
+                <span className="text-[10px] text-emerald-600 font-bold animate-in fade-in">
+                  ✓ Fresh session & QR ready!
+                </span>
+              )}
             </div>
 
             <div className="space-y-3 text-xs text-[#5C4D3E] flex-1">
@@ -252,7 +295,7 @@ export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 bg-white border-t border-[#EAE2D3] flex items-center justify-between">
+        <div className="p-4 bg-white border-t border-[#EAE2D3] flex flex-wrap items-center justify-between gap-2">
           <button
             onClick={onClose}
             className="px-4 py-2 text-xs font-semibold text-[#7C6652] hover:text-[#1F150D]"
@@ -260,13 +303,25 @@ export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
             Close & Monitor on Web
           </button>
 
-          <button
-            onClick={onLaunchWebStudio}
-            className="px-4 py-2 bg-[#8F6834] hover:bg-[#755427] text-white text-xs font-bold rounded-xl shadow-sm flex items-center gap-1.5 transition-all"
-          >
-            <span>Simulate / Open Studio on Web</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleTruncateAndRegenerate}
+              disabled={isRegenerating}
+              className="px-3.5 py-2 bg-[#FAF3E0] hover:bg-[#F3E7C4] text-[#8F6834] border border-[#D9C4A1] text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all disabled:opacity-50"
+              title="Revoke the current session and generate a brand-new code and QR"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRegenerating ? 'animate-spin' : ''}`} />
+              <span>{isRegenerating ? 'Revoking...' : 'Truncate & New Session'}</span>
+            </button>
+
+            <button
+              onClick={onLaunchWebStudio}
+              className="px-4 py-2 bg-[#8F6834] hover:bg-[#755427] text-white text-xs font-bold rounded-xl shadow-sm flex items-center gap-1.5 transition-all"
+            >
+              <span>Simulate / Open Studio on Web</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
