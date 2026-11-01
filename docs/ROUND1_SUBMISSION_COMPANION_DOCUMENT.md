@@ -107,3 +107,4 @@ The repository includes `test_data/sample_indoor_scan.mp4` (2.8 MB), a pre-valid
 * **High-Res Texture Atlas:** [`https://vastu.krads.co.in/output/texture_atlas.jpg`](https://vastu.krads.co.in/output/texture_atlas.jpg) (2048x2048)
 * **Dense Point Cloud (PLY):** [`https://vastu.krads.co.in/output/dense_pointcloud.ply`](https://vastu.krads.co.in/output/dense_pointcloud.ply) (24 MB, 437k points)
 * **Quality Summary:** [`https://vastu.krads.co.in/output/digital_twin_summary.json`](https://vastu.krads.co.in/output/digital_twin_summary.json)
+

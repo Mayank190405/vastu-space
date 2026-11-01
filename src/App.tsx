@@ -31,6 +31,7 @@ import { DeviceMonitoringPage } from './pages/dashboard/DeviceMonitoringPage';
 import { RoomMappingPage } from './pages/dashboard/RoomMappingPage';
 import { ProjectWebsitePage } from './pages/website/ProjectWebsitePage';
 import { LiveDigitalTwinOutputPage } from './pages/viewer/LiveDigitalTwinOutputPage';
+import { ProofOfConceptPage } from './pages/viewer/ProofOfConceptPage';
 
 
 // Root gatekeeper: Shows project website for public visitors, or routes authenticated users directly to console
@@ -109,6 +110,8 @@ export const App: React.FC = () => {
           {/* Public 3D Spatial Viewer & Demo Routes */}
           <Route path="/output" element={<LiveDigitalTwinOutputPage />} />
           <Route path="/twin" element={<LiveDigitalTwinOutputPage />} />
+          <Route path="/poc" element={<ProofOfConceptPage />} />
+          <Route path="/proof-of-concept" element={<ProofOfConceptPage />} />
           <Route path="/viewer" element={<div className="min-h-screen bg-[#E3DACA] p-6"><SpatialViewerPage /></div>} />
           <Route path="/3d" element={<div className="min-h-screen bg-[#E3DACA] p-6"><SpatialViewerPage /></div>} />
           <Route path="/ar" element={<ARNavigationPage />} />

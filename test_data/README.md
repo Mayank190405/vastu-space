@@ -21,3 +21,4 @@ python scripts/reconstruct.py --video test_data/sample_indoor_scan.mp4 --output 
 # 3. View the generated 3D twin in your browser
 # Open digital_twin_output/index.html directly or browse to http://localhost:3000/output
 ```
+
