@@ -2,6 +2,7 @@ package queue
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
@@ -68,7 +69,7 @@ func NewAsynqServer(
 				log.Printf("[AsynqServer] Task %q failed (retry %d/%d): %v", task.Type(), retried, maxRetry, err)
 
 				// When all retries are exhausted, record failure in PostgreSQL
-				if retried >= maxRetry {
+				if retried >= maxRetry || errors.Is(err, asynq.SkipRetry) {
 					if p, decErr := DecodeReconstructionPayload(task.Payload()); decErr == nil {
 						if recorder, ok := jobRepo.(SessionPipelineRecorder); ok && p.SessionID != "" {
 							message := err.Error()

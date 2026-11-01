@@ -3,7 +3,11 @@ package queue
 import (
 	"bufio"
 	"context"
+	"encoding/json"
+	"sort"
+
 	"fmt"
+	"github.com/hibiken/asynq"
 	"io"
 	"log"
 	"mime"
@@ -80,6 +84,11 @@ func (h *StageHandlers) runSessionReconstruction(ctx context.Context, p *Reconst
 	}
 	reader.Close()
 	if err := <-done; err != nil {
+		if rejection := reconstructionQualityRejection(output); rejection != "" {
+			_ = recorder.RecordSessionStage(ctx, p.SessionID, p.JobID, "QUALITY_VALIDATION", "FAILED", &rejection)
+			_ = h.jobRepo.AddLog(ctx, &domain.JobLog{JobID: p.JobID, Stage: "QUALITY_VALIDATION", LogLevel: "error", Message: rejection})
+			return fmt.Errorf("%s: %w", rejection, asynq.SkipRetry)
+		}
 		message := fmt.Sprintf("RECONSTRUCTION_FAILED: %v; inspect persisted job logs for the underlying error", err)
 		_ = recorder.RecordSessionStage(ctx, p.SessionID, p.JobID, current, "RETRYING", &message)
 		return fmt.Errorf("%s", message)
@@ -145,4 +154,42 @@ func prepareReconstructionAttempt(workDir string) (string, string, error) {
 		return "", "", err
 	}
 	return output, filepath.Base(directory), nil
+}
+
+// A measured quality rejection needs changed input or processing settings, not a transient retry.
+// Only the current isolated attempt's explicit FAIL report is authoritative.
+func reconstructionQualityRejection(output string) string {
+	data, err := os.ReadFile(filepath.Join(output, "quality_gate.json"))
+	if err != nil {
+		return ""
+	}
+	var gate struct {
+		Verdict string          `json:"final_verdict"`
+		Gates   map[string]bool `json:"category_gates"`
+	}
+	if json.Unmarshal(data, &gate) != nil || gate.Verdict != "FAIL" {
+		return ""
+	}
+	failed := []string{}
+	for name, passed := range gate.Gates {
+		if !passed {
+			failed = append(failed, name)
+		}
+	}
+	sort.Strings(failed)
+	reason := strings.Join(failed, ", ")
+	if reason == "" {
+		reason = "unspecified quality check"
+	}
+	message := "RECONSTRUCTION_QUALITY_FAILED: " + reason + "; automatic retries stopped; inspect saved quality reports"
+	if strings.Contains(reason, "MESH") {
+		meshData, err := os.ReadFile(filepath.Join(output, "mesh_validation.json"))
+		var mesh struct {
+			Triangles int `json:"triangle_count"`
+		}
+		if err == nil && json.Unmarshal(meshData, &mesh) == nil {
+			message += fmt.Sprintf("; mesh triangles=%d (final gate minimum=15000)", mesh.Triangles)
+		}
+	}
+	return message
 }
