@@ -208,20 +208,21 @@ class TextureReconstructionEngine:
                 continue
 
             scores = []
-            cent = centroids[fi]
-            norm = face_normals[fi]
+            cent = np.asarray(centroids[fi]).flatten()
+            norm = np.asarray(face_normals[fi]).flatten()
 
             for ci in visible_cams:
                 pose = camera_poses[ci]
-                cam_center = -pose["R"].T @ pose["t"]
+                cam_center = (-pose["R"].T @ pose["t"]).flatten()
                 view_vec = cam_center - cent
-                dist = np.linalg.norm(view_vec)
+                dist = float(np.linalg.norm(view_vec))
                 if dist < 1e-6:
                     dist = 1e-6
                 view_dir = view_vec / dist
 
                 # Incidence cos
-                cos_theta = max(0.0, float(np.dot(norm, view_dir)))
+                dot_val = np.dot(norm, view_dir)
+                cos_theta = max(0.0, float(dot_val.item() if hasattr(dot_val, 'item') else dot_val))
 
                 # Projected coordinate
                 uv, depth, _ = self.project_points_to_camera(
