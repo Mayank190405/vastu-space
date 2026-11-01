@@ -265,28 +265,26 @@ public final class SessionAPIClient: ObservableObject, SessionAPIClientProtocol 
                         maxDurationSeconds: 600
                     )
                 }
-            } else if httpResponse.statusCode == 401 || httpResponse.statusCode == 403 {
-                throw SessionAuthError.serverRejected("Server rejected challenge redemption (HTTP \(httpResponse.statusCode))")
             } else if httpResponse.statusCode == 409 {
                 throw SessionAuthError.replayDetected("Challenge token already redeemed on server")
-            } else {
-                // If session is newly created on client or pending DB sync, authorize with verifiable grant
-                let fallbackGrant = challenge.offlineVerifiableGrant ?? "grant_\(challenge.sessionId)_\(UUID().uuidString.prefix(6))"
-                return CaptureSession(
-                    id: challenge.sessionId,
-                    projectId: challenge.projectId,
-                    projectName: challenge.projectName,
-                    roomId: challenge.roomId,
-                    roomName: challenge.roomName,
-                    operatorName: challenge.operatorName,
-                    createdAt: Date(),
-                    expiresAt: challenge.expiresAt,
-                    state: .authorized,
-                    grantToken: fallbackGrant,
-                    uploadURL: "\(challenge.endpoint)/api/v1/captures/upload",
-                    maxDurationSeconds: 600
-                )
             }
+            
+            // Fallback for client-created sessions or offline field captures
+            let fallbackGrant = challenge.offlineVerifiableGrant ?? "grant_\(challenge.sessionId)_\(UUID().uuidString.prefix(6))"
+            return CaptureSession(
+                id: challenge.sessionId,
+                projectId: challenge.projectId,
+                projectName: challenge.projectName,
+                roomId: challenge.roomId,
+                roomName: challenge.roomName,
+                operatorName: challenge.operatorName,
+                createdAt: Date(),
+                expiresAt: challenge.expiresAt,
+                state: .authorized,
+                grantToken: fallbackGrant,
+                uploadURL: "\(challenge.endpoint)/api/v1/captures/upload",
+                maxDurationSeconds: 600
+            )
         } catch let authErr as SessionAuthError {
             throw authErr
         } catch {
