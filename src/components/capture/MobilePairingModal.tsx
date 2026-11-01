@@ -77,8 +77,9 @@ export const MobilePairingModal: React.FC<MobilePairingModalProps> = ({
       try {
         const session = await api.getQRSession(safeSessionId);
         if (!isMounted) return;
-        if (session && (session.status === 'AUTHORIZED' || session.status === 'ACTIVE' || session.status === 'RECORDING')) {
-          setSurveyorStatus(session.status === 'RECORDING' ? 'RECORDING' : 'CONNECTED');
+        const s = session as any;
+        if (s && (s.status === 'AUTHORIZED' || s.status === 'ACTIVE' || s.status === 'RECORDING')) {
+          setSurveyorStatus(s.status === 'RECORDING' ? 'RECORDING' : 'CONNECTED');
         }
       } catch (err) {
         // Fallback for client-only / offline sessions
