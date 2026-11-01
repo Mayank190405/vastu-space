@@ -9,6 +9,7 @@ import { PendingApprovalPage } from './pages/auth/PendingApprovalPage';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { ProjectsPage } from './pages/projects/ProjectsPage';
 import { ProjectCreationWizard } from './pages/projects/ProjectCreationWizard';
+import { ProjectPipelinePage } from './pages/projects/ProjectPipelinePage';
 import { ProjectDashboardPage } from './pages/projects/ProjectDashboardPage';
 import { OrganizationManagementPage } from './pages/organization/OrganizationManagementPage';
 import { OrganizationMembersPage } from './pages/organization/OrganizationMembersPage';
@@ -211,6 +212,8 @@ export const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
+          <Route path="/projects/:projectId/pipelines" element={<ProtectedRoute><ProjectPipelinePage /></ProtectedRoute>} />
+          <Route path="/projects/:projectId/pipelines/:sessionId" element={<ProtectedRoute><ReconstructionTrackingPage /></ProtectedRoute>} />
           <Route
             path="/projects/:projectId"
             element={

@@ -635,6 +635,10 @@ class ApiService {
     return this.request<any[]>(`/jobs/project/${projectId}`);
   }
 
+  async getJobLogs(id: string): Promise<any[]> {
+    return this.request<any[]>(`/jobs/${id}/logs`);
+  }
+
   async getJob(id: string): Promise<any> {
     return this.request<any>(`/jobs/${id}`);
   }
