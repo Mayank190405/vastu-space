@@ -61,7 +61,7 @@ services:
   # 4. OBJECT STORAGE: Self-Hosted MinIO (S3 Compatible)
   # ----------------------------------------------------------------------------
   vastu-minio:
-    image: quay.io/minio/minio:latest
+    image: alpine/minio:latest-release
     container_name: vastu_minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
@@ -82,7 +82,7 @@ services:
   # 5. OBJECT STORAGE INIT: Bucket Auto-Provisioning
   # ----------------------------------------------------------------------------
   vastu-minio-init:
-    image: quay.io/minio/minio:latest
+    image: alpine/minio:latest-release
     container_name: vastu_minio_init
     depends_on:
       vastu-minio:
