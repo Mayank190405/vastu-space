@@ -133,10 +133,9 @@ public final class CapturePackageWriter {
     /// Finalizes capture package, flushes frames and poses, writes manifest and calibration, and generates SHA-256 manifest.
     public func finalizePackage(totalFrames: Int, durationSeconds: Double) throws -> URL {
         guard !isFinalized else { return packageDirectory }
-        isFinalized = true
         
         // 1. Flush frame encoder, boundary logger, and close pose logger
-        frameRecorder.flush()
+        try frameRecorder.finishVideo()
         try? boundaryFileHandle?.close()
         boundaryFileHandle = nil
         try poseLogger.close()
@@ -157,6 +156,7 @@ public final class CapturePackageWriter {
         
         // 4. Write manifest.json
         var filesList = [
+            "capture.mp4",
             "calibration.json",
             "camera_poses.jsonl",
             "tracking_events.jsonl",
@@ -189,6 +189,7 @@ public final class CapturePackageWriter {
         // 5. Generate checksums.sha256 covering all files in package
         try generateChecksumsFile()
         
+        isFinalized = true
         return packageDirectory
     }
     

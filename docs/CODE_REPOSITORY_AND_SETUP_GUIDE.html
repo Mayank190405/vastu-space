@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>VĀSTU — Code Repository & Setup Instructions Document</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 20mm 18mm 20mm 18mm;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #1a1a1a;
+      line-height: 1.5;
+      font-size: 10pt;
+      margin: 0;
+      padding: 0;
+    }
+    .header {
+      border-bottom: 2px solid #c5a059;
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .brand-title {
+      font-family: Georgia, serif;
+      font-size: 24pt;
+      font-weight: bold;
+      color: #211710;
+      letter-spacing: 1px;
+      margin: 0;
+    }
+    .brand-subtitle {
+      font-size: 11pt;
+      color: #7a6336;
+      margin-top: 2px;
+      font-weight: 500;
+    }
+    .meta-box {
+      text-align: right;
+      font-size: 9pt;
+      color: #555;
+    }
+    .meta-box strong {
+      color: #111;
+    }
+    h2 {
+      font-size: 13pt;
+      color: #211710;
+      border-bottom: 1px solid #e0d5c1;
+      padding-bottom: 4px;
+      margin-top: 18px;
+      margin-bottom: 8px;
+      font-family: Georgia, serif;
+    }
+    .link-card {
+      background-color: #fbf9f5;
+      border: 1px solid #d9c099;
+      border-left: 4px solid #c5a059;
+      padding: 9px 12px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+    }
+    .link-card strong {
+      display: block;
+      color: #211710;
+      font-size: 10.5pt;
+      margin-bottom: 2px;
+    }
+    .link-card a {
+      color: #8e6b2c;
+      font-family: monospace;
+      font-size: 9.5pt;
+      font-weight: bold;
+    }
+    pre {
+      background: #181512;
+      color: #f4ece0;
+      padding: 10px 14px;
+      border-radius: 5px;
+      font-family: "SFMono-Regular", Consolas, Menlo, monospace;
+      font-size: 8.5pt;
+      line-height: 1.4;
+      overflow-x: auto;
+      margin: 6px 0 10px 0;
+    }
+    code {
+      font-family: monospace;
+      background: #f0ece1;
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-size: 9pt;
+    }
+    ol, ul {
+      margin: 0 0 10px 0;
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 4px;
+    }
+    .footer {
+      margin-top: 25px;
+      border-top: 1px solid #e0d5c1;
+      padding-top: 8px;
+      font-size: 8pt;
+      color: #888;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <h1 class="brand-title">VĀSTU</h1>
+      <div class="brand-subtitle">Autonomous Spatial Computing & Digital Twin Platform</div>
+    </div>
+    <div class="meta-box">
+      <strong>Techfest IIT Bombay 2026</strong><br>
+      Round 1: 3D Reconstruction & Roaming<br>
+      Deliverable 4: Code Repository & Setup Instructions
+    </div>
+  </div>
+
+  <h2>1. Code Repository Information</h2>
+  <div class="link-card">
+    <strong>Official GitHub Repository:</strong>
+    <a href="https://github.com/Mayank190405/vastu-space.git" target="_blank">https://github.com/Mayank190405/vastu-space.git</a>
+    <div style="font-size: 9pt; color: #666; margin-top: 2px;">
+      Branch: <code>codex/p0-capture-video-recovery</code> | Test Directory: <code>test_data/</code>
+    </div>
+  </div>
+
+  <h2>2. Quick Setup & Local Model Reconstruction</h2>
+  <p>Follow these 3 steps to set up the environment and reconstruct the 3D model using the sample data:</p>
+
+  <p><strong>Step 1: Clone the Repository</strong></p>
+  <pre>git clone -b codex/p0-capture-video-recovery https://github.com/Mayank190405/vastu-space.git
+cd vastu-space</pre>
+
+  <p><strong>Step 2: Create Python Virtual Environment & Install Dependencies</strong></p>
+  <pre>python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r backend/workers/requirements.txt</pre>
+
+  <p><strong>Step 3: Execute Reconstruction on Sample Data</strong></p>
+  <pre>python scripts/reconstruct.py --video test_data/sample_indoor_scan.mp4 --output digital_twin_output --deploy</pre>
+
+  <h2>3. Viewing the Reconstructed Model</h2>
+  <ul>
+    <li><strong>Direct Standalone WebGL:</strong> Double click <code>digital_twin_output/index.html</code> in any modern browser (Chrome, Edge, Safari).</li>
+    <li><strong>Production Cloud Roaming Viewer:</strong> <a href="https://vastu.krads.co.in/output">https://vastu.krads.co.in/output</a></li>
+    <li><strong>Full Local Studio:</strong> Run <code>npm install && npm run dev</code> and open <code>http://localhost:5173/output</code>.</li>
+  </ul>
+
+  <h2>4. Test Data Directory (<code>test_data/</code>)</h2>
+  <p>The repository includes <code>test_data/sample_indoor_scan.mp4</code> (2.8 MB), a pre-validated 720p 30fps indoor spatial scan captured according to the VĀSTU standard operating procedure (smooth dolly translation, high visual feature density, and zero motion blur).</p>
+
+  <div class="footer">
+    VĀSTU / Namma Space Technologies · Techfest IIT Bombay 2026 Submission Deliverable · In Collaboration with Create Fo'em Interior Designing Studio
+  </div>
+
+</body>
+</html>
+

@@ -21,6 +21,7 @@ except ImportError:
 
 import logging
 from enum import Enum
+from ml.depth.model_config import METRIC_DEPTH_MODEL_ID, METRIC_DEPTH_MODEL_REVISION
 from typing import Tuple, Optional, Dict, Any
 import numpy as np
 import cv2
@@ -77,13 +78,13 @@ class DepthEstimator:
         # Tier 1: Try Depth Anything V2 Metric (Hugging Face Transformers)
         try:
             from transformers import AutoImageProcessor, AutoModelForDepthEstimation
-            model_id = "depth-anything/Depth-Anything-V2-Metric-Indoor-Small-hf"
-            try:
-                processor = AutoImageProcessor.from_pretrained(model_id, local_files_only=True)
-                model = AutoModelForDepthEstimation.from_pretrained(model_id, local_files_only=True)
-            except Exception:
-                processor = AutoImageProcessor.from_pretrained(model_id)
-                model = AutoModelForDepthEstimation.from_pretrained(model_id)
+            model_path = os.getenv("VASTU_METRIC_DEPTH_MODEL_PATH")
+            model_id = model_path or METRIC_DEPTH_MODEL_ID
+            options = {"local_files_only": True} if model_path else {"revision": METRIC_DEPTH_MODEL_REVISION}
+            processor = AutoImageProcessor.from_pretrained(model_id, **options)
+            model = AutoModelForDepthEstimation.from_pretrained(model_id, use_safetensors=True, **options)
+            if getattr(model.config, "depth_estimation_type", None) != "metric":
+                raise RuntimeError("Configured depth model does not produce metric depth")
             model.to(self.device)
             model.eval()
             self.model = model
@@ -92,6 +93,8 @@ class DepthEstimator:
             logger.info("Initialized Depth Anything V2 Metric Indoor Small depth estimator.")
             return
         except Exception as e:
+            if os.getenv("VASTU_METRIC_DEPTH_MODEL_PATH"):
+                raise RuntimeError("METRIC_DEPTH_MODEL_UNAVAILABLE: rebuild the worker with its pinned model cache") from e
             logger.info(f"Depth Anything V2 not available ({e}). Trying TorchHub MiDaS...")
 
         # Tier 2: Try cached or Hub neural depth model (MiDaS)

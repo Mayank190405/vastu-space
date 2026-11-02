@@ -14,12 +14,12 @@ import (
 )
 
 type ValidationResult struct {
-	IsValid      bool     `json:"is_valid"`
-	DetectedMIME string   `json:"detected_mime"`
-	FileSizeBytes int64   `json:"file_size_bytes"`
-	SHA256Hash   string   `json:"sha256_hash"`
-	Warnings     []string `json:"warnings,omitempty"`
-	ErrorMessage string   `json:"error_message,omitempty"`
+	IsValid       bool     `json:"is_valid"`
+	DetectedMIME  string   `json:"detected_mime"`
+	FileSizeBytes int64    `json:"file_size_bytes"`
+	SHA256Hash    string   `json:"sha256_hash"`
+	Warnings      []string `json:"warnings,omitempty"`
+	ErrorMessage  string   `json:"error_message,omitempty"`
 }
 
 type UploadSecurityValidator struct {
@@ -47,19 +47,19 @@ func NewUploadSecurityValidator(baseDir string) *UploadSecurityValidator {
 
 // Executable / malicious file magic byte signatures that must never be permitted
 var blacklistedSignatures = [][]byte{
-	{0x7F, 0x45, 0x4C, 0x46},                         // ELF executable
-	{0x4D, 0x5A},                                     // DOS / Windows PE executable
-	{0xFE, 0xED, 0xFA, 0xCE},                         // Mach-O 32-bit (macOS)
-	{0xFE, 0xED, 0xFA, 0xCF},                         // Mach-O 64-bit (macOS)
-	{0xCE, 0xFA, 0xED, 0xFE},                         // Mach-O 32-bit rev
-	{0xCF, 0xFA, 0xED, 0xFE},                         // Mach-O 64-bit rev
-	{0xCA, 0xFE, 0xBA, 0xBE},                         // Mach-O Universal Binary / Java Class
-	{0x50, 0x4B, 0x03, 0x04},                         // ZIP / JAR (unless explicitly handled)
-	[]byte("<?php"),                                  // PHP script
-	[]byte("<script"),                                // Inline HTML script
-	[]byte("#!/bin/sh"),                              // Shell script
-	[]byte("#!/bin/bash"),                            // Bash script
-	[]byte("#!/usr/bin/env"),                         // Env script
+	{0x7F, 0x45, 0x4C, 0x46}, // ELF executable
+	{0x4D, 0x5A},             // DOS / Windows PE executable
+	{0xFE, 0xED, 0xFA, 0xCE}, // Mach-O 32-bit (macOS)
+	{0xFE, 0xED, 0xFA, 0xCF}, // Mach-O 64-bit (macOS)
+	{0xCE, 0xFA, 0xED, 0xFE}, // Mach-O 32-bit rev
+	{0xCF, 0xFA, 0xED, 0xFE}, // Mach-O 64-bit rev
+	{0xCA, 0xFE, 0xBA, 0xBE}, // Mach-O Universal Binary / Java Class
+	{0x50, 0x4B, 0x03, 0x04}, // ZIP / JAR (unless explicitly handled)
+	[]byte("<?php"),          // PHP script
+	[]byte("<script"),        // Inline HTML script
+	[]byte("#!/bin/sh"),      // Shell script
+	[]byte("#!/bin/bash"),    // Bash script
+	[]byte("#!/usr/bin/env"), // Env script
 }
 
 func (v *UploadSecurityValidator) ValidateAndPromote(
@@ -177,7 +177,8 @@ func (v *UploadSecurityValidator) ValidateAndPromote(
 	result.SHA256Hash = calculatedHash
 
 	if expectedChecksum != "" && !strings.EqualFold(calculatedHash, strings.TrimSpace(expectedChecksum)) {
-		result.Warnings = append(result.Warnings, fmt.Sprintf("client whole-file checksum notice: client provided %s, assembled hash is %s", expectedChecksum, calculatedHash))
+		result.ErrorMessage = "whole-file checksum mismatch"
+		return result, "", errors.New(result.ErrorMessage)
 	}
 
 	// 6. All validation checks passed: Promote from Quarantine to Clean Storage

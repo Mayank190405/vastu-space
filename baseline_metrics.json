@@ -1,0 +1,67 @@
+{
+  "baseline_evaluation": {
+    "verdict": "FAIL",
+    "overall_score": 0.63,
+    "timestamp": "2026-11-02T17:32:07+05:30",
+    "git_commit": "9652c22b35e7cb9a1451c8e6474bf4a1314cb63e"
+  },
+  "defects_observed": {
+    "mesh_fragmentation": {
+      "status": "FAIL",
+      "connected_components_count": 316,
+      "largest_component_ratio": 0.254,
+      "largest_component_triangles": 1266,
+      "total_triangles": 4991,
+      "defect_description": "Severe topological fragmentation: 315 floating disconnected triangle components accounting for 74.6% of mesh faces."
+    },
+    "mesh_manifoldness": {
+      "status": "FAIL",
+      "strict_non_manifold_edges": 0,
+      "boundary_edges": 3355,
+      "non_manifold_vertices": 39,
+      "self_intersecting_triangles": 31,
+      "degenerate_triangles": 31,
+      "below_floor_vertices": 30
+    },
+    "parallax_deficiency": {
+      "status": "FAIL",
+      "parallax_gate_passed": false,
+      "total_baseline_displacement_m": 0.5167,
+      "min_baseline_threshold_m": 0.1,
+      "defect_description": "Stationary pivot capture with insufficient camera translation baseline between adjacent frames."
+    },
+    "reprojection_metric": {
+      "status": "FAIL",
+      "mean_pixel_rmse": 41.21,
+      "threshold_max_rmse": 40.0,
+      "metric_semantics": "photometric_BGR_intensity_RMSE_not_geometric_pixel_reprojection_error",
+      "defect_description": "Evaluated using pixel intensity diff rather than geometric 2D-3D landmark reprojection."
+    }
+  },
+  "reconstruction_geometry": {
+    "room_dimensions_m": {
+      "width_x": 1.47,
+      "height_y": 2.6,
+      "depth_z": 3.01
+    },
+    "floor_level_m": 0.0,
+    "ceiling_level_m": 2.19,
+    "point_counts": {
+      "raw_inverse_projected": 921600,
+      "confidence_filtered": 51127,
+      "registered_consensus": 24594,
+      "mesh_vertices": 4441,
+      "mesh_triangles": 4991
+    }
+  },
+  "backend_configuration": {
+    "depth_model": "DEPTH_ANYTHING_V2_METRIC",
+    "pose_estimator": "DIRECT_3D_2D_PNP_RANSAC",
+    "fusion_engine": "TSDF_SCALABLE_VOLUME",
+    "meshing_method": "TSDF_MARCHING_CUBES_TOPOLOGY_PRESERVING",
+    "voxel_length_m": 0.03,
+    "sdf_trunc_m": 0.09,
+    "integrated_frames": 16
+  }
+}
+

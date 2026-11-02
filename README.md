@@ -391,12 +391,18 @@ PYTHONPATH=. backend/workers/venv/bin/uvicorn api.main:app --host 0.0.0.0 --port
 ```
 Interactive API documentation will be available at `http://localhost:8000/docs`.
 
-### 4. Run the 3D Web Viewer Frontend
+### 4. Run the Web App & Dedicated Project Website
 ```bash
 npm install
 npm run dev
 ```
-Open `http://localhost:3000` in your browser.
+Open in your browser:
+- **Dedicated Project Website & Architecture Portal**: `http://localhost:5173/website` (also accessible at `/overview`, `/about`, `/guide`)
+- **3D Spatial Digital Twin Studio**: `http://localhost:5173/viewer`
+- **2D / 3D CAD Floor Plan Studio**: `http://localhost:5173/cad`
+- **Live Mobile WebAR Navigation**: `http://localhost:5173/ar`
+- **Reconstruction Pipeline Center**: `http://localhost:5173/pipeline`
+- **Enterprise Console Dashboard**: `http://localhost:5173/dashboard`
 
 ---
 

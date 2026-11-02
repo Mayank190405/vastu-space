@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"crypto/rand"
+	"crypto/subtle"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -11,13 +12,29 @@ import (
 	"time"
 
 	"vastu/backend/internal/domain"
-	"vastu/backend/internal/repository/postgres"
 
 	"github.com/google/uuid"
 )
 
+type CaptureSessionRepository interface {
+	CreateSession(context.Context, *domain.CaptureSession) error
+	GetSessionByID(context.Context, string) (*domain.CaptureSession, error)
+	GetSessionByChallenge(context.Context, string) (*domain.CaptureSession, error)
+	ListSessionsByProject(context.Context, uuid.UUID) ([]*domain.CaptureSession, error)
+	ListAllSessions(context.Context) ([]*domain.CaptureSession, error)
+	UpdateSessionStatus(context.Context, string, domain.SessionStatus) error
+	AuthorizeSession(context.Context, string, string, string) error
+	UpsertDevice(context.Context, *domain.Device) error
+	RecordHeartbeat(context.Context, *domain.DeviceHeartbeatInput) error
+	ListDevices(context.Context) ([]*domain.Device, error)
+	GetPipelineStages(context.Context, string) ([]*domain.PipelineStageRecord, error)
+	UpdatePipelineStage(context.Context, string, string, domain.UpdatePipelineStageInput) (*domain.PipelineStageRecord, error)
+	ListRoomsByProject(context.Context, uuid.UUID) ([]*domain.RoomWithHierarchy, error)
+	CreateRoom(context.Context, uuid.UUID, domain.CreateRoomInput) (*domain.RoomWithHierarchy, error)
+}
+
 type SessionManagerService struct {
-	sessionRepo *postgres.SessionRepository
+	sessionRepo CaptureSessionRepository
 	appURL      string
 
 	// SSE subscriber broker
@@ -25,7 +42,7 @@ type SessionManagerService struct {
 	subscribers     map[string][]chan domain.PipelineStageRecord
 }
 
-func NewSessionManagerService(sessionRepo *postgres.SessionRepository, appURL string) *SessionManagerService {
+func NewSessionManagerService(sessionRepo CaptureSessionRepository, appURL string) *SessionManagerService {
 	return &SessionManagerService{
 		sessionRepo: sessionRepo,
 		appURL:      appURL,
@@ -58,11 +75,15 @@ func (s *SessionManagerService) CreateCaptureSession(
 	sessionCode := fmt.Sprintf("#S-%s", sessionUUID[:6])
 
 	challengeBytes := make([]byte, 16)
-	_, _ = rand.Read(challengeBytes)
+	if _, err := rand.Read(challengeBytes); err != nil {
+		return nil, err
+	}
 	challengeToken := fmt.Sprintf("chal_%s", hex.EncodeToString(challengeBytes))
 
 	nonceBytes := make([]byte, 8)
-	_, _ = rand.Read(nonceBytes)
+	if _, err := rand.Read(nonceBytes); err != nil {
+		return nil, err
+	}
 	nonce := hex.EncodeToString(nonceBytes)
 
 	expiresAt := time.Now().Add(time.Duration(ttl) * time.Minute)
@@ -179,25 +200,10 @@ func (s *SessionManagerService) RedeemChallenge(
 
 	session, err := s.sessionRepo.GetSessionByChallenge(ctx, input.ChallengeToken)
 	if err != nil {
-		// Auto-provision session for client-created sessions or offline field captures
-		sessionID := input.SessionID
-		if sessionID == "" {
-			sessionID = fmt.Sprintf("sess_%s", input.ChallengeToken)
-		}
-		grantTokenBytes := make([]byte, 24)
-		_, _ = rand.Read(grantTokenBytes)
-		grantToken := fmt.Sprintf("grant_%s", hex.EncodeToString(grantTokenBytes))
-
-		return &domain.RedeemChallengeResponse{
-			SessionID:          sessionID,
-			GrantToken:         grantToken,
-			ProjectID:          uuid.New().String(),
-			ProjectName:        "VĀSTU Residence",
-			RoomID:             uuid.New().String(),
-			RoomName:           "Living Space",
-			Status:             "AUTHORIZED",
-			MaxDurationSeconds: 600,
-		}, nil
+		return nil, errors.New("invalid or unknown capture challenge")
+	}
+	if input.SessionID != session.ID || input.Nonce != session.Nonce || input.DeviceID == "" {
+		return nil, errors.New("challenge session, nonce and device_id must match")
 	}
 
 	// 1. Enforce Expiry
@@ -207,7 +213,7 @@ func (s *SessionManagerService) RedeemChallenge(
 	}
 
 	// 2. Anti-Replay: Prevent redemption of already authorized/completed sessions
-	if session.Status == domain.SessionStatusAuthorized || session.Status == domain.SessionStatusCompleted {
+	if session.Status != domain.SessionStatusCreated {
 		return nil, errors.New("challenge token has already been redeemed (single-use protection)")
 	}
 	if session.Status == domain.SessionStatusRevoked {
@@ -228,11 +234,15 @@ func (s *SessionManagerService) RedeemChallenge(
 		CurrentProjectID:    &session.ProjectID,
 		CurrentRoomID:       session.RoomID,
 	}
-	_ = s.sessionRepo.UpsertDevice(ctx, device)
+	if err := s.sessionRepo.UpsertDevice(ctx, device); err != nil {
+		return nil, fmt.Errorf("failed to register device: %w", err)
+	}
 
 	// 4. Generate short-lived grant token
 	grantTokenBytes := make([]byte, 24)
-	_, _ = rand.Read(grantTokenBytes)
+	if _, err := rand.Read(grantTokenBytes); err != nil {
+		return nil, err
+	}
 	grantToken := fmt.Sprintf("grant_%s", hex.EncodeToString(grantTokenBytes))
 
 	// 5. Authorize session
@@ -298,6 +308,24 @@ func (s *SessionManagerService) UpdateStage(
 	stageName string,
 	input domain.UpdatePipelineStageInput,
 ) (*domain.PipelineStageRecord, error) {
+	validStage := false
+	for _, stage := range domain.StandardPipelineStages {
+		if stage == stageName {
+			validStage = true
+			break
+		}
+	}
+	if !validStage {
+		return nil, errors.New("unknown pipeline stage")
+	}
+	switch input.Status {
+	case domain.StageStatusPending, domain.StageStatusRunning, domain.StageStatusCompleted, domain.StageStatusFailed, domain.StageStatusRetrying, domain.StageStatusCancelled, domain.StageStatusSkipped:
+	default:
+		return nil, errors.New("invalid pipeline stage status")
+	}
+	if input.ProgressPercentage != nil && (*input.ProgressPercentage < 0 || *input.ProgressPercentage > 100) {
+		return nil, errors.New("progress_percentage must be between 0 and 100")
+	}
 	updated, err := s.sessionRepo.UpdatePipelineStage(ctx, sessionID, stageName, input)
 	if err != nil {
 		return nil, err
@@ -354,3 +382,17 @@ func (s *SessionManagerService) CreateRoom(ctx context.Context, floorID uuid.UUI
 	return s.sessionRepo.CreateRoom(ctx, floorID, input)
 }
 
+// ValidateGrant checks the persisted grant and its session scope on every mobile request.
+func (s *SessionManagerService) ValidateGrant(ctx context.Context, sessionID, token string) (*domain.CaptureSession, error) {
+	session, err := s.sessionRepo.GetSessionByID(ctx, sessionID)
+	if err != nil {
+		return nil, errors.New("invalid capture session")
+	}
+	if session.ID != sessionID || token == "" || session.GrantToken == nil || subtle.ConstantTimeCompare([]byte(token), []byte(*session.GrantToken)) != 1 {
+		return nil, errors.New("invalid session grant")
+	}
+	if time.Now().After(session.ExpiresAt) || session.Status == domain.SessionStatusRevoked || session.Status == domain.SessionStatusExpired || session.Status == domain.SessionStatusCreated {
+		return nil, errors.New("session grant expired or revoked")
+	}
+	return session, nil
+}

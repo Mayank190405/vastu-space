@@ -97,11 +97,7 @@ export const LoginPage: React.FC = () => {
       const res = await api.sendOTP(email, 'LOGIN');
       setOtpSent(true);
       setOtpCode('');
-      if (res?.debug_otp) {
-        setSuccessMsg(`Verification code sent to ${email} (Dev Code: ${res.debug_otp})`);
-      } else {
-        setSuccessMsg(`Verification code sent to ${email}`);
-      }
+      setSuccessMsg(`Verification code sent to ${email}. Please check your inbox.`);
     } catch (err: any) {
       setError(err.message || 'Failed to send OTP. Please verify email address.');
     } finally {
@@ -211,6 +207,15 @@ export const LoginPage: React.FC = () => {
         <p className="mt-1 text-xs text-[#5C4A38] font-medium">
           Multi-tenant spatial platform for architecture studios & teams
         </p>
+        <div className="mt-3">
+          <Link
+            to="/website"
+            className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#EAE2D5] border border-[#C5A059]/40 text-[#695541] hover:text-[#241A12] hover:border-[#C5A059] text-xs font-medium transition-all shadow-sm"
+          >
+            <Compass className="w-3.5 h-3.5 text-[#C5A059]" />
+            <span>Explore Project Website, Math Approach & Specs →</span>
+          </Link>
+        </div>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4">

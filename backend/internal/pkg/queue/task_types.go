@@ -14,18 +14,18 @@ import (
 
 const (
 	// Reconstruction pipeline stages — each maps to a distinct Asynq queue task
-	TypePreprocessVideo     = "vastu:reconstruction:preprocess_video"
-	TypeRunSFM              = "vastu:reconstruction:run_sfm"
-	TypeRunDepthEstimation  = "vastu:reconstruction:run_depth_estimation"
-	TypeFusePointCloud      = "vastu:reconstruction:fuse_point_cloud"
-	TypeRunMeshReconstruction = "vastu:reconstruction:run_mesh_reconstruction"
-	TypeRunTexturing          = "vastu:reconstruction:run_texturing"
+	TypePreprocessVideo         = "vastu:reconstruction:preprocess_video"
+	TypeRunSFM                  = "vastu:reconstruction:run_sfm"
+	TypeRunDepthEstimation      = "vastu:reconstruction:run_depth_estimation"
+	TypeFusePointCloud          = "vastu:reconstruction:fuse_point_cloud"
+	TypeRunMeshReconstruction   = "vastu:reconstruction:run_mesh_reconstruction"
+	TypeRunTexturing            = "vastu:reconstruction:run_texturing"
 	TypeRunSemanticSegmentation = "vastu:reconstruction:run_semantic_segmentation"
-	TypeRunQualityAssurance = "vastu:reconstruction:run_quality_assurance"
-	TypeFinalizeModel       = "vastu:reconstruction:finalize_model"
+	TypeRunQualityAssurance     = "vastu:reconstruction:run_quality_assurance"
+	TypeFinalizeModel           = "vastu:reconstruction:finalize_model"
 
 	// Standalone tasks
-	TypeSendNotification  = "vastu:notification:send"
+	TypeSendNotification      = "vastu:notification:send"
 	TypeCleanupExpiredUploads = "vastu:maintenance:cleanup_expired_uploads"
 )
 
@@ -46,13 +46,14 @@ const (
 // ReconstructionPayload is the shared payload for all reconstruction pipeline tasks.
 // Each stage reads the same payload and writes its output to the shared job paths.
 type ReconstructionPayload struct {
+	SessionID  string     `json:"session_id,omitempty"`
 	JobID      uuid.UUID  `json:"job_id"`
 	ProjectID  uuid.UUID  `json:"project_id"`
 	CaptureID  *uuid.UUID `json:"capture_id,omitempty"`
 	VideoURL   string     `json:"video_url"`
 	IMUURL     string     `json:"imu_url"`
 	LiDARURL   string     `json:"lidar_url,omitempty"`
-	WorkDir    string     `json:"work_dir"`  // scratch path for intermediate outputs
+	WorkDir    string     `json:"work_dir"` // scratch path for intermediate outputs
 	Priority   int        `json:"priority"`
 	RetryCount int        `json:"retry_count"` // incremented by Asynq automatically
 }

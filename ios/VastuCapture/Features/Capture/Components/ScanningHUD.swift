@@ -103,6 +103,10 @@ public struct ScanningHUD: View {
             Image(systemName: "arrow.right.circle.fill")
         case .stepSideways:
             Image(systemName: "arrow.left.and.right.circle.fill")
+        case .tiltDown:
+            Image(systemName: "arrow.down.to.line.circle.fill")
+        case .tiltUp:
+            Image(systemName: "arrow.up.to.line.circle.fill")
         case .steady:
             Image(systemName: "hand.raised.fill")
         case .none:

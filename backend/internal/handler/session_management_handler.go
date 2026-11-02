@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"vastu/backend/internal/domain"
@@ -124,6 +125,16 @@ func (h *SessionManagementHandler) RecordHeartbeat(w http.ResponseWriter, r *htt
 		return
 	}
 
+	parts := strings.Fields(r.Header.Get("Authorization"))
+	if input.SessionID == nil || len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
+		JSONError(w, http.StatusUnauthorized, "SESSION_GRANT_REQUIRED")
+		return
+	}
+	session, err := h.sessionService.ValidateGrant(r.Context(), *input.SessionID, parts[1])
+	if err != nil || session.DeviceID == nil || *session.DeviceID != input.DeviceUUID {
+		JSONError(w, http.StatusUnauthorized, "SESSION_DEVICE_MISMATCH")
+		return
+	}
 	if input.DeviceUUID == "" {
 		JSONError(w, http.StatusBadRequest, "device_uuid is required")
 		return
@@ -158,6 +169,10 @@ func (h *SessionManagementHandler) GetPipelineStages(w http.ResponseWriter, r *h
 		return
 	}
 
+	if _, err := h.sessionService.GetSession(r.Context(), sessionID); err != nil {
+		JSONError(w, http.StatusNotFound, "CAPTURE_SESSION_NOT_FOUND")
+		return
+	}
 	stages, err := h.sessionService.GetPipelineStages(r.Context(), sessionID)
 	if err != nil {
 		JSONError(w, http.StatusInternalServerError, err.Error())
@@ -283,3 +298,32 @@ func (h *SessionManagementHandler) CreateRoom(w http.ResponseWriter, r *http.Req
 	JSONSuccess(w, http.StatusCreated, "Room created successfully", room)
 }
 
+// AuthenticateGrant is restricted to a single session; grants are never user JWTs.
+func (h *SessionManagementHandler) AuthenticateGrant(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		parts := strings.Fields(r.Header.Get("Authorization"))
+		if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
+			JSONError(w, http.StatusUnauthorized, "SESSION_GRANT_REQUIRED")
+			return
+		}
+		if _, err := h.sessionService.ValidateGrant(r.Context(), chi.URLParam(r, "sessionId"), parts[1]); err != nil {
+			JSONError(w, http.StatusUnauthorized, "SESSION_GRANT_INVALID: "+err.Error())
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (h *SessionManagementHandler) UpdateMobileStage(w http.ResponseWriter, r *http.Request) {
+	switch chi.URLParam(r, "stageName") {
+	case "ARKIT_CAPTURE_RUNNING", "LOCAL_AI_ANALYSIS", "CAPTURE_VALIDATION", "UPLOADING":
+		h.UpdatePipelineStage(w, r)
+	default:
+		JSONError(w, http.StatusForbidden, "STAGE_SERVER_OWNED")
+	}
+}
+
+// A session handshake alone is never evidence of a verified object or queued job.
+func (h *SessionManagementHandler) FinalizeSession(w http.ResponseWriter, r *http.Request) {
+	JSONError(w, http.StatusConflict, "UPLOAD_NOT_VERIFIED: upload and storage verification are required before finalization")
+}

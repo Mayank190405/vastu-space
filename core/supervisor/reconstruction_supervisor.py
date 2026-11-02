@@ -110,7 +110,7 @@ class PostReconstructionSupervisor:
                 corrections.append({
                     "target_engine": "mobile_capture",
                     "action": "TARGETED_RECAPTURE_WITH_LATERAL_TRANSLATION",
-                    "reason": f"Baseline displacement {parallax_report.get('total_baseline_displacement_m', 0):.3f}m < 0.10m. Epipolar triangulation is degenerate."
+                    "reason": "Triangulation or metric scale is unverified. Inspect parallax_analysis.json and metric_scale_report.json before recapture."
                 })
 
         if floor_rms > self.max_floor_residual_m:

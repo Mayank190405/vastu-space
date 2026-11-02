@@ -38,7 +38,7 @@ class PreflightReconstructionValidator:
         or blocks architectural certification when physical translation is insufficient.
         """
         usable_pct = float(capture_report.get("usable_frame_pct", 100.0))
-        baseline_m = float(parallax_report.get("total_baseline_displacement_m", 0.0))
+        baseline_m = parallax_report.get("total_baseline_displacement_m")
         h_ratio = float(parallax_report.get("mean_homography_inlier_ratio", 0.0))
         flow_px = float(parallax_report.get("mean_optical_flow_px", 0.0))
 
@@ -46,8 +46,10 @@ class PreflightReconstructionValidator:
         capture_ok = usable_pct >= self.min_usable_frame_pct
 
         # Check motion parallax (differentiate lateral translation from stationary pivot)
-        is_stationary_pivot = (baseline_m < self.min_translation_baseline_m) or (h_ratio >= self.max_homography_inlier_ratio)
-        motion_ok = not is_stationary_pivot
+        motion_ok = (parallax_report.get("parallax_gate_passed") is True
+                     and parallax_report.get("verified_multi_view_geometry") is True
+                     and parallax_report.get("scale_status") == "METRIC_ESTABLISHED")
+        is_stationary_pivot = not motion_ok  # legacy diagnostic name; does not prove physical pivot
 
         # Determine optimal depth backend
         try:
@@ -63,16 +65,17 @@ class PreflightReconstructionValidator:
         can_proceed_architectural = capture_ok and motion_ok
         
         status = "APPROVED_ARCHITECTURAL" if can_proceed_architectural else (
-            "DEGENERATE_BASELINE_BLOCKED" if is_stationary_pivot else "CAPTURE_QUALITY_LOW"
+            "NEEDS_RESCAN" if not motion_ok else "CAPTURE_QUALITY_LOW"
         )
 
         guidance = (
             "Preflight passed: Lateral translation baseline confirmed. Proceeding with TSDF volumetric reconstruction."
             if can_proceed_architectural else
-            "PREFLIGHT BLOCK: Insufficient camera translation detected. The video shows stationary in-hand rotation "
-            f"(homography ratio {h_ratio:.1%}, baseline {baseline_m:.3f}m < {self.min_translation_baseline_m}m). "
-            "Monocular depth without multi-view parallax causes flat walls to bow outward. "
-            "Please capture room video using a smooth sliding (truck/dolly) lateral motion across the floor."
+            "PREFLIGHT BLOCK: Camera geometry or metric scale is unverified. "
+            "Use smooth sliding (truck/dolly) lateral motion with overlapping sharp views, "
+            "and record a validated independent metric reference. Inspect parallax_analysis.json; "
+            "unreliable tracking cannot establish the physical motion."
+
         )
 
         decision = {

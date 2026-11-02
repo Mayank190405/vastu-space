@@ -1,0 +1,266 @@
+[
+  {
+    "frame_id": 0,
+    "raw_frame_idx": 0,
+    "sharpness": 362.01877750018076,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 1,
+    "raw_frame_idx": 8,
+    "sharpness": 356.15832865332015,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 2,
+    "raw_frame_idx": 16,
+    "sharpness": 345.66102405710217,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 3,
+    "raw_frame_idx": 24,
+    "sharpness": 333.08458069648043,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 4,
+    "raw_frame_idx": 32,
+    "sharpness": 331.7385367629233,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 5,
+    "raw_frame_idx": 40,
+    "sharpness": 332.08858765001935,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 6,
+    "raw_frame_idx": 48,
+    "sharpness": 334.1603310892341,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 7,
+    "raw_frame_idx": 56,
+    "sharpness": 334.35252887888885,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 8,
+    "raw_frame_idx": 64,
+    "sharpness": 335.4122529285115,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 9,
+    "raw_frame_idx": 72,
+    "sharpness": 348.97683989143957,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 10,
+    "raw_frame_idx": 80,
+    "sharpness": 354.5541525888619,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 11,
+    "raw_frame_idx": 88,
+    "sharpness": 344.35735116380386,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 12,
+    "raw_frame_idx": 96,
+    "sharpness": 337.1548533635664,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 13,
+    "raw_frame_idx": 104,
+    "sharpness": 340.4105671069905,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 14,
+    "raw_frame_idx": 112,
+    "sharpness": 345.09399830809184,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 15,
+    "raw_frame_idx": 120,
+    "sharpness": 345.7910705937808,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 16,
+    "raw_frame_idx": 128,
+    "sharpness": 359.2236878841614,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 17,
+    "raw_frame_idx": 136,
+    "sharpness": 347.6682733105922,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 18,
+    "raw_frame_idx": 144,
+    "sharpness": 311.39698792920154,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 19,
+    "raw_frame_idx": 152,
+    "sharpness": 346.0592901222512,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 20,
+    "raw_frame_idx": 160,
+    "sharpness": 347.20097607875846,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 21,
+    "raw_frame_idx": 168,
+    "sharpness": 345.6208541496948,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 22,
+    "raw_frame_idx": 176,
+    "sharpness": 357.822372409884,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 23,
+    "raw_frame_idx": 184,
+    "sharpness": 356.4176098917811,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 24,
+    "raw_frame_idx": 192,
+    "sharpness": 354.91335449054645,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 25,
+    "raw_frame_idx": 200,
+    "sharpness": 357.3215255808135,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 26,
+    "raw_frame_idx": 208,
+    "sharpness": 358.1083480625892,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 27,
+    "raw_frame_idx": 216,
+    "sharpness": 346.7848798116801,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 28,
+    "raw_frame_idx": 224,
+    "sharpness": 337.8666868341298,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 29,
+    "raw_frame_idx": 232,
+    "sharpness": 351.5826998641319,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 30,
+    "raw_frame_idx": 240,
+    "sharpness": 351.1345755313119,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 31,
+    "raw_frame_idx": 248,
+    "sharpness": 349.92238041284065,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 32,
+    "raw_frame_idx": 256,
+    "sharpness": 348.9597332818333,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 33,
+    "raw_frame_idx": 264,
+    "sharpness": 347.8144950835155,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 34,
+    "raw_frame_idx": 272,
+    "sharpness": 342.61810864076966,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 35,
+    "raw_frame_idx": 280,
+    "sharpness": 335.5945720128849,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 36,
+    "raw_frame_idx": 288,
+    "sharpness": 336.8904427918308,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 37,
+    "raw_frame_idx": 296,
+    "sharpness": 341.42657903800625,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 38,
+    "raw_frame_idx": 304,
+    "sharpness": 305.83776158584766,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 39,
+    "raw_frame_idx": 312,
+    "sharpness": 319.135314875528,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 40,
+    "raw_frame_idx": 320,
+    "sharpness": 316.6081669979329,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 41,
+    "raw_frame_idx": 328,
+    "sharpness": 317.89097992575375,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 42,
+    "raw_frame_idx": 336,
+    "sharpness": 305.6134314813475,
+    "selection_reason": "candidate_pending_geometry"
+  },
+  {
+    "frame_id": 43,
+    "raw_frame_idx": 344,
+    "sharpness": 318.6907952655213,
+    "selection_reason": "candidate_pending_geometry"
+  }
+]

@@ -1,0 +1,44 @@
+{
+  "video_sha256": "b9a1872f3d4f8423739ed10575e33b3f78299828808728b47d606fcbaef6c350",
+  "video": "/Users/kradsagency/Desktop/vastu-namma-space/IMG_4964.MOV",
+  "frame_indices": [
+    0,
+    139,
+    279,
+    419,
+    558,
+    698,
+    838,
+    977,
+    1117,
+    1257,
+    1396,
+    1536,
+    1676,
+    1815,
+    1955
+  ],
+  "failed_decode_indices": [
+    2095
+  ],
+  "K": [
+    [
+      608.0,
+      0.0,
+      180.0
+    ],
+    [
+      0.0,
+      608.0,
+      320.0
+    ],
+    [
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "calibration_source": "uncalibrated focal prior",
+  "pose_source": "unscaled sequential essential decomposition",
+  "warning": "Diagnostic SfM can invent translation under rotation; no physical-motion conclusion without reliable independent poses."
+}

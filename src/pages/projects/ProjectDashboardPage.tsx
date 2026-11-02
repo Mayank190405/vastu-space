@@ -25,6 +25,9 @@ import {
   Copy,
   Check
 } from 'lucide-react';
+import { useProjectPipelines } from '../../hooks/useProjectPipelines';
+import { ProjectPipelinePanel } from '../../components/pipeline/ProjectPipelinePanel';
+import { isSubmitted, pipelineState, toneClasses } from '../../components/pipeline/pipelineState';
 import { api } from '../../services/api';
 import { Project, ProjectFloor, ProjectMember, FloorPlan } from '../../types';
 import { FloorPlanDrawer } from '../../components/canvas/FloorPlanDrawer';
@@ -43,6 +46,14 @@ export const ProjectDashboardPage: React.FC = () => {
   const [showCaptureModal, setShowCaptureModal] = useState(false);
   const [pairingSession, setPairingSession] = useState<any | null>(null);
   const [customSessions, setCustomSessions] = useState<any[]>([]);
+
+  const pipelineData = useProjectPipelines(projectId);
+  useEffect(() => {
+    setCustomSessions(pipelineData.entries.map(entry => ({
+      ...entry.session, floor_name: entry.session.floor_name || entry.session.room_name,
+      operator_name: entry.session.operator_name || 'Unassigned', phase_label: pipelineState(entry).label, pipeline_tone: pipelineState(entry).tone,
+    })));
+  }, [pipelineData.entries]);
 
   // Drawing modal for a selected floor
   const [editingFloorPlan, setEditingFloorPlan] = useState<ProjectFloor | null>(null);
@@ -63,12 +74,14 @@ export const ProjectDashboardPage: React.FC = () => {
   const [assigningMember, setAssigningMember] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  const handleCopyViewingLink = () => {
+  const handleCopyViewingLink = async () => {
     if (!project) return;
-    const url = `${window.location.origin}/view/${project.id}`;
-    navigator.clipboard.writeText(url);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2500);
+    try {
+      const result = await api.getProjectViewingLink(project.id);
+      await navigator.clipboard.writeText(new URL(result.viewing_url, window.location.origin).href);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2500);
+    } catch (err: any) { alert(err.message || 'Viewer not ready'); }
   };
 
   // Fetch full project data
@@ -240,6 +253,7 @@ export const ProjectDashboardPage: React.FC = () => {
           </div>
         </div>
 
+        <div className="px-5 py-3 border-t border-[#EAE2D3] bg-[#FAF7F2]"><button onClick={() => navigate(`/projects/${project.id}/pipelines`)} className="text-sm font-bold text-[#8F6834]">Open dedicated scan pipeline dashboard →</button></div>
         {/* Dashboard Tabs Bar */}
         <div className="flex items-center gap-1 px-4 py-2 border-t border-[#EAE2D3] overflow-x-auto bg-white">
           {[
@@ -269,6 +283,8 @@ export const ProjectDashboardPage: React.FC = () => {
           })}
         </div>
       </div>
+
+      {(activeTab === 'overview' || activeTab === 'captures') && <ProjectPipelinePanel projectId={project.id} {...pipelineData} compact />}
 
       {/* TAB CONTENT: OVERVIEW */}
       {activeTab === 'overview' && (
@@ -683,20 +699,7 @@ export const ProjectDashboardPage: React.FC = () => {
 
           {/* Sessions List */}
           <div className="space-y-3">
-            {[
-              ...customSessions,
-              {
-                id: `CAP-01-RECON`,
-                floor_name: project.floors?.[0]?.name || 'Ground Floor',
-                operator_name: 'Project Admin (Self)',
-                operator_type: 'SELF',
-                phase: 'PHASE_3_ACTIVE',
-                phase_label: 'Area-to-Area Capture Ready',
-                created_at: new Date().toLocaleDateString(),
-                zones_count: 4,
-                completed_zones: 1
-              }
-            ].map((s) => (
+            {customSessions.map((s) => (
               <div
                 key={s.id}
                 className="p-5 bg-[#FAF7F2] border border-[#D1C2A5] rounded-2xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4"
@@ -707,36 +710,36 @@ export const ProjectDashboardPage: React.FC = () => {
                     <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#FAF3E0] text-[#8F6834] border border-[#D9C4A1]">
                       {s.floor_name}
                     </span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${toneClasses[s.pipeline_tone || 'pending']}`}>
                       {s.phase_label}
                     </span>
                   </div>
                   <div className="text-xs text-[#7C6652] flex items-center gap-2">
                     <span>Assigned: <strong className="text-[#1F150D]">{s.operator_name}</strong></span>
                     <span>&bull;</span>
-                    <span>Created: {s.created_at}</span>
-                    <span>&bull;</span>
-                    <span>{s.zones_count} Floor Plan Zones</span>
+                    <span>Created: {new Date(s.created_at).toLocaleString()}</span>
+
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <button
+                <div className="flex flex-wrap items-center gap-2">
+                  <button onClick={() => navigate(`/projects/${project.id}/pipelines/${s.id}`)} className="px-3 py-2 bg-[#8F6834] text-white text-xs font-bold rounded-xl">Scan dashboard</button>
+                  {!isSubmitted(s) && <button
                     onClick={() => setPairingSession(s)}
                     className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-[#FAF7F2] border border-[#D1C2A5] text-[#5C4D3E] text-xs font-semibold rounded-xl shadow-xs transition-all"
                     title="Open QR code & mobile app pairing"
                   >
                     <Share2 className="w-3.5 h-3.5 text-[#8F6834]" />
                     <span>Mobile App Pairing</span>
-                  </button>
+                  </button>}
 
-                  <button
+                  {!isSubmitted(s) && <button
                     onClick={() => navigate(`/projects/${project.id}/capture/${s.id}`)}
                     className="flex items-center gap-1.5 px-4 py-2 bg-[#8F6834] hover:bg-[#755427] text-white text-xs font-bold rounded-xl shadow-sm transition-all"
                   >
                     <Camera className="w-3.5 h-3.5" />
                     <span>Launch Guided Studio</span>
-                  </button>
+                  </button>}
                 </div>
               </div>
             ))}
@@ -974,23 +977,28 @@ export const ProjectDashboardPage: React.FC = () => {
         <CaptureSessionModal
           project={project}
           onClose={() => setShowCaptureModal(false)}
-          onLaunchSession={(data) => {
-            const randomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
-            const newId = `CAP-${randomCode}-SOP`;
+          onLaunchSession={async (data) => {
+            try {
+            const record = await api.createQRSession({
+              project_id: project.id,
+              room_name: project.floors?.find((f) => f.id === data.floorId)?.name || 'Ground Floor',
+              operator_name: data.operatorName,
+            });
+            const newId = record.id;
             const newSession = {
+              ...record,
               id: newId,
               floor_name: project.floors?.find((f) => f.id === data.floorId)?.name || 'Ground Floor',
               operator_name: data.operatorName,
               operator_type: data.operatorType,
-              phase: 'PHASE_1_RECON',
-              phase_label: '1. Reconnaissance Scan Ready',
-              created_at: new Date().toLocaleDateString(),
-              zones_count: 4,
-              completed_zones: 0
+              phase_label: 'QR ready',
+              pipeline_tone: 'pending'
             };
             setCustomSessions([newSession, ...customSessions]);
             setShowCaptureModal(false);
             setPairingSession(newSession);
+            pipelineData.refresh();
+            } catch (err: any) { alert(err.message || "Failed to create capture session"); }
           }}
         />
       )}

@@ -27,6 +27,11 @@ func NewSessionRepository(pool *pgxpool.Pool) *SessionRepository {
 // ----------------------------------------------------
 
 func (r *SessionRepository) CreateSession(ctx context.Context, session *domain.CaptureSession) error {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
 	query := `
 		INSERT INTO capture_sessions (
 			id, session_code, project_id, floor_id, room_id, room_name,
@@ -34,7 +39,7 @@ func (r *SessionRepository) CreateSession(ctx context.Context, session *domain.C
 		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 	`
 	now := time.Now()
-	_, err := r.pool.Exec(
+	_, err = tx.Exec(
 		ctx, query,
 		session.ID, session.SessionCode, session.ProjectID, session.FloorID, session.RoomID,
 		session.RoomName, session.OperatorName, session.ChallengeToken, session.Nonce,
@@ -72,10 +77,16 @@ func (r *SessionRepository) CreateSession(ctx context.Context, session *domain.C
 		if status == domain.StageStatusCompleted {
 			completedAt = startedAt
 		}
-		_, _ = r.pool.Exec(ctx, stageQuery, session.ID, stageName, idx+1, status, 0, worker, startedAt, completedAt, now)
+		progress := 0
+		if status == domain.StageStatusCompleted {
+			progress = 100
+		}
+		if _, err := tx.Exec(ctx, stageQuery, session.ID, stageName, idx+1, status, progress, worker, startedAt, completedAt, now); err != nil {
+			return err
+		}
 	}
 
-	return nil
+	return tx.Commit(ctx)
 }
 
 func (r *SessionRepository) GetSessionByID(ctx context.Context, sessionID string) (*domain.CaptureSession, error) {
@@ -84,7 +95,7 @@ func (r *SessionRepository) GetSessionByID(ctx context.Context, sessionID string
 		       s.floor_id, COALESCE(l.level_name, 'Floor 1') AS floor_name,
 		       s.room_id, s.room_name, s.operator_name, s.challenge_token, s.nonce,
 		       s.grant_token, s.device_id, s.status, s.expires_at, s.redeemed_at,
-		       s.completed_at, s.capture_package_url, s.quality_summary, s.created_at, s.updated_at
+		       s.completed_at, s.capture_package_url, s.quality_summary, s.created_at, s.updated_at, s.capture_id, s.upload_id, s.job_id, s.video_url, s.raw_object_key, s.upload_verified_at, s.viewer_url
 		FROM capture_sessions s
 		LEFT JOIN projects p ON s.project_id = p.id
 		LEFT JOIN spatial_levels l ON s.floor_id = l.id
@@ -99,7 +110,7 @@ func (r *SessionRepository) GetSessionByID(ctx context.Context, sessionID string
 		&s.FloorID, &s.FloorName, &s.RoomID, &s.RoomName, &s.OperatorName,
 		&s.ChallengeToken, &s.Nonce, &s.GrantToken, &s.DeviceID, &s.Status,
 		&s.ExpiresAt, &s.RedeemedAt, &s.CompletedAt, &s.CapturePackageURL,
-		&qualityBytes, &s.CreatedAt, &s.UpdatedAt,
+		&qualityBytes, &s.CreatedAt, &s.UpdatedAt, &s.CaptureID, &s.UploadID, &s.JobID, &s.VideoURL, &s.RawObjectKey, &s.UploadVerifiedAt, &s.ViewerURL,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -127,7 +138,7 @@ func (r *SessionRepository) GetSessionByChallenge(ctx context.Context, challenge
 		       s.floor_id, COALESCE(l.level_name, 'Floor 1') AS floor_name,
 		       s.room_id, s.room_name, s.operator_name, s.challenge_token, s.nonce,
 		       s.grant_token, s.device_id, s.status, s.expires_at, s.redeemed_at,
-		       s.completed_at, s.capture_package_url, s.quality_summary, s.created_at, s.updated_at
+		       s.completed_at, s.capture_package_url, s.quality_summary, s.created_at, s.updated_at, s.capture_id, s.upload_id, s.job_id, s.video_url, s.raw_object_key, s.upload_verified_at, s.viewer_url
 		FROM capture_sessions s
 		LEFT JOIN projects p ON s.project_id = p.id
 		LEFT JOIN spatial_levels l ON s.floor_id = l.id
@@ -142,7 +153,7 @@ func (r *SessionRepository) GetSessionByChallenge(ctx context.Context, challenge
 		&s.FloorID, &s.FloorName, &s.RoomID, &s.RoomName, &s.OperatorName,
 		&s.ChallengeToken, &s.Nonce, &s.GrantToken, &s.DeviceID, &s.Status,
 		&s.ExpiresAt, &s.RedeemedAt, &s.CompletedAt, &s.CapturePackageURL,
-		&qualityBytes, &s.CreatedAt, &s.UpdatedAt,
+		&qualityBytes, &s.CreatedAt, &s.UpdatedAt, &s.CaptureID, &s.UploadID, &s.JobID, &s.VideoURL, &s.RawObjectKey, &s.UploadVerifiedAt, &s.ViewerURL,
 	)
 	if err != nil {
 		return nil, err
@@ -159,7 +170,7 @@ func (r *SessionRepository) ListSessionsByProject(ctx context.Context, projectID
 		       s.floor_id, COALESCE(l.level_name, 'Floor 1') AS floor_name,
 		       s.room_id, s.room_name, s.operator_name, s.challenge_token, s.nonce,
 		       s.grant_token, s.device_id, s.status, s.expires_at, s.redeemed_at,
-		       s.completed_at, s.capture_package_url, s.quality_summary, s.created_at, s.updated_at
+		       s.completed_at, s.capture_package_url, s.quality_summary, s.created_at, s.updated_at, s.capture_id, s.upload_id, s.job_id, s.video_url, s.raw_object_key, s.upload_verified_at, s.viewer_url
 		FROM capture_sessions s
 		LEFT JOIN projects p ON s.project_id = p.id
 		LEFT JOIN spatial_levels l ON s.floor_id = l.id
@@ -182,7 +193,7 @@ func (r *SessionRepository) ListSessionsByProject(ctx context.Context, projectID
 			&s.FloorID, &s.FloorName, &s.RoomID, &s.RoomName, &s.OperatorName,
 			&s.ChallengeToken, &s.Nonce, &s.GrantToken, &s.DeviceID, &s.Status,
 			&s.ExpiresAt, &s.RedeemedAt, &s.CompletedAt, &s.CapturePackageURL,
-			&qualityBytes, &s.CreatedAt, &s.UpdatedAt,
+			&qualityBytes, &s.CreatedAt, &s.UpdatedAt, &s.CaptureID, &s.UploadID, &s.JobID, &s.VideoURL, &s.RawObjectKey, &s.UploadVerifiedAt, &s.ViewerURL,
 		); err != nil {
 			return nil, err
 		}
@@ -203,7 +214,7 @@ func (r *SessionRepository) ListAllSessions(ctx context.Context) ([]*domain.Capt
 		       s.floor_id, COALESCE(l.level_name, 'Floor 1') AS floor_name,
 		       s.room_id, s.room_name, s.operator_name, s.challenge_token, s.nonce,
 		       s.grant_token, s.device_id, s.status, s.expires_at, s.redeemed_at,
-		       s.completed_at, s.capture_package_url, s.quality_summary, s.created_at, s.updated_at
+		       s.completed_at, s.capture_package_url, s.quality_summary, s.created_at, s.updated_at, s.capture_id, s.upload_id, s.job_id, s.video_url, s.raw_object_key, s.upload_verified_at, s.viewer_url
 		FROM capture_sessions s
 		LEFT JOIN projects p ON s.project_id = p.id
 		LEFT JOIN spatial_levels l ON s.floor_id = l.id
@@ -226,7 +237,7 @@ func (r *SessionRepository) ListAllSessions(ctx context.Context) ([]*domain.Capt
 			&s.FloorID, &s.FloorName, &s.RoomID, &s.RoomName, &s.OperatorName,
 			&s.ChallengeToken, &s.Nonce, &s.GrantToken, &s.DeviceID, &s.Status,
 			&s.ExpiresAt, &s.RedeemedAt, &s.CompletedAt, &s.CapturePackageURL,
-			&qualityBytes, &s.CreatedAt, &s.UpdatedAt,
+			&qualityBytes, &s.CreatedAt, &s.UpdatedAt, &s.CaptureID, &s.UploadID, &s.JobID, &s.VideoURL, &s.RawObjectKey, &s.UploadVerifiedAt, &s.ViewerURL,
 		); err != nil {
 			return nil, err
 		}
@@ -251,10 +262,16 @@ func (r *SessionRepository) AuthorizeSession(ctx context.Context, sessionID, dev
 	query := `
 		UPDATE capture_sessions
 		SET status = $1, device_id = $2, grant_token = $3, redeemed_at = $4, updated_at = $4
-		WHERE id = $5
+		WHERE id = $5 AND status = 'CREATED' AND expires_at > NOW()
 	`
-	_, err := r.pool.Exec(ctx, query, domain.SessionStatusAuthorized, deviceID, grantToken, now, sessionID)
-	return err
+	result, err := r.pool.Exec(ctx, query, domain.SessionStatusAuthorized, deviceID, grantToken, now, sessionID)
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() != 1 {
+		return errors.New("challenge expired or already redeemed")
+	}
+	return nil
 }
 
 // ----------------------------------------------------
@@ -303,12 +320,15 @@ func (r *SessionRepository) RecordHeartbeat(ctx context.Context, hb *domain.Devi
 	if hb.BatteryLevel != nil {
 		bat = *hb.BatteryLevel
 	}
-	_, _ = r.pool.Exec(
+	_, err := r.pool.Exec(
 		ctx, insertQuery,
 		hb.DeviceUUID, hb.SessionID, bat, hb.ARKitTrackingStatus,
 		hb.LocalAIStatus, hb.RecordingState, hb.NetworkType, hb.StorageFreeMB,
 	)
 
+	if err != nil {
+		return err
+	}
 	// 2. Update device last heartbeat
 	deviceUpdateQuery := `
 		UPDATE devices
@@ -321,7 +341,7 @@ func (r *SessionRepository) RecordHeartbeat(ctx context.Context, hb *domain.Devi
 		    updated_at = NOW()
 		WHERE device_uuid = $6
 	`
-	_, err := r.pool.Exec(ctx, deviceUpdateQuery, bat, hb.ARKitTrackingStatus, hb.LocalAIStatus, hb.NetworkType, hb.SessionID, hb.DeviceUUID)
+	_, err = r.pool.Exec(ctx, deviceUpdateQuery, bat, hb.ARKitTrackingStatus, hb.LocalAIStatus, hb.NetworkType, hb.SessionID, hb.DeviceUUID)
 	return err
 }
 
@@ -370,7 +390,7 @@ func (r *SessionRepository) ListDevices(ctx context.Context) ([]*domain.Device, 
 func (r *SessionRepository) GetPipelineStages(ctx context.Context, sessionID string) ([]*domain.PipelineStageRecord, error) {
 	query := `
 		SELECT id, session_id, job_id, stage_name, stage_order, status,
-		       progress_percentage, responsible_worker, error_details, retry_count,
+		       progress_percentage, COALESCE(responsible_worker, ''), error_details, retry_count,
 		       started_at, completed_at, updated_at
 		FROM pipeline_stages
 		WHERE session_id = $1
@@ -382,7 +402,7 @@ func (r *SessionRepository) GetPipelineStages(ctx context.Context, sessionID str
 	}
 	defer rows.Close()
 
-	var stages []*domain.PipelineStageRecord
+	stages := make([]*domain.PipelineStageRecord, 0)
 	for rows.Next() {
 		var s domain.PipelineStageRecord
 		if err := rows.Scan(
@@ -394,8 +414,24 @@ func (r *SessionRepository) GetPipelineStages(ctx context.Context, sessionID str
 		}
 		stages = append(stages, &s)
 	}
-	return stages, nil
+	return stages, rows.Err()
 }
+
+const updatePipelineStageSQL = `
+		UPDATE pipeline_stages
+		SET status = $1::varchar,
+		    progress_percentage = COALESCE($2, progress_percentage),
+		    responsible_worker = COALESCE($3, responsible_worker),
+		    error_details = COALESCE($4, error_details),
+		    started_at = CASE WHEN $5::timestamptz IS NOT NULL AND started_at IS NULL THEN $5 ELSE started_at END,
+		    completed_at = CASE WHEN $6::timestamptz IS NOT NULL THEN $6 ELSE completed_at END,
+		    retry_count = CASE WHEN $1::varchar = 'RETRYING' THEN retry_count + 1 ELSE retry_count END,
+		    updated_at = NOW()
+		WHERE session_id = $7 AND stage_name = $8
+		RETURNING id, session_id, job_id, stage_name, stage_order, status,
+		          progress_percentage, COALESCE(responsible_worker, ''), error_details, retry_count,
+		          started_at, completed_at, updated_at
+	`
 
 func (r *SessionRepository) UpdatePipelineStage(
 	ctx context.Context,
@@ -413,21 +449,7 @@ func (r *SessionRepository) UpdatePipelineStage(
 		setCompleted = &now
 	}
 
-	query := `
-		UPDATE pipeline_stages
-		SET status = $1,
-		    progress_percentage = COALESCE($2, progress_percentage),
-		    responsible_worker = COALESCE($3, responsible_worker),
-		    error_details = COALESCE($4, error_details),
-		    started_at = CASE WHEN $5::timestamptz IS NOT NULL AND started_at IS NULL THEN $5 ELSE started_at END,
-		    completed_at = CASE WHEN $6::timestamptz IS NOT NULL THEN $6 ELSE completed_at END,
-		    retry_count = CASE WHEN $1 = 'RETRYING' THEN retry_count + 1 ELSE retry_count END,
-		    updated_at = NOW()
-		WHERE session_id = $7 AND stage_name = $8
-		RETURNING id, session_id, job_id, stage_name, stage_order, status,
-		          progress_percentage, responsible_worker, error_details, retry_count,
-		          started_at, completed_at, updated_at
-	`
+	query := updatePipelineStageSQL
 	row := r.pool.QueryRow(
 		ctx, query,
 		input.Status, input.ProgressPercentage, input.ResponsibleWorker, input.ErrorDetails,
@@ -534,4 +556,3 @@ func (r *SessionRepository) CreateRoom(ctx context.Context, floorID uuid.UUID, i
 	}
 	return &rm, nil
 }
-

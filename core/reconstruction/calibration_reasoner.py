@@ -110,7 +110,174 @@ class CalibrationReasoner:
             if np.median(cheirality) < 0.7:
                 result['report'].update(status='REJECTED', reason='Insufficient positive-depth triangulation support')
                 result['calibration'] = None
+
+        if result.get('calibration') is None:
+            vp_result = self.estimate_from_vanishing_points(frames)
+            vp_result['report']['epipolar_rejection_reason'] = result.get('report', {}).get('reason', 'epipolar_search_unconstrained')
+            return vp_result
+
+        # Populate calibration confidence and uncertainty on successful epipolar calibration
+        fit_res = result['report'].get('fit_residual', 0.04)
+        conf = round(float(np.clip(1.0 - 5.0 * fit_res, 0.75, 0.95)), 3)
+        f_val = result['calibration']['intrinsics']['fx']
+        interval = result['report'].get('focal_plausibility_interval_px', [f_val * 0.9, f_val * 1.1])
+        f_unc_px = round(float((interval[1] - interval[0]) / 2.0), 2)
+        f_unc_pct = round(float(f_unc_px / f_val * 100), 2)
+
+        result['calibration']['calibration_confidence'] = conf
+        result['calibration']['uncertainty'] = {
+            'focal_uncertainty_px': f_unc_px,
+            'focal_uncertainty_pct': f_unc_pct,
+            'principal_point_uncertainty_px': round(float(min(w, h) * 0.02), 2)
+        }
         return result
+
+    def estimate_from_vanishing_points(self, frames):
+        """
+        Estimate focal length and principal point from orthogonal architectural vanishing points.
+        Uses Line Segment Detector (LSD) to detect scene lines and RANSAC to cluster lines
+        intersecting at orthogonal vanishing points.
+        """
+        h, w = frames[0].shape[:2]
+        cx, cy = w / 2.0, h / 2.0
+        lsd = cv2.createLineSegmentDetector(cv2.LSD_REFINE_STD)
+
+        all_lines = []
+        for f in frames[:min(6, len(frames))]:
+            gray = cv2.cvtColor(f, cv2.COLOR_BGR2GRAY) if f.ndim == 3 else f
+            det_lines, _, _, _ = lsd.detect(gray)
+            if det_lines is not None:
+                for l in det_lines:
+                    x1, y1, x2, y2 = l[0]
+                    length = math.hypot(x2 - x1, y2 - y1)
+                    if length >= 40.0:
+                        all_lines.append((float(x1), float(y1), float(x2), float(y2), length))
+
+        horiz_lines = []
+        for x1, y1, x2, y2, l in all_lines:
+            angle = math.atan2(y2 - y1, x2 - x1)
+            while angle <= -math.pi / 2:
+                angle += math.pi
+            while angle > math.pi / 2:
+                angle -= math.pi
+            if abs(abs(angle) - math.pi / 2) >= 0.22:
+                horiz_lines.append((x1, y1, x2, y2))
+
+        def line_homog(x1, y1, x2, y2):
+            l = np.cross([x1, y1, 1.0], [x2, y2, 1.0])
+            norm = np.linalg.norm(l[:2])
+            return l / max(norm, 1e-12)
+
+        h_homog = [line_homog(*l) for l in horiz_lines[:80]]
+        intersections = []
+        for i in range(len(h_homog)):
+            for j in range(i + 1, min(i + 20, len(h_homog))):
+                pt = np.cross(h_homog[i], h_homog[j])
+                if abs(pt[2]) > 1e-5:
+                    intersections.append(pt[:2] / pt[2])
+
+        f_candidates = []
+        if len(intersections) >= 10:
+            intersections = np.array(intersections)
+            valid_idx = (np.abs(intersections[:, 0] - cx) < 10 * w) & (np.abs(intersections[:, 1] - cy) < 10 * h)
+            valid_pts = intersections[valid_idx]
+            C = np.array([cx, cy])
+            left_pts = valid_pts[valid_pts[:, 0] < cx - 0.3 * w]
+            right_pts = valid_pts[valid_pts[:, 0] > cx + 0.3 * w]
+
+            if len(left_pts) >= 2 and len(right_pts) >= 2:
+                v_left = np.median(left_pts, axis=0)
+                v_right = np.median(right_pts, axis=0)
+                dot_prod = float(np.dot(v_left - C, v_right - C))
+                if dot_prod < 0:
+                    f_est = math.sqrt(-dot_prod)
+                    if 0.50 * max(w, h) <= f_est <= 1.45 * max(w, h):
+                        f_candidates.append(f_est)
+
+        if not f_candidates:
+            # Calibrated prior: Standard smartphone 26mm-equivalent wide lens (~67 deg horizontal FOV)
+            focal_prior = max(w, h) * 0.75
+            f_unc_px = round(float(focal_prior * 0.12), 2)
+            fov_h = round(2.0 * math.atan(w / (2.0 * focal_prior)) * 180.0 / math.pi, 2)
+            fov_v = round(2.0 * math.atan(h / (2.0 * focal_prior)) * 180.0 / math.pi, 2)
+            report = {
+                "algorithm": "SMARTPHONE_WIDE_OPTICAL_PRIOR",
+                "metric_verified": False,
+                "status": "UNANCHORED_PINHOLE_PRIOR",
+                "reason": "Vanishing points unconstrained or outside plausible FOV; using calibrated smartphone wide optical prior",
+                "focal_px": float(round(focal_prior, 2)),
+                "focal_uncertainty_px": f_unc_px,
+                "focal_uncertainty_pct": 12.0,
+                "principal_point_uncertainty_px": round(float(min(w, h) * 0.02), 2),
+                "calibration_confidence": 0.55,
+                "field_of_view_deg": {"horizontal": fov_h, "vertical": fov_v},
+                "assumptions": ["smartphone_26mm_equivalent", "square_pixels", "optical_center_pinhole"]
+            }
+            calibration = {
+                "source": "unanchored_optical_prior",
+                "metric_verified": False,
+                "resolution": [w, h],
+                "intrinsics": {"fx": float(round(focal_prior, 2)), "fy": float(round(focal_prior, 2)), "cx": float(cx), "cy": float(cy)},
+                "distortion_coefficients": [0.0] * 5,
+                "calibration_confidence": 0.55,
+                "field_of_view_deg": {"horizontal": fov_h, "vertical": fov_v},
+                "uncertainty": {
+                    "focal_uncertainty_px": f_unc_px,
+                    "focal_uncertainty_pct": 12.0,
+                    "principal_point_uncertainty_px": round(float(min(w, h) * 0.02), 2)
+                }
+            }
+            return {"calibration": calibration, "report": report}
+
+        focal = float(np.median(f_candidates))
+        f_unc_px = max(25.0, float(round(focal * 0.08, 2)))
+        fov_h = round(2.0 * math.atan(w / (2.0 * focal)) * 180.0 / math.pi, 2)
+        fov_v = round(2.0 * math.atan(h / (2.0 * focal)) * 180.0 / math.pi, 2)
+        report = {
+            "algorithm": "ARCHITECTURAL_VANISHING_POINT_GEOMETRY",
+            "metric_verified": False,
+            "status": "ESTIMATED",
+            "focal_px": round(focal, 2),
+            "focal_uncertainty_px": f_unc_px,
+            "focal_uncertainty_pct": round(f_unc_px / focal * 100, 2),
+            "principal_point_uncertainty_px": round(float(min(w, h) * 0.02), 2),
+            "calibration_confidence": 0.75,
+            "field_of_view_deg": {"horizontal": fov_h, "vertical": fov_v},
+            "assumptions": ["orthogonal_wall_vanishing_directions", "square_pixels", "negligible_lens_distortion"]
+        }
+        calibration = {
+            "source": "vanishing_point_geometry",
+            "metric_verified": False,
+            "resolution": [w, h],
+            "intrinsics": {"fx": round(focal, 2), "fy": round(focal, 2), "cx": float(cx), "cy": float(cy)},
+            "distortion_coefficients": [0.0] * 5,
+            "calibration_confidence": 0.75,
+            "field_of_view_deg": {"horizontal": fov_h, "vertical": fov_v},
+            "uncertainty": {
+                "focal_uncertainty_px": f_unc_px,
+                "focal_uncertainty_pct": round(f_unc_px / focal * 100, 2),
+                "principal_point_uncertainty_px": round(float(min(w, h) * 0.02), 2)
+            }
+        }
+        return {"calibration": calibration, "report": report}
+
+    @staticmethod
+    def validate_intrinsics(intrinsics_dict, width, height):
+        """Validate focal length and optical center against physical smartphone geometry."""
+        fx = intrinsics_dict.get('fx', 0.0)
+        fy = intrinsics_dict.get('fy', 0.0)
+        cx = intrinsics_dict.get('cx', 0.0)
+        cy = intrinsics_dict.get('cy', 0.0)
+        max_d = max(width, height)
+        is_focal_ok = (0.35 * max_d <= fx <= 2.0 * max_d) and (0.35 * max_d <= fy <= 2.0 * max_d)
+        is_center_ok = (0.35 * width <= cx <= 0.65 * width) and (0.35 * height <= cy <= 0.65 * height)
+        is_square = abs(fx - fy) / max(fx, 1e-6) < 0.05
+        return {
+            'is_valid': bool(is_focal_ok and is_center_ok and is_square),
+            'is_focal_valid': bool(is_focal_ok),
+            'is_center_valid': bool(is_center_ok),
+            'is_square_pixels': bool(is_square)
+        }
 
     @staticmethod
     def _K(focal, width, height):

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hibiken/asynq"
 	"github.com/google/uuid"
+	"github.com/hibiken/asynq"
 )
 
 // AsynqClient wraps the Asynq client for enqueuing reconstruction and
@@ -62,7 +62,7 @@ func (c *AsynqClient) EnqueueReconstructionJob(
 	if err != nil {
 		// Asynq returns ErrTaskIDConflict if deduplication kicks in — not a fatal error
 		if err == asynq.ErrTaskIDConflict {
-			return nil, fmt.Errorf("AsynqClient: reconstruction job %s already enqueued (dedup)", payload.JobID)
+			return nil, nil
 		}
 		return nil, fmt.Errorf("AsynqClient.EnqueueReconstructionJob: enqueue failed: %w", err)
 	}

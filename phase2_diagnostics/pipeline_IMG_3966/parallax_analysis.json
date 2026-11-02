@@ -1,0 +1,32 @@
+{
+  "status": "NEEDS_RESCAN",
+  "scale_status": "SCALE_UNOBSERVABLE",
+  "parallax_gate_passed": false,
+  "verified_multi_view_geometry": false,
+  "diagnostic_reconstruction_label": "DEGRADED",
+  "baseline_statistic": "maximum camera-center separation among overlapping pairs; not accumulated path length",
+  "baseline_input_units": null,
+  "trajectory_scale_consistent": false,
+  "baseline_measurement_status": "UNOBSERVABLE_NONUNIFORM_MONOCULAR_STEPS",
+  "total_baseline_displacement_m": null,
+  "baseline_statistics_input_units": null,
+  "threshold_min_baseline_m": 0.1,
+  "threshold_role": "advisory heuristic only",
+  "configuration": {
+    "max_keyframes": 16,
+    "min_baseline_m": 0.1,
+    "min_overlap": 0.2,
+    "min_correspondences": 30,
+    "min_angle_deg": 1.5,
+    "min_baseline_depth_ratio": 0.02,
+    "max_relative_depth_uncertainty": 0.25,
+    "min_sharpness": 8.0,
+    "max_reprojection_px": 2.0
+  },
+  "pair_count": 946,
+  "useful_pair_count": 0,
+  "selected_keyframes": [],
+  "selected_pairs": [],
+  "pose_reliability": "UNVERIFIED",
+  "uncertainty_model": "First-order angular pixel/pose error and translation covariance bound; missing covariance rejects verification."
+}

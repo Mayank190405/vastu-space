@@ -124,13 +124,18 @@ public final class CaptureCoordinator: NSObject, ObservableObject, CaptureSessio
     public func captureManager(_ manager: CaptureSessionManager, didChangeTrackingStatus text: String, isWarning: Bool) {}
     
     public func computeQualityAudit() -> CaptureQualityAudit {
+        let baseline = max(
+            manager.translationBaselineMeters,
+            guidance.translationBaselineMeters,
+            floorplanEngine.latestParallax.translationBaselineM
+        )
         return CaptureQualityAudit(
             keyframeCount: manager.keyframeCount,
             durationSeconds: Double(elapsedSeconds),
             meanSharpness: latestQuality.sharpnessScore,
             meanExposure: latestQuality.exposureScore * 255.0,
             trackingStabilityPct: manager.isTrackingDegraded ? 65.0 : 96.0,
-            translationalBaselineM: manager.translationBaselineMeters,
+            translationalBaselineM: baseline,
             angularCoverageDeg: min(360.0, floorplanEngine.floorplanMap.coveragePercentage * 3.6),
             wallBoundaryCoveragePct: floorplanEngine.floorplanMap.coveragePercentage
         )
@@ -250,13 +255,13 @@ public struct CaptureView: View {
                 }
             }
         }
-        .alert("Incomplete Room Coverage", isPresented: $showPrematureFinishAlert) {
+        .alert("Mandatory 90% Quality Gate Required (IOS-008)", isPresented: $showPrematureFinishAlert) {
             Button("Keep Scanning", role: .cancel) {}
-            Button("Finish Anyway", role: .destructive) { finishCapture() }
         } message: {
-            let warnings = coordinator.floorplanEngine.latestQualityAudit.preFinishWarnings
-            let text = warnings.isEmpty ? "Room coverage may be suboptimal." : warnings.joined(separator: "\n• ")
-            Text("The following issues were detected:\n• \(text)\n\nAre you sure you want to finish?")
+            let audit = coordinator.floorplanEngine.latestQualityAudit
+            let warnings = audit.preFinishWarnings
+            let text = warnings.isEmpty ? "Additional room observations required." : warnings.joined(separator: "\n• ")
+            Text("Current Quality Score: \(Int(audit.overallScore))% (Mandatory Gate: 90%)\n\n• \(text)\n\nFinal submission is locked until the score reaches 90% and all critical checks pass.")
         }
         .onAppear {
             coordinator.startLiveCamera()
@@ -356,7 +361,7 @@ public struct CaptureView: View {
             if coordinator.manager.isRecording {
                 HStack(spacing: 16) {
                     statPill(label: "KEYFRAMES", value: "\(coordinator.manager.keyframeCount)")
-                    statPill(label: "BASELINE", value: String(format: "%.2f m", coordinator.manager.translationBaselineMeters))
+                    statPill(label: "BASELINE", value: String(format: "%.2f m", max(coordinator.manager.translationBaselineMeters, coordinator.guidance.translationBaselineMeters, coordinator.floorplanEngine.latestParallax.translationBaselineM)))
                     statPill(label: "DROPPED", value: "\(coordinator.manager.droppedFrameCount)")
                     statPill(label: "DURATION", value: formatTime(coordinator.elapsedSeconds))
                 }
@@ -483,7 +488,7 @@ public struct CaptureView: View {
     
     private func requestFinishCapture() {
         let audit = coordinator.floorplanEngine.latestQualityAudit
-        if audit.canFinalizeWithoutWarning || audit.preFinishWarnings.isEmpty {
+        if audit.submissionAllowed {
             finishCapture()
         } else {
             showPrematureFinishAlert = true
@@ -505,15 +510,18 @@ public struct CaptureView: View {
     }
 }
 
-private struct ARLiveCameraRepresentable: UIViewRepresentable {
-    let session: ARSession
-    func makeUIView(context: Context) -> ARSCNView {
+public struct ARLiveCameraRepresentable: UIViewRepresentable {
+    public let session: ARSession
+    public init(session: ARSession) {
+        self.session = session
+    }
+    public func makeUIView(context: Context) -> ARSCNView {
         let view = ARSCNView(frame: .zero)
         view.session = session
         view.automaticallyUpdatesLighting = true
         return view
     }
-    func updateUIView(_ view: ARSCNView, context: Context) {}
+    public func updateUIView(_ view: ARSCNView, context: Context) {}
 }
 
 // Backward compatibility alias for existing code

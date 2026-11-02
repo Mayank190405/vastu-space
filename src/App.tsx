@@ -9,6 +9,7 @@ import { PendingApprovalPage } from './pages/auth/PendingApprovalPage';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { ProjectsPage } from './pages/projects/ProjectsPage';
 import { ProjectCreationWizard } from './pages/projects/ProjectCreationWizard';
+import { ProjectPipelinePage } from './pages/projects/ProjectPipelinePage';
 import { ProjectDashboardPage } from './pages/projects/ProjectDashboardPage';
 import { OrganizationManagementPage } from './pages/organization/OrganizationManagementPage';
 import { OrganizationMembersPage } from './pages/organization/OrganizationMembersPage';
@@ -28,9 +29,12 @@ import { SessionDetailPage } from './pages/dashboard/SessionDetailPage';
 import { SessionListPage } from './pages/dashboard/SessionListPage';
 import { DeviceMonitoringPage } from './pages/dashboard/DeviceMonitoringPage';
 import { RoomMappingPage } from './pages/dashboard/RoomMappingPage';
+import { ProjectWebsitePage } from './pages/website/ProjectWebsitePage';
+import { LiveDigitalTwinOutputPage } from './pages/viewer/LiveDigitalTwinOutputPage';
+import { ProofOfConceptPage } from './pages/viewer/ProofOfConceptPage';
 
 
-// Root gatekeeper: absolutely no marketing home page between opening the app and authentication
+// Root gatekeeper: Shows project website for public visitors, or routes authenticated users directly to console
 const RootResolver: React.FC = () => {
   const { user, isLoading, hasActiveOrg, hasPendingJoin } = useAuth();
 
@@ -43,7 +47,7 @@ const RootResolver: React.FC = () => {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <ProjectWebsitePage />;
   }
 
   if (hasActiveOrg) {
@@ -90,10 +94,24 @@ export const App: React.FC = () => {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Root Resolver */}
-          <Route path="/" element={<RootResolver />} />
+          {/* Root Landing Page: Dedicated Project Website */}
+          <Route path="/" element={<ProjectWebsitePage />} />
+
+          {/* Dedicated Project Website & Architecture Portal */}
+          <Route path="/website" element={<ProjectWebsitePage />} />
+          <Route path="/website/platform" element={<ProjectWebsitePage />} />
+          <Route path="/website/approach" element={<ProjectWebsitePage />} />
+          <Route path="/website/guide" element={<ProjectWebsitePage />} />
+          <Route path="/overview" element={<ProjectWebsitePage />} />
+          <Route path="/about" element={<ProjectWebsitePage />} />
+          <Route path="/guide" element={<ProjectWebsitePage />} />
+          <Route path="/project" element={<ProjectWebsitePage />} />
 
           {/* Public 3D Spatial Viewer & Demo Routes */}
+          <Route path="/output" element={<LiveDigitalTwinOutputPage />} />
+          <Route path="/twin" element={<LiveDigitalTwinOutputPage />} />
+          <Route path="/poc" element={<ProofOfConceptPage />} />
+          <Route path="/proof-of-concept" element={<ProofOfConceptPage />} />
           <Route path="/viewer" element={<div className="min-h-screen bg-[#E3DACA] p-6"><SpatialViewerPage /></div>} />
           <Route path="/3d" element={<div className="min-h-screen bg-[#E3DACA] p-6"><SpatialViewerPage /></div>} />
           <Route path="/ar" element={<ARNavigationPage />} />
@@ -211,6 +229,8 @@ export const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
+          <Route path="/projects/:projectId/pipelines" element={<ProtectedRoute><ProjectPipelinePage /></ProtectedRoute>} />
+          <Route path="/projects/:projectId/pipelines/:sessionId" element={<ProtectedRoute><ReconstructionTrackingPage /></ProtectedRoute>} />
           <Route
             path="/projects/:projectId"
             element={
@@ -334,7 +354,7 @@ export const App: React.FC = () => {
             }
           />
           <Route
-            path="/dashboard/reconstruction/:jobId"
+            path="/dashboard/reconstruction/:sessionId"
             element={
               <ProtectedRoute>
                 <ReconstructionTrackingPage />

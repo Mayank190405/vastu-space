@@ -93,6 +93,7 @@ func main() {
 	locationHandler := handler.NewLocationHandler(locationService)
 	captureHandler := handler.NewCaptureHandler(captureService)
 	sessionHandler := handler.NewSessionManagementHandler(sessionService)
+	mobileUploadHandler := handler.NewMobileUploadHandler(pool, sessionRepo, captureRepo, uploadRepo, uploadService, jobService, sessionService, cfg.UploadDir)
 	rescanHandler := handler.NewRescanHandler(rescanService)
 	uploadHandler := handler.NewUploadHandler(uploadService)
 	jobHandler := handler.NewJobHandler(jobService)
@@ -109,14 +110,14 @@ func main() {
 	r.Use(chimw.RealIP)
 	r.Use(chimw.Logger)
 	r.Use(chimw.Recoverer)
-	r.Use(chimw.Timeout(60 * time.Second))
+	r.Use(chimw.Timeout(10 * time.Minute))
 
 	r.Use(cors.Handler(cors.Options{
 		AllowOriginFunc: func(r *http.Request, origin string) bool {
 			return true
 		},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "X-Requested-With"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token", "X-Requested-With", "X-Chunk-SHA256"},
 		ExposedHeaders:   []string{"Link", "Authorization"},
 		AllowCredentials: true,
 		MaxAge:           300,
@@ -249,7 +250,7 @@ func main() {
 
 			// Digital Twin Render & Viewing Link
 			r.Get("/{projectId}/render", projectHandler.GetRender)
-			r.Get("/{projectId}/view-link", projectHandler.GetViewingLink)
+			r.Get("/{projectId}/view-link", mobileUploadHandler.ProjectViewer)
 			r.Get("/{projectId}/pois", poiHandler.ListByProject)
 
 			// Room Mapping & Management
@@ -283,6 +284,13 @@ func main() {
 		r.Route("/capture-sessions", func(r chi.Router) {
 			// Public redemption for mobile apps
 			r.Post("/redeem", sessionHandler.RedeemChallenge)
+			r.With(sessionHandler.AuthenticateGrant).Post("/{sessionId}/stages/{stageName}", sessionHandler.UpdateMobileStage)
+			r.With(sessionHandler.AuthenticateGrant).Post("/{sessionId}/finalize", mobileUploadHandler.Complete)
+			r.With(sessionHandler.AuthenticateGrant).Get("/{sessionId}/validate-quality", mobileUploadHandler.ValidateQuality)
+			r.With(sessionHandler.AuthenticateGrant).Post("/{sessionId}/validate-quality", mobileUploadHandler.ValidateQuality)
+			r.With(sessionHandler.AuthenticateGrant).Post("/{sessionId}/upload", mobileUploadHandler.Init)
+			r.With(sessionHandler.AuthenticateGrant).Get("/{sessionId}/upload", mobileUploadHandler.Progress)
+			r.With(sessionHandler.AuthenticateGrant).Put("/{sessionId}/upload/chunks/{chunkIndex}", mobileUploadHandler.Chunk)
 
 			r.Group(func(r chi.Router) {
 				r.Use(authMiddleware.Authenticate)
@@ -290,8 +298,8 @@ func main() {
 				r.Get("/", sessionHandler.ListSessions)
 				r.Get("/{sessionId}", sessionHandler.GetSession)
 				r.Post("/{sessionId}/revoke", sessionHandler.RevokeSession)
+				r.Post("/{sessionId}/retry-processing", mobileUploadHandler.RetryProcessing)
 				r.Get("/{sessionId}/pipeline", sessionHandler.GetPipelineStages)
-				r.Post("/{sessionId}/stages/{stageName}", sessionHandler.UpdatePipelineStage)
 				r.Get("/{sessionId}/events", sessionHandler.StreamPipelineEvents)
 			})
 		})

@@ -635,6 +635,10 @@ class ApiService {
     return this.request<any[]>(`/jobs/project/${projectId}`);
   }
 
+  async getJobLogs(id: string): Promise<any[]> {
+    return this.request<any[]>(`/jobs/${id}/logs`);
+  }
+
   async getJob(id: string): Promise<any> {
     return this.request<any>(`/jobs/${id}`);
   }
@@ -714,6 +718,10 @@ class ApiService {
 
   async listDevices(): Promise<ConnectedDevice[]> {
     return this.request<ConnectedDevice[]>('/devices');
+  }
+
+  async retryCaptureProcessing(sessionId: string): Promise<CaptureSessionRecord> {
+    return this.request<CaptureSessionRecord>(`/capture-sessions/${sessionId}/retry-processing`, {method: 'POST'});
   }
 
   async getPipelineStages(sessionId: string): Promise<PipelineStageRecord[]> {

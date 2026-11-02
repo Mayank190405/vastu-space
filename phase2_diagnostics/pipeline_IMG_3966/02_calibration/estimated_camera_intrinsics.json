@@ -1,0 +1,27 @@
+{
+  "source": "vanishing_point_geometry",
+  "metric_verified": false,
+  "resolution": [
+    540,
+    960
+  ],
+  "intrinsics": {
+    "fx": 652.39,
+    "fy": 652.39,
+    "cx": 270.0,
+    "cy": 480.0
+  },
+  "distortion_coefficients": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "calibration_confidence": 0.75,
+  "uncertainty": {
+    "focal_uncertainty_px": 52.19,
+    "focal_uncertainty_pct": 8.0,
+    "principal_point_uncertainty_px": 10.8
+  }
+}

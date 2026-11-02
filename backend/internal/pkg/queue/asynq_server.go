@@ -2,6 +2,7 @@ package queue
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
@@ -32,9 +33,10 @@ type AsynqServer struct {
 // reconstruction pipeline task handlers registered.
 //
 // Queue priorities:
-//   critical: 6 — user-facing notifications, upload completion hooks
-//   default:  3 — reconstruction pipeline stages
-//   low:      1 — maintenance and cleanup
+//
+//	critical: 6 — user-facing notifications, upload completion hooks
+//	default:  3 — reconstruction pipeline stages
+//	low:      1 — maintenance and cleanup
 func NewAsynqServer(
 	cfg AsynqServerConfig,
 	jobRepo repository.JobRepository,
@@ -67,8 +69,12 @@ func NewAsynqServer(
 				log.Printf("[AsynqServer] Task %q failed (retry %d/%d): %v", task.Type(), retried, maxRetry, err)
 
 				// When all retries are exhausted, record failure in PostgreSQL
-				if retried >= maxRetry {
+				if retried >= maxRetry || errors.Is(err, asynq.SkipRetry) {
 					if p, decErr := DecodeReconstructionPayload(task.Payload()); decErr == nil {
+						if recorder, ok := jobRepo.(SessionPipelineRecorder); ok && p.SessionID != "" {
+							message := err.Error()
+							_ = recorder.RecordSessionStage(ctx, p.SessionID, p.JobID, "COMPLETED", "FAILED", &message)
+						}
 						errCode := "ERR_STAGE_FAILED"
 						errMsg := fmt.Sprintf("Stage %s failed after %d retries: %v", task.Type(), retried, err)
 						workerID := "vastu-worker"
@@ -91,15 +97,15 @@ func NewAsynqServer(
 	mux := asynq.NewServeMux()
 
 	// Register all reconstruction pipeline stage handlers
-	mux.HandleFunc(TypePreprocessVideo,       handlers.HandlePreprocessVideo)
-	mux.HandleFunc(TypeRunSFM,               handlers.HandleRunSFM)
-	mux.HandleFunc(TypeRunDepthEstimation,   handlers.HandleRunDepthEstimation)
-	mux.HandleFunc(TypeFusePointCloud,       handlers.HandleFusePointCloud)
+	mux.HandleFunc(TypePreprocessVideo, handlers.HandlePreprocessVideo)
+	mux.HandleFunc(TypeRunSFM, handlers.HandleRunSFM)
+	mux.HandleFunc(TypeRunDepthEstimation, handlers.HandleRunDepthEstimation)
+	mux.HandleFunc(TypeFusePointCloud, handlers.HandleFusePointCloud)
 	mux.HandleFunc(TypeRunMeshReconstruction, handlers.HandleRunMeshReconstruction)
-	mux.HandleFunc(TypeRunTexturing,              handlers.HandleRunTexturing)
-	mux.HandleFunc(TypeRunSemanticSegmentation,   handlers.HandleRunSemanticSegmentation)
-	mux.HandleFunc(TypeRunQualityAssurance,       handlers.HandleRunQualityAssurance)
-	mux.HandleFunc(TypeFinalizeModel,        handlers.HandleFinalizeModel)
+	mux.HandleFunc(TypeRunTexturing, handlers.HandleRunTexturing)
+	mux.HandleFunc(TypeRunSemanticSegmentation, handlers.HandleRunSemanticSegmentation)
+	mux.HandleFunc(TypeRunQualityAssurance, handlers.HandleRunQualityAssurance)
+	mux.HandleFunc(TypeFinalizeModel, handlers.HandleFinalizeModel)
 
 	return &AsynqServer{
 		server:   srv,

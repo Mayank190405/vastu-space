@@ -14,6 +14,7 @@ public class ARKitRecordingEngineTests {
         testCameraPoseLogger(report)
         testCapturePackageWriterHierarchy(report)
         testCaptureSessionManagerAuthorizationLock(report)
+        testCaptureSessionManagerBaselineTracking(report)
     }
     
     // 1. Keyframe Selector Spatial & Angular Thresholds
@@ -217,6 +218,28 @@ public class ARKitRecordingEngineTests {
             report.check(true, "CaptureSessionManager strictly refused to start recording without active grant")
         }
         report.check(manager.isRecording == false, "Recording flag remains false")
+    }
+    
+    // 7. Capture Session Manager Baseline Tracking
+    private static func testCaptureSessionManagerBaselineTracking(_ report: TestReport) {
+        print("\n[Phase 3 - Test 7/7] Capture Session Manager Translation Baseline Tracking")
+        let manager = CaptureSessionManager()
+        report.check(manager.translationBaselineMeters == 0.0, "Initial translation baseline is 0.0m")
+        manager.updateBaselineForTesting(distanceMeters: 1.854)
+        report.check(manager.translationBaselineMeters == 1.85, "Translation baseline correctly rounded to 1.85m")
+        
+        let audit = CaptureQualityAudit(
+            keyframeCount: 76,
+            durationSeconds: 45.0,
+            meanSharpness: 0.85,
+            meanExposure: 130.0,
+            trackingStabilityPct: 96.0,
+            translationalBaselineM: manager.translationBaselineMeters,
+            angularCoverageDeg: 360.0,
+            wallBoundaryCoveragePct: 100.0
+        )
+        report.check(audit.overallScore >= 0.90, "Audit score reaches 90%+ with active baseline (got \(Int(audit.overallScore * 100))%)")
+        report.check(audit.isAcceptableForReconstruction, "Audit passes reconstruction acceptance criteria")
     }
 }
 

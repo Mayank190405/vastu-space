@@ -30,12 +30,22 @@ WORKDIR /app
 COPY backend/workers/requirements.txt .
 RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 
+# Keep metric model dependencies separate so the large reconstruction layer stays cached.
+COPY backend/workers/requirements-depth.txt ./requirements-depth.txt
+RUN pip install --no-cache-dir -r requirements-depth.txt
+
 # Copy Go worker executable from builder stage
 COPY --from=go-builder /app/vastu-worker /app/vastu-worker
 
 # Copy worker modules, scripts, and assets
 COPY backend/workers /app/backend/workers
 COPY scripts /app/scripts
+COPY core /app/core
+COPY ml /app/ml
+COPY navigation /app/navigation
+COPY storage /app/storage
+COPY geometry /app/geometry
+COPY shared /app/shared
 
 # Pre-create scratch and upload directories
 RUN mkdir -p /app/uploads/scratch
@@ -43,5 +53,13 @@ RUN mkdir -p /app/uploads/scratch
 ENV WORKERS_PATH=/app/backend/workers
 ENV PYTHONPATH=/app:/app/backend/workers:/app/scripts
 ENV UPLOAD_DIR=/app/uploads
+ENV VASTU_METRIC_DEPTH_MODEL_PATH=/opt/vastu-models/metric-indoor
+
+# Download the pinned metric weights and run real inference before accepting the image.
+RUN HF_HOME=/tmp/vastu-model-download python3 scripts/prepare_metric_depth.py --output "$VASTU_METRIC_DEPTH_MODEL_PATH" \
+    && rm -rf /tmp/vastu-model-download
+
+# Fail the image build if the complete production reconstruction entrypoint cannot import.
+RUN python3 -c "from scripts.capture_reconstruct import main; import scripts.generate_video_twin as p; import core.dense.tsdf_fusion as t; from core.reconstruction.native_runtime import load_open3d; native = load_open3d(); assert p.o3d is native and t.o3d is native; print('Native Open3D reconstruction imports verified:', native.__version__)"
 
 ENTRYPOINT ["/app/vastu-worker"]

@@ -49,6 +49,12 @@ def parse_args():
         action="store_true",
         help="Copy generated assets directly to public web viewer models/ directory"
     )
+    parser.add_argument(
+        "--allow-overwrite",
+        action="store_true",
+        default=True,
+        help="Allow overwriting existing output directory"
+    )
     return parser.parse_args()
 
 def main():
@@ -68,10 +74,10 @@ def main():
     logger.info(f"  Output Folder : {output_dir}")
     logger.info("=" * 65)
     
-    pipeline = VastuDigitalTwinPipeline(video_path, output_dir)
-    success = pipeline.run()
+    pipeline = VastuDigitalTwinPipeline(video_path, output_dir, allow_overwrite=True)
+    result = pipeline.run()
     
-    if success:
+    if result.get("quality_status") == "PASS":
         logger.info("Reconstruction completed successfully!")
         
         if args.deploy:

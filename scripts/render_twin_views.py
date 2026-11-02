@@ -2,8 +2,11 @@ import os
 import sys
 import numpy as np
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-import core.reconstruction.o3d_shim as o3d
-sys.modules["open3d"] = o3d
+try:
+    import open3d as o3d
+except ImportError:
+    import core.reconstruction.o3d_shim as o3d
+    sys.modules["open3d"] = o3d
 try:
     import matplotlib
     matplotlib.use('Agg')
