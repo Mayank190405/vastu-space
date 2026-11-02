@@ -17,6 +17,7 @@ Rules (per Master Architecture v3.0 S5):
 from enum import Enum
 from typing import Dict, Any, List, Tuple, Optional, Union
 import numpy as np
+import cv2
 
 
 class CameraConvention(str, Enum):
@@ -157,9 +158,46 @@ class CameraIntrinsics:
         self.cy = float(cy)
         self.width = int(width)
         self.height = int(height)
-        self.distortion = np.asarray(distortion_coeffs if distortion_coeffs is not None else [0.0, 0.0, 0.0, 0.0, 0.0], dtype=np.float64)
-        if not np.all(np.isfinite(self.distortion)) or np.any(self.distortion != 0):
-            raise ValueError("Pinhole projection requires rectified imagery (zero distortion)")
+        dist = distortion_coeffs if distortion_coeffs is not None else [0.0, 0.0, 0.0, 0.0, 0.0]
+        self.distortion = np.asarray(dist, dtype=np.float64).flatten()
+        if not np.all(np.isfinite(self.distortion)):
+            raise ValueError("Distortion coefficients must be finite")
+        if len(self.distortion) < 5:
+            padded = np.zeros(5, dtype=np.float64)
+            padded[:len(self.distortion)] = self.distortion
+            self.distortion = padded
+
+    @property
+    def has_distortion(self) -> bool:
+        """Returns True if any lens distortion coefficient is non-zero."""
+        return bool(np.any(np.abs(self.distortion) > 1e-6))
+
+    def undistort_points(self, points_uv: np.ndarray) -> np.ndarray:
+        """
+        Undistorts 2D pixel coordinates using OpenCV cv2.undistortPoints.
+        Input points shape: (N, 2) or (2,)
+        Output points shape: matching (N, 2)
+        """
+        pts = np.asarray(points_uv, dtype=np.float64).reshape(-1, 1, 2)
+        if not self.has_distortion:
+            return pts.reshape(-1, 2)
+        # Undistort with P=K to keep coordinates in pixel space
+        undistorted = cv2.undistortPoints(pts, self.K, self.distortion, P=self.K)
+        return undistorted.reshape(-1, 2)
+
+    def ray_direction(self, u: float, v: float) -> np.ndarray:
+        """
+        Returns normalized 3D unit ray vector in OpenCV camera coordinates (+Z forward)
+        for a given 2D pixel (u, v), properly accounting for lens distortion.
+        """
+        if self.has_distortion:
+            undist = self.undistort_points(np.array([[u, v]], dtype=np.float64))[0]
+            p_hom = np.array([undist[0], undist[1], 1.0], dtype=np.float64)
+        else:
+            p_hom = np.array([u, v, 1.0], dtype=np.float64)
+        ray = self.K_inv @ p_hom
+        norm = np.linalg.norm(ray)
+        return ray / max(norm, 1e-12)
 
     @property
     def K(self) -> np.ndarray:
@@ -345,10 +383,17 @@ class CameraPose:
         if z_cam <= 1e-4:
             raise ValueError(f"Point is behind or on the camera optical center (Z_cam={z_cam:.4f})")
 
-        # Pinhole projection: p_norm = [X/Z, Y/Z, 1]
-        p_hom = intrinsics.K @ (P_cam / z_cam)
-        u, v = p_hom[0], p_hom[1]
-        return np.array([u, v], dtype=np.float64), float(z_cam)
+        # Pinhole projection (accounting for radial/tangential distortion if present)
+        if intrinsics.has_distortion:
+            rvec, _ = cv2.Rodrigues(R_cw)
+            tvec = t_cw.reshape(3, 1)
+            pts_2d, _ = cv2.projectPoints(P_w.reshape(1, 3), rvec, tvec, intrinsics.K, intrinsics.distortion)
+            u, v = float(pts_2d[0, 0, 0]), float(pts_2d[0, 0, 1])
+            return np.array([u, v], dtype=np.float64), float(z_cam)
+        else:
+            p_hom = intrinsics.K @ (P_cam / z_cam)
+            u, v = p_hom[0], p_hom[1]
+            return np.array([u, v], dtype=np.float64), float(z_cam)
 
     def backproject_pixel(
         self,
@@ -359,14 +404,20 @@ class CameraPose:
     ) -> np.ndarray:
         """
         Back-projects a 2D image pixel (u, v) with known metric depth Z into 3D world coordinates.
-        P_cam = Z * K^-1 @ [u, v, 1]^T
+        P_cam = Z * K^-1 @ [u, v, 1]^T (accounting for lens distortion)
         P_world = R_wc @ P_cam + t_wc
         """
         if not np.all(np.isfinite([u, v, depth_m])) or depth_m <= 0:
             raise ValueError(f"Depth must be positive, got {depth_m}")
 
+        if intrinsics.has_distortion:
+            undist = intrinsics.undistort_points(np.array([[u, v]], dtype=np.float64))[0]
+            u_clean, v_clean = float(undist[0]), float(undist[1])
+        else:
+            u_clean, v_clean = float(u), float(v)
+
         pose_cv = self.to_opencv()
-        p_hom = np.array([u, v, 1.0], dtype=np.float64)
+        p_hom = np.array([u_clean, v_clean, 1.0], dtype=np.float64)
         ray_cam = intrinsics.K_inv @ p_hom
         P_cam = ray_cam * depth_m
 

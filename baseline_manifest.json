@@ -1,0 +1,63 @@
+{
+  "manifest_version": "1.0.0",
+  "pipeline_escalation": "VASTU-P0-DEEP-REPAIR-002",
+  "step": "STEP_0_BASELINE_FREEZE",
+  "timestamp": "2026-11-02T17:34:50+05:30",
+  "git": {
+    "commit": "9652c22b35e7cb9a1451c8e6474bf4a1314cb63e",
+    "branch": "codex/p0-capture-video-recovery",
+    "clean_worktree": false
+  },
+  "input_capture": {
+    "filename": "IMG_3966.MOV",
+    "sha256": "2e22a963d7cde9a5d8768d90a6a34f81ec9aaf61a7e6ec8573309c846f1eb4de",
+    "file_size_bytes": 74534720,
+    "dimensions": {
+      "width": 2160,
+      "height": 3840,
+      "orientation": "portrait"
+    },
+    "duration_seconds": 5.79,
+    "total_frames": 347,
+    "fps": 59.93,
+    "keyframes_extracted": 16
+  },
+  "runtime_hardware": {
+    "os": "macOS-26.6.2-arm64-arm-64bit",
+    "architecture": "arm64",
+    "processor": "Apple Silicon (M-series)",
+    "mps_acceleration": true
+  },
+  "dependency_versions": {
+    "python": "3.9.6",
+    "open3d": "0.18.0",
+    "torch": "2.8.0",
+    "torchvision": "0.23.0",
+    "opencv-python": "4.9.0",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1"
+  },
+  "model_identifiers": {
+    "depth_network": "depth-anything/Depth-Anything-V2-Metric-Indoor-Small-hf",
+    "depth_inference_backend": "torch.backends.mps / Fallback NEURAL_METRIC_CALIBRATED",
+    "pose_tracker": "Direct 3D-2D PnP RANSAC + Multi-scale Optical Flow",
+    "fusion_engine": "Open3D ScalableTSDFVolume",
+    "mesher": "TSDF Marching Cubes Topology-Preserving"
+  },
+  "pipeline_parameters": {
+    "voxel_length_m": 0.03,
+    "sdf_trunc_m": 0.09,
+    "depth_min_m": 0.4,
+    "depth_max_m": 5.0,
+    "texture_atlas_size": 2048,
+    "min_parallax_baseline_m": 0.1,
+    "max_reprojection_rmse": 40.0
+  },
+  "baseline_artifacts": {
+    "baseline_model_glb": "baseline_model.glb",
+    "baseline_model_sha256": "9c835cfbed1a167ccc2bbcb92d32b8313221835d74207fbb3365241963aeda17",
+    "baseline_metrics_json": "baseline_metrics.json",
+    "baseline_execution_log": "baseline_execution.log",
+    "baseline_freeze_directory": "baseline_freeze/"
+  }
+}

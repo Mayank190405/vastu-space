@@ -1,0 +1,271 @@
+{
+  "audit_version": "1.0.0",
+  "escalation": "VASTU-P0-DEEP-REPAIR-002",
+  "entry_point": "scripts/generate_video_twin.py",
+  "active_pipeline_modules": [
+    {
+      "stage": "STAGE_00",
+      "name": "Capture Validation & Signal Integrity",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._stage_00_capture_validation",
+      "invokes": [
+        {"module": "cv2", "functions": ["VideoCapture", "Laplacian", "meanStdDev", "calcHist"]}
+      ],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_01",
+      "name": "Motion-Aware Keyframe Selection",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._stage_01_keyframe_selection",
+      "invokes": [
+        {"module": "cv2", "functions": ["calcOpticalFlowFarneback", "Laplacian", "cvtColor"]}
+      ],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_01b",
+      "name": "Parallax Validation Gate",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._stage_01b_parallax_validation",
+      "invokes": [
+        {"module": "core.reconstruction.alignment", "function": "trajectory_parallax"}
+      ],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_02",
+      "name": "Camera Calibration & Intrinsic Reasoning",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._stage_02_camera_calibration",
+      "invokes": [
+        {"module": "core.reconstruction.calibration_reasoner", "class": "CalibrationReasoner", "function": "reason"}
+      ],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_04",
+      "name": "Neural Metric Depth Estimation",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._stage_04_depth_estimation",
+      "invokes": [
+        {"module": "torch", "description": "Local MPS inference or calibrated metric neural depth fallback"}
+      ],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_03",
+      "name": "3D-2D PnP RANSAC Camera Tracking",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._stage_03_feature_tracking",
+      "invokes": [
+        {"module": "cv2", "functions": ["SIFT_create", "BFMatcher", "solvePnPRansac", "Rodrigues"]},
+        {"module": "core.reconstruction.tracking_reasoner", "class": "TrackingReasoner", "function": "track"}
+      ],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_05",
+      "name": "Temporal Depth Alignment & Multi-View Scale Audit",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._stage_05_depth_alignment",
+      "invokes": [
+        {"module": "core.reconstruction.depth_reasoner", "class": "KeyframeDepthReasoner", "function": "reason"},
+        {"module": "core.reconstruction.alignment", "function": "verified_depth_inputs"}
+      ],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_06",
+      "name": "3D Inverse Projection & Coordinate Mapping",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._run_stages (inline)",
+      "invokes": [
+        {"module": "numpy", "description": "Pinhole inverse projection X_c = (u-cx)*Z/fx, Y_c = (v-cy)*Z/fy, Z_c = Z"}
+      ],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_07",
+      "name": "Mandatory Two-View Validation Gate",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._stage_07_two_view_gate",
+      "invokes": [
+        {"module": "cv2", "description": "Geometric warp consistency and depth overlap evaluation"}
+      ],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_08",
+      "name": "Local Multi-View Incremental Chunk Expansion",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._run_stages (inline)",
+      "invokes": [],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_09",
+      "name": "Global Registration & Multi-View Consensus",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._stage_09_global_registration",
+      "invokes": [
+        {"module": "numpy", "description": "Point-to-image reprojection consensus check (support >= 2)"}
+      ],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_10",
+      "name": "Dense Colored Point Cloud & Upright Grounding",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._run_stages (inline)",
+      "invokes": [
+        {"module": "open3d.geometry", "class": "PointCloud"},
+        {"module": "open3d.io", "functions": ["write_point_cloud"]}
+      ],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_11",
+      "name": "Architectural Plane Detection & Asset Export",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._stage_11_architectural_recovery",
+      "invokes": [
+        {"module": "core.reconstruction.architectural_builder", "class": "ArchitecturalGeometryBuilder"},
+        {"module": "core.packaging.glb_exporter", "class": "GLBExporter", "functions": ["export"]},
+        {"module": "core.reconstruction.gaussian_splatting", "class": "GaussianSplattingPipeline"},
+        {"module": "core.reconstruction.spz_exporter", "class": "SPZExporter", "functions": ["export_spz"]}
+      ],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_12",
+      "name": "Openings & Structural Recesses Preservation",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._stage_12_openings_preservation",
+      "invokes": [],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_13",
+      "name": "Geometric Normal Estimation",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._stage_13_normal_estimation",
+      "invokes": [
+        {"module": "open3d.geometry.PointCloud", "function": "estimate_normals"}
+      ],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_14",
+      "name": "TSDF Scalable Volumetric Fusion & Topology Marching Cubes",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._stage_14_tsdf_mesh",
+      "invokes": [
+        {"module": "core.dense.tsdf_fusion", "class": "TSDFFusionEngine", "function": "fuse_and_extract"},
+        {"module": "open3d.pipelines.integration", "class": "ScalableTSDFVolume", "function": "integrate"},
+        {"module": "open3d.pipelines.integration.ScalableTSDFVolume", "function": "extract_triangle_mesh"},
+        {"module": "core.reconstruction.geometry_reasoner", "class": "GeometryReasoner", "function": "regularize_planes"}
+      ],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_15",
+      "name": "Mesh Geometric Integrity Validation Gate",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._stage_15_mesh_validation",
+      "invokes": [
+        {"module": "open3d.geometry.TriangleMesh", "functions": ["is_edge_manifold", "is_vertex_manifold", "is_self_intersecting", "cluster_connected_triangles"]}
+      ],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_16_17",
+      "name": "Photographic Texture Projection & Atlas Baking",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._stage_16_and_17_texture_projection",
+      "invokes": [
+        {"module": "backend.workers.texturing.texture_reconstruction_engine", "class": "TextureReconstructionEngine", "function": "reconstruct_texture"},
+        {"module": "core.packaging.glb_exporter", "class": "GLBExporter", "function": "export"}
+      ],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_18",
+      "name": "Texture Quality Validation Gate",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._stage_18_texture_validation",
+      "invokes": [
+        {"module": "cv2", "functions": ["Laplacian", "meanStdDev"]}
+      ],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_19",
+      "name": "Mipmap Pyramid Generation",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._stage_19_mipmaps",
+      "invokes": [
+        {"module": "cv2", "function": "resize"}
+      ],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_20",
+      "name": "Dual-Mode WebGL Viewer Generation",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._stage_20_webgl_viewer",
+      "invokes": [],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_21",
+      "name": "Metric Reprojection Evaluation Gate",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._stage_21_reprojection_validation",
+      "invokes": [
+        {"module": "core.reconstruction.alignment", "function": "photometric_rmse"}
+      ],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_22",
+      "name": "Permanent Multi-Category Measured Quality Gate",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._stage_22_quality_gate",
+      "invokes": [],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_23",
+      "name": "Recovery Orchestration & Audit Logging",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._run_stages (inline)",
+      "invokes": [
+        {"module": "core.reconstruction.safety", "class": "RecoveryLog"}
+      ],
+      "active_on_production_path": true
+    },
+    {
+      "stage": "STAGE_24",
+      "name": "Keyframe-to-Surface Provenance Traceability",
+      "source_file": "scripts/generate_video_twin.py",
+      "function": "VastuDigitalTwinEngine._run_stages (inline)",
+      "invokes": [],
+      "active_on_production_path": true
+    }
+  ],
+  "dormant_unreferenced_modules": [
+    {
+      "name": "Screened Poisson Surface Reconstruction",
+      "location": "scripts/generate_video_twin.py:1930 (_generate_mesh_candidate)",
+      "status": "DORMANT_DEAD_CODE",
+      "audit_result": "Poisson surface reconstruction is completely bypassed. Active path exclusively uses ScalableTSDFVolume with Marching Cubes."
+    },
+    {
+      "name": "Legacy Backend V3 Engine",
+      "location": "backend/workers/pipeline/v3_reconstruction_engine.py",
+      "status": "STANDALONE_LEGACY",
+      "audit_result": "Not referenced by scripts/generate_video_twin.py"
+    }
+  ]
+}
