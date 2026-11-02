@@ -1,0 +1,7 @@
+{
+  "status": "NEEDS_RESCAN",
+  "scale_status": "SCALE_UNOBSERVABLE",
+  "verified_multi_view_geometry": false,
+  "reason": "Video-only input lacks independently validated metric poses. See capture_guidance.json.",
+  "phase_3_authorized": false
+}

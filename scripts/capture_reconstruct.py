@@ -11,7 +11,9 @@ from core.reconstruction.native_runtime import load_open3d
 def main(video, output):
     load_open3d()  # Production never accepts diagnostic geometry, even with diagnostic flags.
     root = Path(output)
-    VastuDigitalTwinPipeline(video, str(root)).run()
+    result = VastuDigitalTwinPipeline(video, str(root)).run()
+    if result.get('quality_status') == 'NEEDS_RESCAN':
+        raise ReconstructionSafetyError('NEEDS_RESCAN: inspect parallax_analysis.json and capture_guidance.json')
     
     # 1. Enforce physical artifact generation
     for name in ('index.html', 'textured_mesh.obj', 'textured_mesh.mtl', 'texture_atlas.png'):

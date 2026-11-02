@@ -1,0 +1,7 @@
+{
+  "status": "SCALE_UNOBSERVABLE",
+  "source": "MONOCULAR_UNSCALED",
+  "evidence": {},
+  "meters_per_unit": null,
+  "reason": "No validated independent metric reference; neural depth and essential-matrix translation do not establish metric scale."
+}

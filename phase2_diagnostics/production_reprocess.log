@@ -1,0 +1,24 @@
+2026-11-02 23:56:55,659 - [INFO] - =================================================================
+2026-11-02 23:56:55,659 - [INFO] -   VĀSTU / NAMMA SPACE — 3D SPATIAL RECONSTRUCTION
+2026-11-02 23:56:55,660 - [INFO] -   Input Capture : IMG_3966.MOV
+2026-11-02 23:56:55,660 - [INFO] -   Output Folder : phase2_diagnostics/pipeline_IMG_3966
+2026-11-02 23:56:55,660 - [INFO] - =================================================================
+2026-11-02 23:56:55,660 - [INFO] - ==================================================================
+2026-11-02 23:56:55,660 - [INFO] - VĀSTU — PERMANENT 25-STAGE EVIDENCE-DRIVEN RECONSTRUCTION ENGINE
+2026-11-02 23:56:55,661 - [INFO] - Input Video: /Users/kradsagency/Desktop/vastu-namma-space/IMG_3966.MOV
+2026-11-02 23:56:55,661 - [INFO] - Output Directory: /Users/kradsagency/Desktop/vastu-namma-space/phase2_diagnostics/pipeline_IMG_3966
+2026-11-02 23:56:55,661 - [INFO] - ==================================================================
+2026-11-02 23:56:55,661 - [INFO] - 
+[STAGE 00] Capture Validation & Signal Integrity...
+2026-11-02 23:56:56,288 - [INFO] -   Frame Geometry: Decoded 2160x3840 (aspect 0.562) -> Resizing to 540x960 (aspect verified: True)
+2026-11-02 23:57:14,170 - [INFO] -   Capture Quality: PASS (Sharpness: 340.84, Exposure: 151.58, Usable: 100.0%)
+2026-11-02 23:57:14,174 - [INFO] - 
+[STAGE 01] Motion-Aware Keyframe Selection & Blur Filtering...
+2026-11-02 23:57:15,482 - [INFO] - 
+[STAGE 01b] Parallax Validation Gate (Rotational vs Metric Translation Flow)...
+2026-11-02 23:57:15,482 - [INFO] - 
+[STAGE 02] Camera Calibration & Pinhole Intrinsic Modeling...
+2026-11-02 23:57:23,631 - [INFO] -   Camera Calibration: fx=652.4, fy=652.4, cx=270.0, cy=480.0 (Source: vanishing_point_geometry, Confidence: 0.75)
+2026-11-02 23:57:54,811 - [WARNING] - NEEDS_RESCAN: unverified geometry/scale; diagnostics preserved. Stopping before depth inference and meshing.
+2026-11-02 23:57:54,812 - [WARNING] - Reconstruction finished with quality gate notice: NEEDS_RESCAN
+2026-11-02 23:57:54,813 - [ERROR] - Pipeline encountered quality gate errors.

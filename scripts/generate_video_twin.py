@@ -70,7 +70,7 @@ if WORKERS_DIR not in sys.path:
 
 import cv2
 import numpy as np
-from core.reconstruction.alignment import output_transform, transform_points, aligned_camera, verified_depth_inputs, trajectory_parallax, photometric_rmse
+from core.reconstruction.alignment import output_transform, transform_points, aligned_camera, verified_depth_inputs, photometric_rmse
 from core.reconstruction.native_runtime import load_open3d
 o3d = load_open3d(allow_diagnostic=os.environ.get("VASTU_DIAGNOSTIC_SHIMS") == "1")
 
@@ -105,6 +105,7 @@ from core.reconstruction.tracking_reasoner import TrackingReasoner
 from core.reconstruction.geometry_reasoner import GeometryReasoner
 from core.reconstruction.safety import ReconstructionSafetyError, ReconstructionPolicy
 from core.quality.geometry_accuracy_validator import GeometryAccuracyValidator
+
 
 ARTIFACT_DIRS = [
     "00_capture", "01_keyframes", "02_calibration", "03_features",
@@ -393,11 +394,13 @@ class VastuDigitalTwinPipeline:
 
         try:
             summary = self._run_stages()
-            is_pass = summary.get("quality_status") in ("PASS", "WARNING")
+            is_pass = summary.get("quality_status") == "PASS"
             status = {"accepted": is_pass, "quality_status": summary.get("quality_status")}
             self._save_json("run_status.json", status)
             if not is_pass:
                 logger.warning(f"Reconstruction finished with quality gate notice: {summary.get('quality_status')}")
+                if summary.get("quality_status") != "NEEDS_RESCAN":
+                    raise ReconstructionSafetyError("Final reconstruction quality gate did not pass")
             return summary
         except ReconstructionSafetyError:
             raise
@@ -437,17 +440,6 @@ class VastuDigitalTwinPipeline:
         parallax_report = self._stage_01b_parallax_validation(frames, keyframes_meta, capture_report)
         self._save_json("01_keyframes/parallax_validation.json", parallax_report)
         self._save_json("parallax_validation.json", parallax_report)
-        if not parallax_report["parallax_gate_passed"]:
-            self.recovery.record(
-                "STAGE_01b",
-                "insufficient_translation_baseline",
-                parallax_report["total_baseline_displacement_m"],
-                0.10,
-                "flag_metric_uncertainty_and_apply_planar_prior",
-                1,
-                "ADAPTED"
-            )
-
         # -------------------------------------------------------------
         # STAGE 02: CAMERA CALIBRATION & REASONING
         # -------------------------------------------------------------
@@ -461,6 +453,28 @@ class VastuDigitalTwinPipeline:
         cx, cy = K[0, 2], K[1, 2]
         self._save_json("02_calibration/camera_calibration.json", calib)
         self._save_json("camera_calibration.json", calib)
+
+        from core.reconstruction.parallax import analyze_frames, estimate_monocular_trajectory, ParallaxConfig
+        diagnostic_poses = estimate_monocular_trajectory(frames, K)
+        parallax_report = analyze_frames(frames, diagnostic_poses, K, self.output_dir, config=ParallaxConfig(max_keyframes=self.num_keyframes))
+        self._save_json("01_keyframes/parallax_validation.json", parallax_report)
+        self._save_json("parallax_validation.json", parallax_report)
+        if not parallax_report["parallax_gate_passed"]:
+            self._save_json("reconstruction_status.json", {
+                "status": "NEEDS_RESCAN", "scale_status": parallax_report["scale_status"],
+                "verified_multi_view_geometry": False,
+                "reason": "Video-only input lacks independently validated metric poses. See capture_guidance.json.",
+                "phase_3_authorized": False})
+            logger.warning("NEEDS_RESCAN: unverified geometry/scale; diagnostics preserved. Stopping before depth inference and meshing.")
+            summary = {"quality_status": "NEEDS_RESCAN", "status": "NEEDS_RESCAN",
+                       "scale_status": parallax_report["scale_status"],
+                       "verified_multi_view_geometry": False, "phase_3_authorized": False}
+            self._save_json("digital_twin_summary.json", summary)
+            return summary
+        selected = parallax_report["selected_keyframes"]
+        frames = [frames[i] for i in selected]
+        keyframes_meta = [keyframes_meta[i] for i in selected]
+        self._save_json("01_keyframes/keyframes_metadata.json", keyframes_meta)
 
         # -------------------------------------------------------------
         # STAGE 04: DEPTH ESTIMATION (Needed prior to 3D-2D PnP)
@@ -488,20 +502,6 @@ class VastuDigitalTwinPipeline:
             logger.info(f"  [TRACKING REASONER] Multi-anchor PnP tracked: {len(track_res['report'].get('tracked_frames', []))}/{len(frames)} keyframes.")
         except Exception as e:
             logger.warning(f"  [TRACKING REASONER] Multi-anchor tracking notice: {e}")
-        baseline, parallax_passed = trajectory_parallax(
-            poses, parallax_report.get("mean_parallax_residual_px", 0.0),
-            min_residual=self.safety_policy.min_parallax_residual_px
-        )
-        parallax_report["optical_flow_baseline_proxy_m"] = parallax_report.get("total_baseline_displacement_m")
-        parallax_report.update(
-            total_baseline_displacement_m=round(baseline, 4),
-            baseline_source="estimated_depth_anchored_camera_centers_not_independent_metric_measurement",
-            parallax_gate_passed=parallax_passed,
-            status="PASS" if parallax_passed else "INSUFFICIENT_MEASURED_PARALLAX",
-            parallax_score=round(min(1.0, baseline / 0.10), 3)
-        )
-        self._save_json("01_keyframes/parallax_validation.json", parallax_report)
-
         self._save_json("03_features/features_summary.json", pairwise_features)
         self._save_json("04_camera_poses/camera_poses.json", trajectory_metrics)
         self._save_json("camera_poses.json", trajectory_metrics)
@@ -527,6 +527,8 @@ class VastuDigitalTwinPipeline:
             else:
                 logger.info("  [DEPTH REASONER] Parallax baseline adapted: preserving metric neural depth prior for TSDF volumetric fusion.")
             logger.info(f"  [DEPTH REASONER] Successfully verified multi-view depth evidence across {len(frames)} keyframes.")
+        except ReconstructionSafetyError:
+            raise
         except Exception as e:
             raise ReconstructionSafetyError(f"Multiview depth verification failed: {e}") from e
 
@@ -1062,162 +1064,26 @@ class VastuDigitalTwinPipeline:
     def _stage_01_keyframe_selection(
         self, raw_samples: List[Dict[str, Any]]
     ) -> Tuple[List[np.ndarray], List[Dict[str, Any]]]:
-        sift = cv2.SIFT_create(nfeatures=1500)
-        evaluated = []
-        for s in raw_samples:
-            kp = sift.detect(s["gray"], None)
-            evaluated.append({
-                "frame_idx": s["frame_idx"],
-                "frame": s["frame"],
-                "gray": s["gray"],
-                "sharpness": s["sharpness"],
-                "feature_count": len(kp)
-            })
-
-        chunk_size = max(1, len(evaluated) // self.num_keyframes)
-        selected_meta = []
-        selected_frames = []
-
-        for c_i in range(min(self.num_keyframes, len(evaluated))):
-            chunk = evaluated[c_i * chunk_size : min((c_i + 1) * chunk_size, len(evaluated))]
-            if not chunk:
-                break
-            best = max(chunk, key=lambda x: x["sharpness"] * 0.7 + x["feature_count"] * 0.3)
-            sec = round(best["frame_idx"] / 60.0, 3)
-
-            motion = 0.0
-            overlap = 1.0
-            if len(selected_frames) > 0:
-                prev_gray = selected_frames[-1]
-                prev_gray_g = cv2.cvtColor(prev_gray, cv2.COLOR_BGR2GRAY)
-                flow = cv2.calcOpticalFlowFarneback(prev_gray_g, best["gray"], None, 0.5, 3, 15, 3, 5, 1.2, 0)
-                motion = round(float(np.mean(np.linalg.norm(flow, axis=2))), 2)
-                overlap = round(max(0.0, float(1.0 - motion / 30.0)), 3)
-
-            out_idx = len(selected_frames)
-            meta = {
-                "frame_id": out_idx,
-                "raw_frame_idx": best["frame_idx"],
-                "timestamp_sec": sec,
-                "sharpness": round(best["sharpness"], 2),
-                "feature_count": best["feature_count"],
-                "motion_from_previous": motion,
-                "overlap_score": overlap,
-                "selection_reason": "Optimal sharpness & motion baseline"
-            }
-            selected_meta.append(meta)
-            selected_frames.append(best["frame"])
-            cv2.imwrite(os.path.join(self.output_dir, "01_keyframes", f"frame_{out_idx:02d}.png"), best["frame"])
-
-        logger.info(f"  Selected {len(selected_frames)} motion-aware keyframes (avg features: {np.mean([m['feature_count'] for m in selected_meta]):.0f}).")
+        # Candidate extraction only. Final selection requires calibrated geometry.
+        selected_frames, selected_meta = [], []
+        for sample in raw_samples:
+            if sample["sharpness"] < 8.0:
+                continue
+            idx = len(selected_frames)
+            selected_frames.append(sample["frame"])
+            selected_meta.append({"frame_id": idx, "raw_frame_idx": sample["frame_idx"],
+                                  "sharpness": sample["sharpness"],
+                                  "selection_reason": "candidate_pending_geometry"})
+            cv2.imwrite(os.path.join(self.output_dir, "01_keyframes", f"frame_{idx:02d}.png"), sample["frame"])
+        if len(selected_frames) < 2:
+            raise ValueError("NEEDS_RESCAN: fewer than two sharp candidate frames")
         return selected_frames, selected_meta
 
-    def _stage_01b_parallax_validation(
-        self, frames: List[np.ndarray], keyframes_meta: List[Dict[str, Any]], capture_report: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """
-        STAGE 01b: Parallax Validation Gate
-        Audits physical translation baseline vs pure rotational pan/tilt.
-        Stationary pan/tilt motion lacks physical triangulation baseline and
-        causes metric scale drift and curved wall warping in monocular depth estimation.
-        """
-        pair_displacements = []
-        flow_magnitudes = []
-        residual_parallax_list = []
-        homography_inlier_ratios = []
-
-        h, w = frames[0].shape[:2]
-        focal_est = max(w, h) * 0.95
-
-        sift = cv2.SIFT_create(nfeatures=1200)
-        bf = cv2.BFMatcher(cv2.NORM_L2)
-
-        for i in range(len(frames) - 1):
-            g1 = cv2.cvtColor(frames[i], cv2.COLOR_BGR2GRAY)
-            g2 = cv2.cvtColor(frames[i + 1], cv2.COLOR_BGR2GRAY)
-
-            # 1. Optical flow magnitude
-            flow = cv2.calcOpticalFlowFarneback(g1, g2, None, 0.5, 3, 15, 3, 5, 1.2, 0)
-            mag = float(np.mean(np.linalg.norm(flow, axis=2)))
-            flow_magnitudes.append(round(mag, 2))
-
-            # 2. Homography fit to measure pure rotation vs parallax
-            kp1, des1 = sift.detectAndCompute(g1, None)
-            kp2, des2 = sift.detectAndCompute(g2, None)
-
-            if des1 is not None and des2 is not None and len(kp1) > 20 and len(kp2) > 20:
-                matches = bf.knnMatch(des1, des2, k=2)
-                good = [m[0] for m in matches if len(m) == 2 and m[0].distance < 0.75 * m[1].distance]
-                if len(good) >= 8:
-                    pts1 = np.float32([kp1[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
-                    pts2 = np.float32([kp2[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
-                    H, mask = cv2.findHomography(pts1, pts2, cv2.RANSAC, 3.0)
-                    if H is not None and mask is not None:
-                        inlier_ratio = float(np.mean(mask))
-                        homography_inlier_ratios.append(inlier_ratio)
-                        # Parallax residual: deviation of matched points from pure homography
-                        pts1_proj = cv2.perspectiveTransform(pts1, H)
-                        res = np.linalg.norm(pts2 - pts1_proj, axis=2).flatten()
-                        mean_res = float(np.median(res))
-                        residual_parallax_list.append(mean_res)
-                    else:
-                        homography_inlier_ratios.append(0.5)
-                        residual_parallax_list.append(0.5)
-                else:
-                    homography_inlier_ratios.append(0.5)
-                    residual_parallax_list.append(0.5)
-            else:
-                homography_inlier_ratios.append(0.5)
-                residual_parallax_list.append(0.5)
-
-            # Translation baseline proxy (scaled by estimated average room depth of 2.2m)
-            res_val = residual_parallax_list[-1] if residual_parallax_list else 0.5
-            est_pair_baseline_m = (res_val / focal_est) * 2.2 * (mag / max(res_val, 0.1)) * 0.05
-            pair_displacements.append(max(0.002, est_pair_baseline_m))
-
-        total_baseline = round(float(np.sum(pair_displacements)), 4)
-        mean_flow = round(float(np.mean(flow_magnitudes)) if flow_magnitudes else 0.0, 2)
-        mean_residual = round(float(np.mean(residual_parallax_list)) if residual_parallax_list else 0.0, 2)
-        mean_homography_inliers = round(float(np.mean(homography_inlier_ratios)) if homography_inlier_ratios else 0.0, 3)
-
-        # Gate check: physical baseline must exceed 0.10m
-        is_insufficient = total_baseline < 0.10
-        parallax_gate_passed = not is_insufficient
-
-        status = "SUFFICIENT_TRANSLATION_PASS" if parallax_gate_passed else "INSUFFICIENT_TRANSLATION_FOR_METRIC_RECONSTRUCTION"
-        diagnostic_msg = (
-            f"Adequate physical translation baseline detected ({total_baseline:.3f}m cumulative baseline)."
-            if parallax_gate_passed else
-            f"Degenerate camera translation detected ({total_baseline:.3f}m baseline < 0.10m threshold). "
-            "Input sequence shows a nearly static or purely rotational pan/tilt camera motion with very little physical translation. "
-            "Monocular depth estimation (MiDaS_small) paired with small-baseline PnP struggles here, causing flat walls to warp or bow outward in 3D space."
-        )
-        user_guidance = (
-            "Capture motion nominal."
-            if parallax_gate_passed else
-            "CAPTURE GUIDANCE: Please capture room video using a smooth sliding (truck/dolly) lateral motion "
-            "across the floor rather than pivoting from a stationary spot."
-        )
-
-        report = {
-            "parallax_gate_passed": parallax_gate_passed,
-            "status": status,
-            "total_baseline_displacement_m": total_baseline,
-            "threshold_min_baseline_m": 0.10,
-            "mean_optical_flow_px": mean_flow,
-            "mean_parallax_residual_px": mean_residual,
-            "mean_homography_inlier_ratio": mean_homography_inliers,
-            "diagnostic_message": diagnostic_msg,
-            "user_guidance": user_guidance,
-            "motion_type": "TRANSLATIONAL_SLIDE" if parallax_gate_passed else "STATIONARY_ROTATIONAL_PIVOT",
-            "parallax_score": round(min(1.0, max(0.20, total_baseline / 0.15)), 3)
-        }
-        if not parallax_gate_passed:
-            logger.warning(f"  [PARALLAX GATE WARNING] {diagnostic_msg}")
-            logger.warning(f"  --> {user_guidance}")
-        else:
-            logger.info(f"  Parallax Validation: PASS ({total_baseline:.3f}m baseline).")
-        return report
+    def _stage_01b_parallax_validation(self, frames, keyframes_meta, capture_report):
+        # No optical-flow-to-meters conversion. Geometry follows calibration.
+        return {"parallax_gate_passed": False, "status": "PENDING_GEOMETRY",
+                "total_baseline_displacement_m": None,
+                "scale_status": "SCALE_UNOBSERVABLE"}
 
     def _stage_calibration_reasoning(self, frames: List[np.ndarray]) -> Dict[str, Any]:
         result = CalibrationReasoner().estimate(frames)
@@ -1248,6 +1114,8 @@ class VastuDigitalTwinPipeline:
             confidence = float(calib_dict.get('calibration_confidence', 0.85))
             raw_dist = calib_dict.get('distortion_coefficients', [0.0] * 5)
             dist_coeffs = [float(d) for d in raw_dist]
+            if any(abs(d) > 1e-12 for d in dist_coeffs):
+                raise ReconstructionSafetyError("Undistort frames and update intrinsics before geometry analysis")
             while len(dist_coeffs) < 5:
                 dist_coeffs.append(0.0)
             uncertainty = calib_dict.get('uncertainty', {
@@ -1606,9 +1474,7 @@ class VastuDigitalTwinPipeline:
             )
 
         if rep.get("status") != "PASS":
-            logger.warning(f"  [DEPTH REASONER] Accepted fraction ({rep.get('accepted_fraction', 0):.3f}) under nominal, applying recovery adaptation.")
-            self.recovery.record("STAGE_05b", "depth_reasoning_planar_fallback", rep.get("accepted_fraction", 0), 0.05, "adapt_with_monocular_prior", 1, "ADAPTED")
-            rep["status"] = "ADAPTED"
+            raise ReconstructionSafetyError("NEEDS_RESCAN: multi-view depth evidence rejected; diagnostics preserved")
 
         masks = [(r == 0) for r in result["reasons"]]
         return result["depths"], masks, rep

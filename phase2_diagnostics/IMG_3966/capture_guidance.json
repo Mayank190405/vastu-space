@@ -1,0 +1,21 @@
+{
+  "status": "NEEDS_RESCAN",
+  "scale_status": "SCALE_UNOBSERVABLE",
+  "missing_motion": "UNKNOWN: reliable camera poses are required to distinguish physical motion from tracking error.",
+  "instructions": [
+    "Walk sideways smoothly while keeping the same textured surfaces visible.",
+    "Capture sharp overlapping views at multiple positions and scene depths.",
+    "Record validated ARKit/VIO poses, reliable LiDAR, or an independently measured reference."
+  ],
+  "tracking_caveat": "Unreliable poses cannot establish whether the physical capture lacked translation.",
+  "rejection_counts": {
+    "INCONSISTENT_MONOCULAR_STEP_SCALE": 276,
+    "INSUFFICIENT_CORRESPONDENCES": 134,
+    "LOW_BASELINE_DEPTH_RATIO": 32,
+    "LOW_OVERLAP": 92,
+    "POOR_TRIANGULATION_ANGLE": 40,
+    "POSE_UNCERTAINTY_UNKNOWN": 276,
+    "UNRELIABLE_POSE": 276,
+    "ZERO_TRANSLATION": 14
+  }
+}

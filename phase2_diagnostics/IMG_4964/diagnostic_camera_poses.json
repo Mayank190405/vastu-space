@@ -1,0 +1,420 @@
+[
+  {
+    "R": [
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "t": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "reliable": false,
+    "scale_consistent": false
+  },
+  {
+    "R": [
+      [
+        0.9856740971980801,
+        -0.024385232404653092,
+        0.1668889887120197
+      ],
+      [
+        0.017387319117750637,
+        0.9989123119976301,
+        0.043265160041847855
+      ],
+      [
+        -0.1677624965439151,
+        -0.039743595460404235,
+        0.9850259851258911
+      ]
+    ],
+    "t": [
+      -0.20279860521408832,
+      0.07634768454785883,
+      -0.9762396000918017
+    ],
+    "reliable": false,
+    "scale_consistent": false,
+    "diagnostic_tracking_succeeded": true,
+    "scale_note": "arbitrary unit step per recovered pair; trajectory scale and covariance unobserved"
+  },
+  {
+    "R": [
+      [
+        0.9856740971980801,
+        -0.024385232404653092,
+        0.1668889887120197
+      ],
+      [
+        0.017387319117750637,
+        0.9989123119976301,
+        0.043265160041847855
+      ],
+      [
+        -0.1677624965439151,
+        -0.039743595460404235,
+        0.9850259851258911
+      ]
+    ],
+    "t": [
+      -0.20279860521408832,
+      0.07634768454785883,
+      -0.9762396000918017
+    ],
+    "reliable": false,
+    "scale_consistent": false,
+    "diagnostic_tracking_succeeded": false,
+    "scale_note": "arbitrary unit step per recovered pair; trajectory scale and covariance unobserved"
+  },
+  {
+    "R": [
+      [
+        0.9856740971980801,
+        -0.024385232404653092,
+        0.1668889887120197
+      ],
+      [
+        0.017387319117750637,
+        0.9989123119976301,
+        0.043265160041847855
+      ],
+      [
+        -0.1677624965439151,
+        -0.039743595460404235,
+        0.9850259851258911
+      ]
+    ],
+    "t": [
+      -0.20279860521408832,
+      0.07634768454785883,
+      -0.9762396000918017
+    ],
+    "reliable": false,
+    "scale_consistent": false,
+    "diagnostic_tracking_succeeded": false,
+    "scale_note": "arbitrary unit step per recovered pair; trajectory scale and covariance unobserved"
+  },
+  {
+    "R": [
+      [
+        0.9856740971980801,
+        -0.024385232404653092,
+        0.1668889887120197
+      ],
+      [
+        0.017387319117750637,
+        0.9989123119976301,
+        0.043265160041847855
+      ],
+      [
+        -0.1677624965439151,
+        -0.039743595460404235,
+        0.9850259851258911
+      ]
+    ],
+    "t": [
+      -0.20279860521408832,
+      0.07634768454785883,
+      -0.9762396000918017
+    ],
+    "reliable": false,
+    "scale_consistent": false,
+    "diagnostic_tracking_succeeded": false,
+    "scale_note": "arbitrary unit step per recovered pair; trajectory scale and covariance unobserved"
+  },
+  {
+    "R": [
+      [
+        0.9856740971980801,
+        -0.024385232404653092,
+        0.1668889887120197
+      ],
+      [
+        0.017387319117750637,
+        0.9989123119976301,
+        0.043265160041847855
+      ],
+      [
+        -0.1677624965439151,
+        -0.039743595460404235,
+        0.9850259851258911
+      ]
+    ],
+    "t": [
+      -0.20279860521408832,
+      0.07634768454785883,
+      -0.9762396000918017
+    ],
+    "reliable": false,
+    "scale_consistent": false,
+    "diagnostic_tracking_succeeded": false,
+    "scale_note": "arbitrary unit step per recovered pair; trajectory scale and covariance unobserved"
+  },
+  {
+    "R": [
+      [
+        0.9856740971980801,
+        -0.024385232404653092,
+        0.1668889887120197
+      ],
+      [
+        0.017387319117750637,
+        0.9989123119976301,
+        0.043265160041847855
+      ],
+      [
+        -0.1677624965439151,
+        -0.039743595460404235,
+        0.9850259851258911
+      ]
+    ],
+    "t": [
+      -0.20279860521408832,
+      0.07634768454785883,
+      -0.9762396000918017
+    ],
+    "reliable": false,
+    "scale_consistent": false,
+    "diagnostic_tracking_succeeded": false,
+    "scale_note": "arbitrary unit step per recovered pair; trajectory scale and covariance unobserved"
+  },
+  {
+    "R": [
+      [
+        0.8333140968061354,
+        -0.05969652939319383,
+        0.5495670481775469
+      ],
+      [
+        0.03785500434600039,
+        0.99798068625494,
+        0.05100537724674864
+      ],
+      [
+        -0.5515021438853517,
+        -0.021699636875450887,
+        0.833891186576123
+      ]
+    ],
+    "t": [
+      -1.4602638225042206,
+      0.4903852693594855,
+      -0.5892258007659125
+    ],
+    "reliable": false,
+    "scale_consistent": false,
+    "diagnostic_tracking_succeeded": true,
+    "scale_note": "arbitrary unit step per recovered pair; trajectory scale and covariance unobserved"
+  },
+  {
+    "R": [
+      [
+        0.3890297124472837,
+        -0.099949439008806,
+        0.9157870890523674
+      ],
+      [
+        0.17758352563245478,
+        0.9835882114632325,
+        0.03191115313658334
+      ],
+      [
+        -0.903946886856264,
+        0.15021431327401588,
+        0.4003944128362491
+      ]
+    ],
+    "t": [
+      -1.5607668435796669,
+      0.4793166523030946,
+      1.365394235452627
+    ],
+    "reliable": false,
+    "scale_consistent": false,
+    "diagnostic_tracking_succeeded": true,
+    "scale_note": "arbitrary unit step per recovered pair; trajectory scale and covariance unobserved"
+  },
+  {
+    "R": [
+      [
+        0.3890297124472837,
+        -0.099949439008806,
+        0.9157870890523674
+      ],
+      [
+        0.17758352563245478,
+        0.9835882114632325,
+        0.03191115313658334
+      ],
+      [
+        -0.903946886856264,
+        0.15021431327401588,
+        0.4003944128362491
+      ]
+    ],
+    "t": [
+      -1.5607668435796669,
+      0.4793166523030946,
+      1.365394235452627
+    ],
+    "reliable": false,
+    "scale_consistent": false,
+    "diagnostic_tracking_succeeded": false,
+    "scale_note": "arbitrary unit step per recovered pair; trajectory scale and covariance unobserved"
+  },
+  {
+    "R": [
+      [
+        -0.12153018149784084,
+        -0.13950020398156032,
+        0.9827360317370094
+      ],
+      [
+        0.3830266200893292,
+        0.9067985855446583,
+        0.17608785749492123
+      ],
+      [
+        -0.9157079355821085,
+        0.39781404995714953,
+        -0.05677110505039841
+      ]
+    ],
+    "t": [
+      -1.3013532429121497,
+      -0.3915200688317878,
+      2.7623356174900477
+    ],
+    "reliable": false,
+    "scale_consistent": false,
+    "diagnostic_tracking_succeeded": true,
+    "scale_note": "arbitrary unit step per recovered pair; trajectory scale and covariance unobserved"
+  },
+  {
+    "R": [
+      [
+        -0.24840792452815907,
+        -0.07547998848515487,
+        0.9657102434839828
+      ],
+      [
+        0.09042450311214045,
+        0.9907990638980818,
+        0.10070066641093804
+      ],
+      [
+        -0.9644256903818643,
+        0.11233871245908644,
+        -0.23929709863368492
+      ]
+    ],
+    "t": [
+      -0.6201324127935868,
+      -0.31278742086345257,
+      3.3437075614240155
+    ],
+    "reliable": false,
+    "scale_consistent": false,
+    "diagnostic_tracking_succeeded": true,
+    "scale_note": "arbitrary unit step per recovered pair; trajectory scale and covariance unobserved"
+  },
+  {
+    "R": [
+      [
+        -0.6605318315230082,
+        -0.19268192927448727,
+        0.725652377985439
+      ],
+      [
+        -0.08821666055816335,
+        0.9797309872608593,
+        0.17984719458703669
+      ],
+      [
+        -0.7455974251194989,
+        0.0547801673228841,
+        -0.6641412597657594
+      ]
+    ],
+    "t": [
+      0.45600578829701865,
+      -0.020445308711180527,
+      4.101226102573905
+    ],
+    "reliable": false,
+    "scale_consistent": false,
+    "diagnostic_tracking_succeeded": true,
+    "scale_note": "arbitrary unit step per recovered pair; trajectory scale and covariance unobserved"
+  },
+  {
+    "R": [
+      [
+        -0.6605318315230082,
+        -0.19268192927448727,
+        0.725652377985439
+      ],
+      [
+        -0.08821666055816335,
+        0.9797309872608593,
+        0.17984719458703669
+      ],
+      [
+        -0.7455974251194989,
+        0.0547801673228841,
+        -0.6641412597657594
+      ]
+    ],
+    "t": [
+      0.45600578829701865,
+      -0.020445308711180527,
+      4.101226102573905
+    ],
+    "reliable": false,
+    "scale_consistent": false,
+    "diagnostic_tracking_succeeded": false,
+    "scale_note": "arbitrary unit step per recovered pair; trajectory scale and covariance unobserved"
+  },
+  {
+    "R": [
+      [
+        -0.6605318315230082,
+        -0.19268192927448727,
+        0.725652377985439
+      ],
+      [
+        -0.08821666055816335,
+        0.9797309872608593,
+        0.17984719458703669
+      ],
+      [
+        -0.7455974251194989,
+        0.0547801673228841,
+        -0.6641412597657594
+      ]
+    ],
+    "t": [
+      0.45600578829701865,
+      -0.020445308711180527,
+      4.101226102573905
+    ],
+    "reliable": false,
+    "scale_consistent": false,
+    "diagnostic_tracking_succeeded": false,
+    "scale_note": "arbitrary unit step per recovered pair; trajectory scale and covariance unobserved"
+  }
+]

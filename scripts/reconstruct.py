@@ -75,9 +75,9 @@ def main():
     logger.info("=" * 65)
     
     pipeline = VastuDigitalTwinPipeline(video_path, output_dir, allow_overwrite=True)
-    success = pipeline.run()
+    result = pipeline.run()
     
-    if success:
+    if result.get("quality_status") == "PASS":
         logger.info("Reconstruction completed successfully!")
         
         if args.deploy:

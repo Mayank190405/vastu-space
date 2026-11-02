@@ -1,0 +1,16 @@
+{
+  "algorithm": "ARCHITECTURAL_VANISHING_POINT_GEOMETRY",
+  "metric_verified": false,
+  "status": "ESTIMATED",
+  "focal_px": 652.39,
+  "focal_uncertainty_px": 52.19,
+  "focal_uncertainty_pct": 8.0,
+  "principal_point_uncertainty_px": 10.8,
+  "calibration_confidence": 0.75,
+  "assumptions": [
+    "orthogonal_wall_vanishing_directions",
+    "square_pixels",
+    "negligible_lens_distortion"
+  ],
+  "epipolar_rejection_reason": "Focal optimum is at the search boundary"
+}

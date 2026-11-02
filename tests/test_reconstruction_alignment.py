@@ -43,7 +43,7 @@ class AlignmentTests(unittest.TestCase):
         self.assertFalse(trajectory_parallax([pose(x) for x in [0,.01,0,.01]*20],5.)[1])
         self.assertFalse(trajectory_parallax([pose(0),pose(.5)],.2)[1])
         baseline,passed=trajectory_parallax([pose(0),pose(.2)],2.)
-        self.assertTrue(passed)
+        self.assertFalse(passed)  # Separation alone has no metric/triangulation evidence.
         self.assertAlmostEqual(baseline,.2)
 
 class PhotometricTests(unittest.TestCase):

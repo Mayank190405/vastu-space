@@ -38,14 +38,21 @@ def verified_depth_inputs(depths, confidences, refined, masks):
     return outputs, enabled
 
 
-def trajectory_parallax(poses, residual_px, min_baseline=0.10, min_residual=1.5):
+def trajectory_parallax(poses, residual_px, min_baseline=0.10, min_residual=1.5, pair_report=None):
+    """Legacy separation diagnostic in input units. Only a geometry report can pass.
+
+    Pixel residual and an arbitrary-scale trajectory cannot establish metric parallax.
+    Use core.reconstruction.parallax for pair selection and verification.
+    """
     centers = np.array([(-np.asarray(p['R']).T @ np.asarray(p['t']).reshape(3, 1)).ravel()
                         for p in poses])
     if len(centers) < 2 or not np.isfinite(centers).all() or not np.isfinite(residual_px):
         return 0.0, False
     # Maximum separation, not accumulated jitter or optical-flow-derived meters.
     baseline = float(np.max(np.linalg.norm(centers[:, None] - centers[None, :], axis=2)))
-    return baseline, bool(baseline >= min_baseline and residual_px >= min_residual)
+    return baseline, bool(pair_report and pair_report.get('parallax_gate_passed') is True
+                          and pair_report.get('scale_status') == 'METRIC_ESTABLISHED'
+                          and pair_report.get('verified_multi_view_geometry') is True)
 
 
 def photometric_rmse(reference, rendered, mask, minimum_pixels=100):

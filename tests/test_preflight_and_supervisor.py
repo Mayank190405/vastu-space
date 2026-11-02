@@ -25,7 +25,7 @@ def test_preflight_validator_blocks_stationary_pivot():
 
     result = validator.evaluate_preflight(capture_report, parallax_report_pivot, calib_data)
     assert result["can_certify_architectural"] is False
-    assert result["preflight_status"] == "DEGENERATE_BASELINE_BLOCKED"
+    assert result["preflight_status"] == "NEEDS_RESCAN"
     assert "smooth sliding (truck/dolly)" in result["user_guidance"]
 
 
@@ -37,6 +37,9 @@ def test_preflight_validator_approves_lateral_translation():
     # Lateral translation: baseline 0.45m, homography inlier ratio 52%
     parallax_report_lateral = {
         "total_baseline_displacement_m": 0.45,
+        "parallax_gate_passed": True,
+        "verified_multi_view_geometry": True,
+        "scale_status": "METRIC_ESTABLISHED",
         "mean_homography_inlier_ratio": 0.52,
         "mean_optical_flow_px": 14.2
     }
@@ -66,3 +69,19 @@ def test_post_reconstruction_supervisor_recommends_corrections():
     assert "targeted_engine_corrections" in report
     assert report["metrics"]["topology"]["self_intersecting_triangles"] == 0
     assert report["metrics"]["topology"]["strict_non_manifold_edges"] == 0
+
+
+def test_preflight_rejects_unproven_metric_baseline():
+    validator = PreflightReconstructionValidator()
+    r = validator.evaluate_preflight({'usable_frame_pct': 100},
+        {'total_baseline_displacement_m': 20, 'parallax_gate_passed': True}, {})
+    assert r['preflight_status'] == 'NEEDS_RESCAN'
+    assert r['can_certify_architectural'] is False
+
+
+def test_preflight_uses_geometry_instead_of_fixed_ten_cm_gate():
+    validator = PreflightReconstructionValidator()
+    r = validator.evaluate_preflight({'usable_frame_pct': 100},
+        {'total_baseline_displacement_m': .05, 'parallax_gate_passed': True,
+         'verified_multi_view_geometry': True, 'scale_status': 'METRIC_ESTABLISHED'}, {})
+    assert r['can_certify_architectural'] is True
