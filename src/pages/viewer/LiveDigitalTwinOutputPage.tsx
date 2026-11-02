@@ -52,7 +52,7 @@ export const LiveDigitalTwinOutputPage: React.FC = () => {
               </span>
             </div>
             <span className="text-[11px] text-slate-400 font-mono hidden sm:inline">
-              TSDF Volumetric Marching Cubes · 256k Triangles · 2048x2048 Texture Atlas
+              TSDF Volumetric Marching Cubes · 133k Triangles · 306k Points · 2048x2048 Atlas (100% Coverage)
             </span>
           </div>
         </div>

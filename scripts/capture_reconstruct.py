@@ -1,8 +1,10 @@
 """Production worker entrypoint: publish only after the real reconstruction quality gate passes."""
 import json
 import sys
+import traceback
 from pathlib import Path
 from generate_video_twin import VastuDigitalTwinPipeline
+from core.reconstruction.safety import ReconstructionSafetyError
 from core.reconstruction.native_runtime import load_open3d
 
 
@@ -19,4 +21,8 @@ def main(video, output):
 
 
 if __name__ == '__main__':
-    main(*sys.argv[1:3])
+    try:
+        main(*sys.argv[1:3])
+    except ReconstructionSafetyError:
+        traceback.print_exc()
+        sys.exit(42)  # Deterministic evidence failure; retry needs changed input/settings.
