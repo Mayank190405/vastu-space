@@ -30,6 +30,9 @@ public final class CaptureSessionManager: NSObject, ObservableObject, ARSessionC
     private var activeSessionId: String = ""
     private var sessionStartTime: TimeInterval = 0
     private var initialCameraPosition: simd_float3?
+    private var minCameraPosition: simd_float3?
+    private var maxCameraPosition: simd_float3?
+    private var recordedKeyframePositions: [simd_float3] = []
     private var maxBaselineDisplacement: Double = 0.0
     private var frameIndexCounter: Int = 0
     private let processingQueue = DispatchQueue(label: "com.vastu.capture.session_processor", qos: .userInitiated)
@@ -60,6 +63,9 @@ public final class CaptureSessionManager: NSObject, ObservableObject, ARSessionC
         self.translationBaselineMeters = 0.0
         self.maxBaselineDisplacement = 0.0
         self.initialCameraPosition = nil
+        self.minCameraPosition = nil
+        self.maxCameraPosition = nil
+        self.recordedKeyframePositions.removeAll()
         self.completedPackageURL = nil
         self.sessionStartTime = ProcessInfo.processInfo.systemUptime
         
@@ -152,7 +158,11 @@ public final class CaptureSessionManager: NSObject, ObservableObject, ARSessionC
         packageWriter?.recordTrackingEvent(
             type: "RECORDING_FINISHED",
             timestampSec: ProcessInfo.processInfo.systemUptime,
-            details: ["total_keyframes": keyframeCount, "duration_sec": duration]
+            details: [
+                "total_keyframes": keyframeCount,
+                "duration_sec": duration,
+                "translation_baseline_m": translationBaselineMeters
+            ]
         )
         
         guard let writer = packageWriter else {
@@ -201,12 +211,46 @@ public final class CaptureSessionManager: NSObject, ObservableObject, ARSessionC
         let cameraTransform = frame.camera.transform
         let timestamp = frame.timestamp
         let pixelBuffer = frame.capturedImage
+        let currentPos = simd_make_float3(cameraTransform.columns.3.x, cameraTransform.columns.3.y, cameraTransform.columns.3.z)
         
         // 1. Update calibration from frame
         _ = packageWriter?.calibrationManager.updateCalibration(
             intrinsics: frame.camera.intrinsics,
             resolution: frame.camera.imageResolution
         )
+        
+        // 2. Track real camera translation baseline during active recording
+        if isRecording && !isPaused {
+            if initialCameraPosition == nil {
+                initialCameraPosition = currentPos
+                minCameraPosition = currentPos
+                maxCameraPosition = currentPos
+                recordedKeyframePositions.append(currentPos)
+            } else {
+                let distFromStart = Double(simd_distance(currentPos, initialCameraPosition!))
+                if distFromStart > maxBaselineDisplacement {
+                    maxBaselineDisplacement = distFromStart
+                }
+                
+                if let minP = minCameraPosition, let maxP = maxCameraPosition {
+                    let newMin = simd_min(minP, currentPos)
+                    let newMax = simd_max(maxP, currentPos)
+                    minCameraPosition = newMin
+                    maxCameraPosition = newMax
+                    let boxDiag = Double(simd_distance(newMin, newMax))
+                    if boxDiag > maxBaselineDisplacement {
+                        maxBaselineDisplacement = boxDiag
+                    }
+                }
+            }
+            
+            let updatedBaseline = round(maxBaselineDisplacement * 100.0) / 100.0
+            if updatedBaseline != translationBaselineMeters {
+                DispatchQueue.main.async { [weak self] in
+                    self?.translationBaselineMeters = updatedBaseline
+                }
+            }
+        }
         
         // 3. Notify delegate of current camera pose & heading
         let headingDeg = Double(atan2(-cameraTransform.columns.2.x, cameraTransform.columns.2.z)) * (180.0 / .pi)
@@ -244,6 +288,21 @@ public final class CaptureSessionManager: NSObject, ObservableObject, ARSessionC
             self.frameIndexCounter += 1
             let frameIdx = self.frameIndexCounter
             let frameId = String(format: "frame_%06d.jpg", frameIdx)
+            
+            // Check pairwise baseline across recorded keyframes
+            for kPos in self.recordedKeyframePositions {
+                let d = Double(simd_distance(currentPos, kPos))
+                if d > self.maxBaselineDisplacement {
+                    self.maxBaselineDisplacement = d
+                }
+            }
+            if self.recordedKeyframePositions.count < 400 {
+                self.recordedKeyframePositions.append(currentPos)
+            }
+            let updatedBaseline = round(self.maxBaselineDisplacement * 100.0) / 100.0
+            DispatchQueue.main.async { [weak self] in
+                self?.translationBaselineMeters = updatedBaseline
+            }
             
             // Asynchronously record frame JPEG
             writer.frameRecorder.recordFrame(pixelBuffer: pixelBuffer, frameIndex: frameIdx) { [weak self] _, success in
@@ -307,6 +366,11 @@ public final class CaptureSessionManager: NSObject, ObservableObject, ARSessionC
         }
     }
 #endif
+
+    public func updateBaselineForTesting(distanceMeters: Double) {
+        self.maxBaselineDisplacement = distanceMeters
+        self.translationBaselineMeters = round(distanceMeters * 100.0) / 100.0
+    }
 }
 
 // Backward compatibility alias for existing code

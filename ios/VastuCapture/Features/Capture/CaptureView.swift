@@ -124,13 +124,18 @@ public final class CaptureCoordinator: NSObject, ObservableObject, CaptureSessio
     public func captureManager(_ manager: CaptureSessionManager, didChangeTrackingStatus text: String, isWarning: Bool) {}
     
     public func computeQualityAudit() -> CaptureQualityAudit {
+        let baseline = max(
+            manager.translationBaselineMeters,
+            guidance.translationBaselineMeters,
+            floorplanEngine.latestParallax.translationBaselineM
+        )
         return CaptureQualityAudit(
             keyframeCount: manager.keyframeCount,
             durationSeconds: Double(elapsedSeconds),
             meanSharpness: latestQuality.sharpnessScore,
             meanExposure: latestQuality.exposureScore * 255.0,
             trackingStabilityPct: manager.isTrackingDegraded ? 65.0 : 96.0,
-            translationalBaselineM: manager.translationBaselineMeters,
+            translationalBaselineM: baseline,
             angularCoverageDeg: min(360.0, floorplanEngine.floorplanMap.coveragePercentage * 3.6),
             wallBoundaryCoveragePct: floorplanEngine.floorplanMap.coveragePercentage
         )
@@ -356,7 +361,7 @@ public struct CaptureView: View {
             if coordinator.manager.isRecording {
                 HStack(spacing: 16) {
                     statPill(label: "KEYFRAMES", value: "\(coordinator.manager.keyframeCount)")
-                    statPill(label: "BASELINE", value: String(format: "%.2f m", coordinator.manager.translationBaselineMeters))
+                    statPill(label: "BASELINE", value: String(format: "%.2f m", max(coordinator.manager.translationBaselineMeters, coordinator.guidance.translationBaselineMeters, coordinator.floorplanEngine.latestParallax.translationBaselineM)))
                     statPill(label: "DROPPED", value: "\(coordinator.manager.droppedFrameCount)")
                     statPill(label: "DURATION", value: formatTime(coordinator.elapsedSeconds))
                 }
