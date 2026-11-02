@@ -191,22 +191,26 @@ class CalibrationReasoner:
                 dot_prod = float(np.dot(v_left - C, v_right - C))
                 if dot_prod < 0:
                     f_est = math.sqrt(-dot_prod)
-                    if 0.4 * max(w, h) <= f_est <= 2.5 * max(w, h):
+                    if 0.50 * max(w, h) <= f_est <= 1.45 * max(w, h):
                         f_candidates.append(f_est)
 
         if not f_candidates:
-            focal_prior = max(w, h) * 1.05
-            f_unc_px = round(float(focal_prior * 0.15), 2)
+            # Calibrated prior: Standard smartphone 26mm-equivalent wide lens (~67 deg horizontal FOV)
+            focal_prior = max(w, h) * 0.75
+            f_unc_px = round(float(focal_prior * 0.12), 2)
+            fov_h = round(2.0 * math.atan(w / (2.0 * focal_prior)) * 180.0 / math.pi, 2)
+            fov_v = round(2.0 * math.atan(h / (2.0 * focal_prior)) * 180.0 / math.pi, 2)
             report = {
                 "algorithm": "SMARTPHONE_WIDE_OPTICAL_PRIOR",
                 "metric_verified": False,
                 "status": "UNANCHORED_PINHOLE_PRIOR",
-                "reason": "Vanishing points unconstrained; using smartphone wide optical model prior",
+                "reason": "Vanishing points unconstrained or outside plausible FOV; using calibrated smartphone wide optical prior",
                 "focal_px": float(round(focal_prior, 2)),
                 "focal_uncertainty_px": f_unc_px,
-                "focal_uncertainty_pct": 15.0,
-                "principal_point_uncertainty_px": round(float(min(w, h) * 0.03), 2),
-                "calibration_confidence": 0.45,
+                "focal_uncertainty_pct": 12.0,
+                "principal_point_uncertainty_px": round(float(min(w, h) * 0.02), 2),
+                "calibration_confidence": 0.55,
+                "field_of_view_deg": {"horizontal": fov_h, "vertical": fov_v},
                 "assumptions": ["smartphone_26mm_equivalent", "square_pixels", "optical_center_pinhole"]
             }
             calibration = {
@@ -215,17 +219,20 @@ class CalibrationReasoner:
                 "resolution": [w, h],
                 "intrinsics": {"fx": float(round(focal_prior, 2)), "fy": float(round(focal_prior, 2)), "cx": float(cx), "cy": float(cy)},
                 "distortion_coefficients": [0.0] * 5,
-                "calibration_confidence": 0.45,
+                "calibration_confidence": 0.55,
+                "field_of_view_deg": {"horizontal": fov_h, "vertical": fov_v},
                 "uncertainty": {
                     "focal_uncertainty_px": f_unc_px,
-                    "focal_uncertainty_pct": 15.0,
-                    "principal_point_uncertainty_px": round(float(min(w, h) * 0.03), 2)
+                    "focal_uncertainty_pct": 12.0,
+                    "principal_point_uncertainty_px": round(float(min(w, h) * 0.02), 2)
                 }
             }
             return {"calibration": calibration, "report": report}
 
         focal = float(np.median(f_candidates))
         f_unc_px = max(25.0, float(round(focal * 0.08, 2)))
+        fov_h = round(2.0 * math.atan(w / (2.0 * focal)) * 180.0 / math.pi, 2)
+        fov_v = round(2.0 * math.atan(h / (2.0 * focal)) * 180.0 / math.pi, 2)
         report = {
             "algorithm": "ARCHITECTURAL_VANISHING_POINT_GEOMETRY",
             "metric_verified": False,
@@ -235,6 +242,7 @@ class CalibrationReasoner:
             "focal_uncertainty_pct": round(f_unc_px / focal * 100, 2),
             "principal_point_uncertainty_px": round(float(min(w, h) * 0.02), 2),
             "calibration_confidence": 0.75,
+            "field_of_view_deg": {"horizontal": fov_h, "vertical": fov_v},
             "assumptions": ["orthogonal_wall_vanishing_directions", "square_pixels", "negligible_lens_distortion"]
         }
         calibration = {
@@ -244,6 +252,7 @@ class CalibrationReasoner:
             "intrinsics": {"fx": round(focal, 2), "fy": round(focal, 2), "cx": float(cx), "cy": float(cy)},
             "distortion_coefficients": [0.0] * 5,
             "calibration_confidence": 0.75,
+            "field_of_view_deg": {"horizontal": fov_h, "vertical": fov_v},
             "uncertainty": {
                 "focal_uncertainty_px": f_unc_px,
                 "focal_uncertainty_pct": round(f_unc_px / focal * 100, 2),
@@ -251,6 +260,24 @@ class CalibrationReasoner:
             }
         }
         return {"calibration": calibration, "report": report}
+
+    @staticmethod
+    def validate_intrinsics(intrinsics_dict, width, height):
+        """Validate focal length and optical center against physical smartphone geometry."""
+        fx = intrinsics_dict.get('fx', 0.0)
+        fy = intrinsics_dict.get('fy', 0.0)
+        cx = intrinsics_dict.get('cx', 0.0)
+        cy = intrinsics_dict.get('cy', 0.0)
+        max_d = max(width, height)
+        is_focal_ok = (0.35 * max_d <= fx <= 2.0 * max_d) and (0.35 * max_d <= fy <= 2.0 * max_d)
+        is_center_ok = (0.35 * width <= cx <= 0.65 * width) and (0.35 * height <= cy <= 0.65 * height)
+        is_square = abs(fx - fy) / max(fx, 1e-6) < 0.05
+        return {
+            'is_valid': bool(is_focal_ok and is_center_ok and is_square),
+            'is_focal_valid': bool(is_focal_ok),
+            'is_center_valid': bool(is_center_ok),
+            'is_square_pixels': bool(is_square)
+        }
 
     @staticmethod
     def _K(focal, width, height):

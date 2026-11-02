@@ -238,6 +238,27 @@ class CameraIntrinsics:
             "distortion": self.distortion.tolist()
         }
 
+    def validate_bounds(self) -> Dict[str, Any]:
+        """Validate focal length and optical center against physical smartphone geometry."""
+        max_dim = max(self.width, self.height)
+        fov_h = 2.0 * np.arctan(self.width / (2.0 * self.fx)) * 180.0 / np.pi
+        fov_v = 2.0 * np.arctan(self.height / (2.0 * self.fy)) * 180.0 / np.pi
+
+        is_focal_plausible = (0.35 * max_dim <= self.fx <= 2.0 * max_dim) and (0.35 * max_dim <= self.fy <= 2.0 * max_dim)
+        is_center_plausible = (abs(self.cx - self.width / 2.0) <= 0.15 * self.width) and (abs(self.cy - self.height / 2.0) <= 0.15 * self.height)
+        aspect_ratio_err = abs(self.fx - self.fy) / self.fx
+        is_square_pixel = aspect_ratio_err < 0.05
+
+        return {
+            "is_valid": bool(is_focal_plausible and is_center_plausible and is_square_pixel),
+            "is_focal_plausible": bool(is_focal_plausible),
+            "is_center_plausible": bool(is_center_plausible),
+            "is_square_pixel": bool(is_square_pixel),
+            "fov_h_deg": round(float(fov_h), 2),
+            "fov_v_deg": round(float(fov_v), 2),
+            "pixel_aspect_ratio_err": round(float(aspect_ratio_err), 4)
+        }
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "CameraIntrinsics":
         return cls(
@@ -334,6 +355,30 @@ class CameraPose:
         R_cw = self.R.T
         t_cw = -R_cw @ self.t
         return R_cw, t_cw
+
+    @property
+    def T_cw_4x4(self) -> np.ndarray:
+        """4x4 Homogeneous transformation matrix (World to Camera)."""
+        R_cw, t_cw = self.world_to_camera_transform()
+        T = np.eye(4, dtype=np.float64)
+        T[:3, :3] = R_cw
+        T[:3, 3] = t_cw
+        return T
+
+    @property
+    def camera_center_world(self) -> np.ndarray:
+        """3D camera optical center in world coordinates [X, Y, Z] (meters)."""
+        return self.t.copy()
+
+    @property
+    def optical_axis_world(self) -> np.ndarray:
+        """Unit vector of camera viewing direction in world coordinates."""
+        if self.convention == CameraConvention.OPENCV_RDF:
+            # OpenCV forward is +Z
+            return self.R @ np.array([0.0, 0.0, 1.0])
+        else:
+            # ARKit / OpenGL forward is -Z
+            return self.R @ np.array([0.0, 0.0, -1.0])
 
     def to_opencv(self) -> "CameraPose":
         """
