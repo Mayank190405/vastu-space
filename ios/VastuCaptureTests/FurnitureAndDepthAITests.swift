@@ -362,7 +362,7 @@ public class FurnitureAndDepthAITests {
         )
     }
     
-    private static func createTestPixelBuffer(width: Int, height: Int) -> CVPixelBuffer? {
+    public static func createTestPixelBuffer(width: Int, height: Int) -> CVPixelBuffer? {
         var pixelBuffer: CVPixelBuffer?
         let attrs: [CFString: Any] = [
             kCVPixelBufferCGImageCompatibilityKey: true,

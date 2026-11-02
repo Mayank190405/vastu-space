@@ -127,14 +127,18 @@ public struct CaptureValidationView: View {
                 
                 // Bottom CTAs
                 VStack(spacing: 12) {
+                    let canSubmit = (audit.overallScore >= 0.90) && audit.isAcceptableForReconstruction
+                    
                     Button(action: onProceedToUpload) {
                         HStack(spacing: 8) {
-                            Image(systemName: "arrow.up.circle.fill")
+                            Image(systemName: canSubmit ? "arrow.up.circle.fill" : "lock.fill")
                                 .font(.system(size: 18))
-                            Text("Upload & Reconstruct 3D Room")
+                            Text(canSubmit ? "Upload & Reconstruct 3D Room" : "Submit Locked — Quality < 90%")
                         }
                     }
                     .buttonStyle(VastuPrimaryButtonStyle())
+                    .disabled(!canSubmit)
+                    .opacity(canSubmit ? 1.0 : 0.45)
                     
                     Button("Retake / Rescan Room", action: onRetake)
                         .font(.system(size: 14, weight: .semibold))

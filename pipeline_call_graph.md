@@ -115,3 +115,4 @@ flowchart TD
 - **Test Evidence:**
   - `pytest tests/test_reconstruction_alignment.py` passed 14/14 tests.
   - Baseline execution produced `Final Status: FAIL (Score: 0.63)` accurately reflecting the stationary pivot defect of `IMG_3966.MOV`.
+

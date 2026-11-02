@@ -238,3 +238,19 @@ type CreateRoomInput struct {
 	SectionType string  `json:"section_type"` // 'room', 'hall', 'corridor', etc.
 	AreaSqm     float64 `json:"area_sqm"`
 }
+
+type BackendQualityIssue struct {
+	RegionID          string `json:"region_id"`
+	Type              string `json:"type"`
+	Severity          string `json:"severity"`
+	RecommendedAction string `json:"recommended_action"`
+}
+
+type BackendQualityValidationReport struct {
+	SessionID            string                `json:"session_id"`
+	QualityScore         int                   `json:"quality_score"`
+	Threshold            int                   `json:"threshold"`
+	SubmissionAllowed    bool                  `json:"submission_allowed"`
+	CriticalChecksPassed bool                  `json:"critical_checks_passed"`
+	Issues               []BackendQualityIssue `json:"issues"`
+}

@@ -1,10 +1,10 @@
 import Foundation
 
 public enum GuidanceSeverity: String, Codable {
-    case info = "INFO"
-    case warning = "WARNING"
-    case alert = "ALERT"
-    case success = "SUCCESS"
+    case alert = "ALERT"     // Critical tracking or integrity failure
+    case warning = "WARNING" // Capture flaw (blur, speed, lighting, rotation)
+    case info = "INFO"       // Missing coverage, viewpoint suggestion
+    case success = "SUCCESS" // Quality reaches threshold (>= 90%)
 }
 
 public enum DirectionalCue: String, Codable {
@@ -13,17 +13,34 @@ public enum DirectionalCue: String, Codable {
     case right = "RIGHT"
     case steady = "STEADY"
     case stepSideways = "STEP_SIDEWAYS"
+    case tiltDown = "TILT_DOWN"
+    case tiltUp = "TILT_UP"
     case none = "NONE"
 }
 
-public struct GuidanceInstruction {
+public struct GuidanceInstruction: Codable {
     public let text: String
     public let severity: GuidanceSeverity
     public let directionalCue: DirectionalCue
     public let missingAreaSummary: String?
+    public let targetRegionId: String?
+    
+    public init(
+        text: String,
+        severity: GuidanceSeverity,
+        directionalCue: DirectionalCue,
+        missingAreaSummary: String? = nil,
+        targetRegionId: String? = nil
+    ) {
+        self.text = text
+        self.severity = severity
+        self.directionalCue = directionalCue
+        self.missingAreaSummary = missingAreaSummary
+        self.targetRegionId = targetRegionId
+    }
 }
 
-/// Intelligent state-machine guiding operators during room scanning with real-time cues
+/// Advanced AI Real-Time Capture Guidance System implementing strict 7-level priority arbitration (IOS-009)
 public final class ScanGuidanceEngine {
     public static let shared = ScanGuidanceEngine()
     
@@ -34,122 +51,144 @@ public final class ScanGuidanceEngine {
         quality: ComprehensiveQualityAssessment?,
         parallax: ParallaxMetric,
         coverage: CoverageReport,
-        corners: [RoomCorner2D]
+        corners: [RoomCorner2D],
+        selectedRescanRegion: String? = nil,
+        floorObserved: Bool = true,
+        ceilingObserved: Bool = false,
+        overallScore: Double = 0.0
     ) -> GuidanceInstruction {
-        // Priority 1: Tracking loss / safety
-        if trackingState == "LIMITED_EXCESSIVE_MOTION" {
+        
+        // -------------------------------------------------------------
+        // PRIORITY 1: Tracking Failure
+        // -------------------------------------------------------------
+        if trackingState == "LIMITED_RELOCALIZING" || trackingState == "LIMITED_INSUFFICIENT_FEATURES" || trackingState == "NOT_AVAILABLE" {
             return GuidanceInstruction(
-                text: "⚠️ Slow down walking speed to ~0.3 m/s",
+                text: "Return to a previously scanned area.",
                 severity: .alert,
                 directionalCue: .steady,
-                missingAreaSummary: nil
-            )
-        }
-        if trackingState == "LIMITED_INSUFFICIENT_FEATURES" {
-            return GuidanceInstruction(
-                text: "⚠️ Blank wall — keep textured floor & baseboards in view",
-                severity: .alert,
-                directionalCue: .steady,
-                missingAreaSummary: nil
-            )
-        }
-        if trackingState == "LIMITED_RELOCALIZING" {
-            return GuidanceInstruction(
-                text: "⚠️ Tracking paused — return to previously scanned area",
-                severity: .alert,
-                directionalCue: .steady,
-                missingAreaSummary: nil
+                missingAreaSummary: "Tracking lost • relocalizing against mapped features"
             )
         }
         
-        // Priority 2: Visual Frame Quality (Blur & Extreme Exposure)
+        if trackingState == "LIMITED_EXCESSIVE_MOTION" {
+            return GuidanceInstruction(
+                text: "Move your phone more slowly.",
+                severity: .alert,
+                directionalCue: .steady,
+                missingAreaSummary: "Excessive motion detected by VIO sensor"
+            )
+        }
+        
+        // -------------------------------------------------------------
+        // PRIORITY 2: Critical Capture Integrity & Active Rescan Mode
+        // -------------------------------------------------------------
+        if let rescanRegion = selectedRescanRegion {
+            return GuidanceInstruction(
+                text: "Move toward the highlighted region and follow the guide.",
+                severity: .info,
+                directionalCue: .forward,
+                missingAreaSummary: "Targeted rescan of \(rescanRegion)",
+                targetRegionId: rescanRegion
+            )
+        }
+        
+        // -------------------------------------------------------------
+        // PRIORITY 3: Missing Room Coverage (Walls, Floor, Ceiling)
+        // -------------------------------------------------------------
+        if !floorObserved {
+            return GuidanceInstruction(
+                text: "Tilt your camera slightly downward.",
+                severity: .warning,
+                directionalCue: .tiltDown,
+                missingAreaSummary: "Ground plane missing"
+            )
+        }
+        
+        if !coverage.missingSectors.isEmpty && coverage.angularCoveragePct < 85.0 {
+            let nextMissing = coverage.missingSectors.first ?? 0
+            let regionId = "wall-sector-\(String(format: "%02d", nextMissing))"
+            return GuidanceInstruction(
+                text: "Scan the highlighted wall.",
+                severity: .info,
+                directionalCue: .forward,
+                missingAreaSummary: "\(coverage.missingSectors.count) wall segments remaining",
+                targetRegionId: regionId
+            )
+        }
+        
+        if !ceilingObserved && coverage.angularCoveragePct >= 80.0 {
+            return GuidanceInstruction(
+                text: "Point your camera toward the upper wall and ceiling.",
+                severity: .info,
+                directionalCue: .tiltUp,
+                missingAreaSummary: "Upper architectural boundary unmapped"
+            )
+        }
+        
+        // -------------------------------------------------------------
+        // PRIORITY 4: Insufficient Viewpoint Diversity (Parallax / Baseline)
+        // -------------------------------------------------------------
+        if parallax.isRotationOnly || parallax.translationBaselineM < 0.80 {
+            return GuidanceInstruction(
+                text: "Move sideways to capture this wall from another angle.",
+                severity: .warning,
+                directionalCue: .stepSideways,
+                missingAreaSummary: "Pure rotation detected • multi-view baseline required"
+            )
+        }
+        
+        // -------------------------------------------------------------
+        // PRIORITY 5: Blur or Exposure Problems
+        // -------------------------------------------------------------
         if let q = quality {
             if q.isBlurry {
                 return GuidanceInstruction(
-                    text: "⚠️ Hold camera steady — motion blur detected",
+                    text: "Hold your phone steady.",
                     severity: .warning,
                     directionalCue: .steady,
-                    missingAreaSummary: nil
+                    missingAreaSummary: "Motion blur detected in recent frames"
                 )
             }
             if q.isUnderexposed {
                 return GuidanceInstruction(
-                    text: "💡 Low light — turn on room lights if possible",
+                    text: "Move to a brighter position.",
                     severity: .warning,
                     directionalCue: .none,
-                    missingAreaSummary: nil
-                )
-            }
-            if q.isOverexposed {
-                return GuidanceInstruction(
-                    text: "☀️ Glare detected — angle phone slightly downward",
-                    severity: .warning,
-                    directionalCue: .none,
-                    missingAreaSummary: nil
+                    missingAreaSummary: "Low ambient lighting"
                 )
             }
         }
         
-        // Priority 3: Pure Rotational Scanning (Degenerate Parallax Prevention)
-        if parallax.isRotationOnly {
-            return GuidanceInstruction(
-                text: "👟 Step sideways along the wall • Avoid rotating in place",
-                severity: .warning,
-                directionalCue: .stepSideways,
-                missingAreaSummary: "Insufficient parallax (pure rotation detected)"
-            )
-        }
-        
-        // Priority 4: Initial Baseline Translation
-        if parallax.translationBaselineM < 0.80 {
-            let needed = String(format: "%.1f", 0.80 - parallax.translationBaselineM)
-            return GuidanceInstruction(
-                text: "Walk along the floor perimeter (need \(needed)m baseline)",
-                severity: .info,
-                directionalCue: .forward,
-                missingAreaSummary: "Establishing initial spatial baseline"
-            )
-        }
-        
-        // Priority 5: Unscanned Corners
+        // -------------------------------------------------------------
+        // PRIORITY 6: Furniture Observation Recommendations
+        // -------------------------------------------------------------
         let unscannedCorners = corners.filter { !$0.isDirectlyObserved }
         if let firstUnscanned = unscannedCorners.first {
             return GuidanceInstruction(
                 text: "Scan the room corner (\(Int(firstUnscanned.angleDegrees))°) to anchor wall junction",
                 severity: .info,
                 directionalCue: .forward,
-                missingAreaSummary: "Unscanned corner at junction"
+                missingAreaSummary: "Unanchored corner junction"
             )
         }
         
-        // Priority 6: Missing Sectors / Opposite Wall
-        if !coverage.missingSectors.isEmpty && coverage.angularCoveragePct < 75.0 {
-            let missingSummary = "Missing \(coverage.missingSectors.count) room sectors (\(Int(100.0 - coverage.angularCoveragePct))% remaining)"
+        // -------------------------------------------------------------
+        // PRIORITY 7: General Recording Assistance & Threshold Notification
+        // -------------------------------------------------------------
+        if overallScore >= 90.0 {
             return GuidanceInstruction(
-                text: "Continue walking perimeter to capture opposite wall",
+                text: "Capture quality is sufficient. Review the room before submitting.",
+                severity: .success,
+                directionalCue: .none,
+                missingAreaSummary: "Mandatory 90% quality threshold achieved"
+            )
+        } else {
+            return GuidanceInstruction(
+                text: "Continue walking perimeter to close loop (Score: \(Int(overallScore))% / 90% needed)",
                 severity: .info,
                 directionalCue: .forward,
-                missingAreaSummary: missingSummary
+                missingAreaSummary: "Closing perimeter loop"
             )
         }
-        
-        // Priority 7: Perimeter Loop Closure
-        if coverage.perimeterCoveragePct < 80.0 {
-            return GuidanceInstruction(
-                text: "Follow perimeter to close wall loop (\(Int(coverage.perimeterCoveragePct))% observed)",
-                severity: .info,
-                directionalCue: .forward,
-                missingAreaSummary: "\(Int(coverage.totalEstimatedPerimeterM - coverage.observedPerimeterM))m wall perimeter unmapped"
-            )
-        }
-        
-        // Priority 8: Complete & Ready
-        return GuidanceInstruction(
-            text: "✅ Full room coverage & parallax verified • Tap Finish",
-            severity: .success,
-            directionalCue: .none,
-            missingAreaSummary: nil
-        )
     }
 }
-

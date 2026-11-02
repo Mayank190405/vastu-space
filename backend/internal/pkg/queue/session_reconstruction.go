@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"sort"
 
 	"fmt"
@@ -88,6 +89,11 @@ func (h *StageHandlers) runSessionReconstruction(ctx context.Context, p *Reconst
 			_ = recorder.RecordSessionStage(ctx, p.SessionID, p.JobID, "QUALITY_VALIDATION", "FAILED", &rejection)
 			_ = h.jobRepo.AddLog(ctx, &domain.JobLog{JobID: p.JobID, Stage: "QUALITY_VALIDATION", LogLevel: "error", Message: rejection})
 			return fmt.Errorf("%s: %w", rejection, asynq.SkipRetry)
+		}
+		if isReconstructionSafetyExit(err) {
+			message := "RECONSTRUCTION_EVIDENCE_REJECTED: inspect the failed stage's persisted logs; changed capture or processing is required"
+			_ = recorder.RecordSessionStage(ctx, p.SessionID, p.JobID, current, "FAILED", &message)
+			return fmt.Errorf("%s: %w", message, asynq.SkipRetry)
 		}
 		message := fmt.Sprintf("RECONSTRUCTION_FAILED: %v; inspect persisted job logs for the underlying error", err)
 		_ = recorder.RecordSessionStage(ctx, p.SessionID, p.JobID, current, "RETRYING", &message)
@@ -192,4 +198,9 @@ func reconstructionQualityRejection(output string) string {
 		}
 	}
 	return message
+}
+
+func isReconstructionSafetyExit(err error) bool {
+	var exitErr *exec.ExitError
+	return errors.As(err, &exitErr) && exitErr.ExitCode() == 42
 }

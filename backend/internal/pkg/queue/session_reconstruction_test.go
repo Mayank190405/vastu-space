@@ -2,6 +2,7 @@ package queue
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -66,5 +67,14 @@ func TestQualityRejectionRequiresExplicitReport(t *testing.T) {
 	got := reconstructionQualityRejection(root)
 	if !strings.Contains(got, "CAMERA, MESH") || !strings.Contains(got, "triangles=4608") {
 		t.Fatalf("missing reasons: %s", got)
+	}
+}
+
+func TestSafetyExitIsTerminalButRuntimeFailureCanRetry(t *testing.T) {
+	for _, code := range []string{"42", "1"} {
+		err := exec.Command("sh", "-c", "exit "+code).Run()
+		if got := isReconstructionSafetyExit(err); got != (code == "42") {
+			t.Fatalf("exit %s terminal=%v", code, got)
+		}
 	}
 }

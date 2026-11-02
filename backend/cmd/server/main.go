@@ -286,6 +286,8 @@ func main() {
 			r.Post("/redeem", sessionHandler.RedeemChallenge)
 			r.With(sessionHandler.AuthenticateGrant).Post("/{sessionId}/stages/{stageName}", sessionHandler.UpdateMobileStage)
 			r.With(sessionHandler.AuthenticateGrant).Post("/{sessionId}/finalize", mobileUploadHandler.Complete)
+			r.With(sessionHandler.AuthenticateGrant).Get("/{sessionId}/validate-quality", mobileUploadHandler.ValidateQuality)
+			r.With(sessionHandler.AuthenticateGrant).Post("/{sessionId}/validate-quality", mobileUploadHandler.ValidateQuality)
 			r.With(sessionHandler.AuthenticateGrant).Post("/{sessionId}/upload", mobileUploadHandler.Init)
 			r.With(sessionHandler.AuthenticateGrant).Get("/{sessionId}/upload", mobileUploadHandler.Progress)
 			r.With(sessionHandler.AuthenticateGrant).Put("/{sessionId}/upload/chunks/{chunkIndex}", mobileUploadHandler.Chunk)

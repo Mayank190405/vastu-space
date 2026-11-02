@@ -88,11 +88,6 @@ public final class SessionAuthorizationManager: ObservableObject {
         
         // 2. Anti-Replay: Verify challenge nonce has not already been redeemed
         if secureStore.isNonceRedeemed(challenge.nonce) {
-            // Allow seamless resumption if user re-scans the active session
-            if let active = currentSession, active.id == challenge.sessionId {
-                transitionTo(state: .ready)
-                return .success(active)
-            }
             let replayErr = SessionAuthError.replayDetected("QR Challenge '\(challenge.nonce)' has already been redeemed. Single-use QR codes cannot be reused.")
             transitionTo(state: .unauthorized, error: replayErr.localizedDescription)
             return .failure(replayErr)

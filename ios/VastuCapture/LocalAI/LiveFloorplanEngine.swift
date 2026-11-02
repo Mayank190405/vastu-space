@@ -34,17 +34,7 @@ public final class LiveFloorplanEngine: ObservableObject {
             directionalCue: .forward,
             missingAreaSummary: nil
         )
-        self.latestQualityAudit = ComprehensiveCaptureAudit(
-            overallScore: 0.0,
-            coverageScore: 0.0,
-            parallaxScore: 0.0,
-            visualQualityScore: 100.0,
-            trackingStabilityScore: 100.0,
-            isReadyForFinalization: false,
-            canFinalizeWithoutWarning: false,
-            preFinishWarnings: ["Capture not started"],
-            auditSummary: "Initializing room scan"
-        )
+        self.latestQualityAudit = ComprehensiveCaptureAudit.initial()
     }
     
     public func reset() {
@@ -79,17 +69,7 @@ public final class LiveFloorplanEngine: ObservableObject {
             directionalCue: .forward,
             missingAreaSummary: nil
         )
-        latestQualityAudit = ComprehensiveCaptureAudit(
-            overallScore: 0.0,
-            coverageScore: 0.0,
-            parallaxScore: 0.0,
-            visualQualityScore: 100.0,
-            trackingStabilityScore: 100.0,
-            isReadyForFinalization: false,
-            canFinalizeWithoutWarning: false,
-            preFinishWarnings: [],
-            auditSummary: "Starting capture"
-        )
+        latestQualityAudit = ComprehensiveCaptureAudit.initial()
     }
     
     /// Processes a single frame with camera pose, AI boundary rays, and quality metrics

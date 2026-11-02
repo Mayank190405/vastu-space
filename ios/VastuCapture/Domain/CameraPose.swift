@@ -98,9 +98,11 @@ public struct CaptureQualityAudit: Codable {
             (wallBoundaryCoveragePct / 100.0) * 0.20
         )
         self.overallScore = round(score * 1000) / 1000.0
-        self.isAcceptableForReconstruction = keyframeCount >= 12 && translationalBaselineM >= 0.40 && trackingStabilityPct >= 75.0
+        self.isAcceptableForReconstruction = (self.overallScore >= 0.90) && keyframeCount >= 12 && translationalBaselineM >= 0.40 && trackingStabilityPct >= 75.0
         
-        if translationalBaselineM < 0.40 {
+        if self.overallScore < 0.90 {
+            self.recommendationPrompt = "Capture score (\(Int(self.overallScore * 100))%) is below the mandatory 90% gate (IOS-008). Rescan required before submission."
+        } else if translationalBaselineM < 0.40 {
             self.recommendationPrompt = "Move body laterally across the room floor to establish a triangulation baseline."
         } else if wallBoundaryCoveragePct < 60.0 {
             self.recommendationPrompt = "Walk along the unobserved walls to complete room enclosure."

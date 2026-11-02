@@ -1,6 +1,8 @@
 import Foundation
 import Combine
+#if canImport(UIKit)
 import UIKit
+#endif
 import CryptoKit
 
 public enum SessionAuthError: LocalizedError, Equatable {
@@ -208,13 +210,21 @@ public final class SessionAPIClient: ObservableObject, SessionAPIClientProtocol 
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.timeoutInterval = 8.0
         
+        #if canImport(UIKit)
+        let deviceModel = UIDevice.current.model
+        let deviceOS = "\(UIDevice.current.systemName) \(UIDevice.current.systemVersion)"
+        #else
+        let deviceModel = "iPhone (macOS Test Runner)"
+        let deviceOS = "iOS 17.0"
+        #endif
+        
         let payload: [String: Any] = [
             "session_id": challenge.sessionId,
             "challenge_token": challenge.challengeToken,
             "nonce": challenge.nonce,
             "device_id": deviceUUID,
-            "device_model": UIDevice.current.model,
-            "device_os": "\(UIDevice.current.systemName) \(UIDevice.current.systemVersion)",
+            "device_model": deviceModel,
+            "device_os": deviceOS,
             "client_timestamp": ISO8601DateFormatter().string(from: Date())
         ]
         
@@ -315,10 +325,18 @@ public final class SessionAPIClient: ObservableObject, SessionAPIClientProtocol 
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         request.timeoutInterval = 4.0
         
+        #if canImport(UIKit)
+        let devModel = UIDevice.current.model
+        let devOS = "\(UIDevice.current.systemName) \(UIDevice.current.systemVersion)"
+        #else
+        let devModel = "iPhone (macOS Test Runner)"
+        let devOS = "iOS 17.0"
+        #endif
+        
         let body: [String: Any] = [
             "device_uuid": deviceUUID,
-            "device_model": UIDevice.current.model,
-            "device_os": "\(UIDevice.current.systemName) \(UIDevice.current.systemVersion)",
+            "device_model": devModel,
+            "device_os": devOS,
             "app_version": "1.0.0",
             "session_id": grantSessionID,
             "battery_level": battery,
